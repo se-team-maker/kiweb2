@@ -5,6 +5,8 @@
 `index.html` にアクセスすると `/kiweb/login/public/login.php` にリダイレクトされます。  
 講師ポータル、講師認証、会議室予約、Google Apps Script 連携用コードを同じ配下で管理しています。
 
+**作成:** 真砂 大朗（SE）
+
 ## 主な構成
 
 | Path | 役割 |
