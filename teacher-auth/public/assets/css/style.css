@@ -1,0 +1,825 @@
+:root {
+    --md-sys-color-primary: #0F3568;
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-primary-container: #d2e3fc;
+    --md-sys-color-on-primary-container: #174ea6;
+    --md-sys-color-secondary: #e8f0fe;
+    --md-sys-color-on-secondary: #0F3568;
+    --md-sys-color-error: #d93025;
+    --md-sys-color-surface: #ffffff;
+    --md-sys-color-on-surface: #202124;
+    --md-sys-color-outline: #dadce0;
+    --md-sys-color-outline-focus: #0F3568;
+
+    --kyoto-primary: #0F3568;
+    --kyoto-accent: #AF1E2B;
+    --kyoto-surface-tint: rgba(15, 53, 104, 0.08);
+    --kyoto-ink: #1f2a37;
+    --remember-container-bg: rgba(15, 53, 104, 0.03);
+    --remember-container-bg-hover: rgba(15, 53, 104, 0.07);
+    --remember-container-bg-selected: rgba(15, 53, 104, 0.1);
+    --remember-container-border: rgba(15, 53, 104, 0.16);
+    --remember-container-border-selected: rgba(15, 53, 104, 0.34);
+    --remember-support-color: #5f6368;
+
+    --md-sys-typescale-body-large-size: 16px;
+    --md-sys-typescale-body-medium-size: 14px;
+    --md-sys-typescale-body-small-size: 12px;
+    --md-sys-typescale-headline-small-size: 24px;
+
+    --md-sys-elevation-level1: 0 1px 2px 0 rgba(60, 64, 67, 0.3), 0 1px 3px 1px rgba(60, 64, 67, 0.15);
+
+    --md-sys-shape-corner-extra-large: 28px;
+    --md-sys-shape-corner-small: 4px;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Roboto', 'Noto Sans JP', sans-serif;
+    background-color: #f3f4f7;
+    background-image:
+        radial-gradient(circle at 12% 12%, rgba(15, 53, 104, 0.12), transparent 42%),
+        radial-gradient(circle at 88% 18%, rgba(175, 30, 43, 0.09), transparent 40%),
+        linear-gradient(180deg, #f8f9fc 0%, #eff1f6 100%);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    color: var(--md-sys-color-on-surface);
+}
+
+/* カードコンテナ */
+.login-container {
+    padding: 0;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.login-card {
+    background-color: var(--md-sys-color-surface);
+    background-image: linear-gradient(180deg, rgba(15, 53, 104, 0.04), rgba(255, 255, 255, 1) 42%);
+    border-radius: 8px;
+    /* Googleログイン画面は角が少し丸い程度 */
+    padding: 48px 40px 36px;
+    width: 100%;
+    max-width: 450px;
+    border: 1px solid rgba(15, 53, 104, 0.18);
+    /* Googleログイン画面は影がない場合もあるが、リクエストに合わせて少し立体感を出す */
+    box-shadow: 0 14px 34px rgba(15, 53, 104, 0.12);
+    display: flex;
+    flex-direction: column;
+    min-height: 500px;
+    position: relative;
+    overflow: hidden;
+}
+
+.login-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, var(--kyoto-accent), #143D78 45%, var(--kyoto-primary));
+}
+
+@media (max-width: 600px) {
+    .login-card {
+        border: none;
+        box-shadow: none;
+        padding: 28px 20px 36px;
+        min-height: 100vh;
+        max-width: 100%;
+    }
+
+    body {
+        background-color: white;
+        align-items: flex-start;
+    }
+
+    .login-header {
+        margin-bottom: 28px;
+    }
+
+    .login-header h1 {
+        font-size: 22px;
+    }
+
+    .subtitle {
+        font-size: 14px;
+    }
+
+    .md-text-field {
+        margin-bottom: 20px;
+    }
+
+    .md-text-field input {
+        height: 52px;
+    }
+
+    .action-area {
+        flex-direction: column-reverse;
+        align-items: stretch;
+        gap: 12px;
+        padding-top: 20px;
+    }
+
+    .btn-primary {
+        width: 100%;
+        height: 44px;
+        font-size: 15px;
+    }
+
+    .text-btn {
+        width: 100%;
+        text-align: center;
+        padding: 10px 12px;
+    }
+
+    .remember-control {
+        padding: 10px;
+        border-radius: 10px;
+    }
+
+    .remember-label {
+        font-size: 13px;
+        gap: 8px;
+    }
+
+    .remember-support {
+        margin-left: 26px;
+        font-size: 11px;
+    }
+}
+
+@media (max-width: 600px) {
+    .code-input-container {
+        gap: 6px;
+    }
+
+    .code-input {
+        width: 40px;
+        height: 48px;
+        font-size: 20px;
+    }
+}
+
+/* ヘッダー */
+.login-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.logo {
+    height: 36px;
+    /* Googleのロゴサイズに合わせる */
+    margin-bottom: 16px;
+}
+
+.login-header h1 {
+    font-size: 24px;
+    font-weight: 500;
+    margin-bottom: 8px;
+    color: var(--md-sys-color-on-surface);
+    letter-spacing: 0.03em;
+    position: relative;
+}
+
+.login-header h1::after {
+    content: '';
+    display: block;
+    width: 44px;
+    height: 3px;
+    background: var(--kyoto-accent);
+    border-radius: 999px;
+    margin: 10px auto 0;
+}
+
+.subtitle {
+    font-size: 16px;
+    color: #2f3846;
+}
+
+/* アラート */
+.alert {
+    padding: 12px 16px;
+    border-radius: 4px;
+    margin-bottom: 24px;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
+.alert-error {
+    background-color: #fce8e6;
+    color: var(--md-sys-color-error);
+}
+
+.alert-success {
+    background-color: #e6f4ea;
+    color: #188038;
+}
+
+/* Material Design TextInput */
+.md-text-field {
+    position: relative;
+    margin-bottom: 24px;
+}
+
+.md-text-field input {
+    width: 100%;
+    height: 56px;
+    padding: 16px 13px;
+    font-size: 16px;
+    border: 1px solid rgba(15, 53, 104, 0.28);
+    border-radius: 4px;
+    outline: none;
+    background-color: rgba(255, 255, 255, 0.95);
+    transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s;
+    color: var(--md-sys-color-on-surface);
+    z-index: 1;
+}
+
+.md-text-field label {
+    position: absolute;
+    left: 13px;
+    top: 50%;
+    transform: translateY(-50%);
+    background-color: white;
+    padding: 0 4px;
+    color: #5f6368;
+    font-size: 16px;
+    transition: all 0.2s;
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* フォーカス時・入力あり時のラベル移動 */
+.md-text-field input:focus~label,
+.md-text-field input.has-value~label {
+    top: 0;
+    font-size: 12px;
+    color: var(--kyoto-accent);
+}
+
+.page-progress {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: transparent;
+    pointer-events: none;
+    z-index: 5;
+}
+
+.page-progress .bar {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, var(--kyoto-accent), var(--kyoto-primary));
+    transform: scaleX(0);
+    transform-origin: left;
+    opacity: 0;
+}
+
+.page-progress.active .bar {
+    animation: progress-sweep 0.8s ease-out forwards;
+}
+
+@keyframes progress-sweep {
+    0% {
+        transform: scaleX(0);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    80% {
+        transform: scaleX(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scaleX(1);
+        opacity: 0;
+    }
+}
+
+.md-text-field input:focus {
+    border: 2px solid var(--kyoto-primary);
+    box-shadow: 0 0 0 4px rgba(15, 53, 104, 0.12), 0 6px 14px rgba(15, 53, 104, 0.12);
+    padding: 16px 12px;
+    /* ボーダー太くなる分調整 */
+}
+
+/* 入力済みだがフォーカス外れた場合の色 */
+.md-text-field input.has-value:not(:focus)~label {
+    color: #5f6368;
+}
+
+.md-text-field input.has-value:not(:focus) {
+    border-color: rgba(15, 53, 104, 0.22);
+}
+
+.md-text-field input.error,
+.md-text-field.error input {
+    border-color: #d93025;
+}
+
+.md-text-field input.error:focus,
+.md-text-field.error input:focus {
+    border-color: #d93025;
+    box-shadow: 0 0 0 3px rgba(217, 48, 37, 0.15);
+}
+
+/* エラー時にフォーカス/入力済みならラベルを赤にする */
+.md-text-field.error input:focus~label,
+.md-text-field.error input.has-value~label {
+    color: #d93025;
+}
+
+.field-error {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    margin: -12px 0 12px;
+    color: #d93025;
+    font-size: 12px;
+}
+
+.field-error.active {
+    display: flex;
+}
+
+.field-error .error-icon {
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    background: #d93025;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+
+.remember-row {
+    margin: 2px 0 12px;
+}
+
+.remember-control {
+    min-height: 44px;
+    border-radius: 12px;
+    border: 1px solid var(--remember-container-border);
+    background: var(--remember-container-bg);
+    padding: 10px 12px;
+    transition: background-color 0.2s, border-color 0.2s, box-shadow 0.2s;
+}
+
+.remember-control:hover {
+    background: var(--remember-container-bg-hover);
+}
+
+.remember-control:focus-within {
+    border-color: var(--md-sys-color-outline-focus);
+    box-shadow: 0 0 0 3px rgba(15, 53, 104, 0.16);
+}
+
+.remember-control:has(#remember-login:checked) {
+    background: var(--remember-container-bg-selected);
+    border-color: var(--remember-container-border-selected);
+}
+
+.remember-label {
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+    gap: 10px;
+    color: #2f3c4d;
+    font-size: 14px;
+    font-weight: 500;
+    line-height: 1.45;
+    cursor: pointer;
+    user-select: none;
+}
+
+.remember-label input[type="checkbox"] {
+    width: 18px;
+    height: 18px;
+    flex: 0 0 18px;
+    margin: 0;
+    accent-color: var(--kyoto-primary);
+}
+
+.remember-label input[type="checkbox"]:focus-visible {
+    outline: 2px solid rgba(15, 53, 104, 0.45);
+    outline-offset: 2px;
+    border-radius: 2px;
+}
+
+.remember-label input[type="checkbox"]:checked + .remember-text {
+    color: var(--kyoto-primary);
+}
+
+.remember-text {
+    flex: 1;
+}
+
+.remember-support {
+    margin: 6px 0 0 28px;
+    color: var(--remember-support-color);
+    font-size: 12px;
+    line-height: 1.5;
+}
+
+/* サインアップの追加セクション */
+.form-section {
+    margin-bottom: 24px;
+}
+
+.section-label {
+    font-size: 12px;
+    color: #5f6368;
+    margin-bottom: 8px;
+    font-weight: 500;
+}
+
+.role-display {
+    display: inline-flex;
+    align-items: center;
+    padding: 8px 14px;
+    border-radius: 18px;
+    background: #e8f0fe;
+    color: #0F3568;
+    border: 1px solid #dadce0;
+    font-size: 13px;
+    font-weight: 500;
+}
+
+
+/* アクションエリア */
+.action-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    /* 下部に配置 */
+    padding-top: 30px;
+}
+
+/* 要素が1つだけのときは右下寄せ */
+.action-area > :only-child {
+    margin-left: auto;
+}
+
+.account-create-btn {
+    font-size: 14px;
+    color: var(--md-sys-color-primary);
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    padding: 8px;
+    border-radius: 4px;
+}
+
+.account-create-btn:hover {
+    background-color: rgba(15, 53, 104, 0.04);
+}
+
+.btn {
+    border: 1px solid transparent;
+    border-radius: 18px;
+    padding: 0 24px;
+    height: 36px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.2s, box-shadow 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #0F3568 0%, #153f7a 100%);
+    color: white;
+    border: none;
+    border-radius: 18px;
+    padding: 0 24px;
+    height: 36px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 72px;
+    transition: background-color 0.2s, box-shadow 0.2s, color 0.2s;
+}
+
+.btn-primary::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    pointer-events: none;
+}
+
+.btn-primary:hover {
+    background: linear-gradient(135deg, #0c2f5f 0%, #123a6d 100%);
+    box-shadow: 0 10px 20px rgba(15, 53, 104, 0.22);
+}
+
+.btn-primary:active {
+    background: linear-gradient(135deg, #0a294f 0%, #0f2f5a 100%);
+    box-shadow: none;
+}
+
+.btn-primary:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(175, 30, 43, 0.25), 0 8px 16px rgba(15, 53, 104, 0.2);
+}
+
+.btn-primary:disabled {
+    background-color: #dadce0;
+    color: #5f6368;
+    cursor: not-allowed;
+    box-shadow: none;
+}
+
+.btn-secondary {
+    background-color: #f1f3f4;
+    color: #202124;
+    border-color: #dadce0;
+}
+
+.btn-secondary:hover {
+    background-color: #e8eaed;
+}
+
+.btn-danger {
+    background-color: #d93025;
+    color: #ffffff;
+    border-color: #d93025;
+}
+
+.btn-danger:hover {
+    background-color: #c5221f;
+}
+
+.btn-sm {
+    height: 28px;
+    padding: 0 14px;
+    font-size: 12px;
+    border-radius: 14px;
+}
+
+.btn-full {
+    width: 100%;
+}
+
+/* タブ切り替えボタンとして使用するスタイル（見た目はテキストリンク） */
+.text-btn {
+    background: none;
+    border: none;
+    color: var(--kyoto-primary);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: background-color 0.2s, box-shadow 0.2s;
+}
+
+.text-btn:hover {
+    background-color: rgba(15, 53, 104, 0.08);
+    box-shadow: inset 0 -2px 0 rgba(175, 30, 43, 0.45);
+}
+
+/* ログイン方法選択リスト */
+.method-list {
+    list-style: none;
+    margin: 8px 0 0;
+    padding: 0;
+    border: 1px solid var(--md-sys-color-outline);
+    border-radius: 12px;
+    overflow: hidden;
+    background: #f6f8fb;
+}
+
+.method-item a {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px 18px;
+    text-decoration: none;
+    color: var(--md-sys-color-on-surface);
+    background: #f8fafc;
+    transition: background-color 0.2s;
+}
+
+.method-item + .method-item a {
+    border-top: 1px solid #e0e3e7;
+}
+
+.method-item a:hover {
+    background: #eef2f7;
+}
+
+.method-icon {
+    width: 24px;
+    height: 24px;
+    color: #0F3568;
+    flex: 0 0 24px;
+}
+
+.method-text {
+    font-size: 15px;
+    font-weight: 500;
+    color: #0F3568;
+}
+
+/* ロード中スクリーン */
+.kPY6ve {
+    position: fixed;
+    inset: 0;
+    background-color: #ffffff;
+    opacity: 0.5;
+    z-index: 5;
+    pointer-events: none;
+}
+
+
+/* リップルエフェクト */
+.ripple {
+    position: absolute;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.3);
+    transform: scale(0);
+    animation: ripple-animation 0.6s linear;
+    pointer-events: none;
+}
+
+@keyframes ripple-animation {
+    to {
+        transform: scale(4);
+        opacity: 0;
+    }
+}
+
+/* フォーム切り替え (CSSで制御) */
+.auth-form {
+    display: none;
+}
+
+.auth-form.active {
+    display: block;
+}
+
+/* パスキーボタン（Google風） */
+.passkey-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+    margin-top: 20px;
+    padding: 10px 0;
+    border: 1px solid var(--md-sys-color-outline);
+    background-color: white;
+    border-radius: 4px;
+    color: var(--md-sys-color-on-surface);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.passkey-btn:hover {
+    background-color: #f8f9fa;
+    border-color: #d2e3fc;
+}
+
+/* ダッシュボード等は既存維持しつつフォント整合 */
+.dashboard-container {
+    padding: 24px;
+    width: 100%;
+    max-width: 800px;
+    position: relative;
+}
+
+/* ログインフッター */
+.login-footer {
+    margin-top: 32px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 12px;
+    color: #5f6368;
+}
+
+.login-footer .footer-links {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.login-footer .footer-links a {
+    color: #5f6368;
+    text-decoration: none;
+}
+
+.login-footer .footer-links a:hover {
+    color: #202124;
+    text-decoration: underline;
+}
+
+.lang-select {
+    position: relative;
+    display: inline-block;
+    align-self: center;
+}
+
+.lang-button {
+    background: #f1f3f4;
+    border: 1px solid #dadce0;
+    color: #202124;
+    border-radius: 18px;
+    padding: 6px 12px;
+    font-size: 12px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.lang-button:hover {
+    background: #e8eaed;
+}
+
+.lang-menu {
+    position: absolute;
+    left: 0;
+    top: calc(100% + 6px);
+    background: #ffffff;
+    border: 1px solid #dadce0;
+    border-radius: 8px;
+    box-shadow: 0 2px 6px rgba(60, 64, 67, 0.2);
+    padding: 6px;
+    min-width: 160px;
+    z-index: 5;
+}
+
+.lang-menu button {
+    width: 100%;
+    text-align: left;
+    background: transparent;
+    border: none;
+    padding: 8px 10px;
+    font-size: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    color: #202124;
+}
+
+.lang-menu button:hover {
+    background: #f1f3f4;
+}
+
+.lang-caret {
+    border: solid #5f6368;
+    border-width: 0 1.5px 1.5px 0;
+    display: inline-block;
+    padding: 3px;
+    transform: rotate(45deg);
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(255, 255, 255, 0.6);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}

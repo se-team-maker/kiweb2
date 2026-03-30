@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>出退勤記録 履歴の閲覧</title>
+<style>
+  :root {
+    /* parttime theme (default) */
+    --theme-primary: #AF1E2B;
+    --theme-primary-hover: #8F141F;
+    --theme-on-primary: #ffffff;
+    --theme-primary-container: #FFD9DD;
+    --theme-on-primary-container: #400009;
+    --theme-secondary-container: #FFD8DC;
+    --theme-background: #FFF4F5;
+    --theme-surface: #FFF7F8;
+    --theme-surface-alt: #FFF0F2;
+    --theme-text: #291819;
+    --theme-text-muted: #5C4346;
+    --theme-outline: #E3C4C7;
+    --theme-outline-strong: #8F7275;
+    --theme-shadow: 0 18px 42px rgba(64, 0, 9, 0.14);
+    --theme-focus: rgba(175, 30, 43, 0.16);
+    --theme-font: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+    --theme-radius-small: 12px;
+    --theme-radius-medium: 18px;
+    --theme-radius-large: 24px;
+  }
+
+  /* admin theme override */
+  :root.theme-admin {
+    --theme-primary: #844FC1;
+    --theme-primary-hover: #68389D;
+    --theme-on-primary: #ffffff;
+    --theme-primary-container: #F0DBFF;
+    --theme-on-primary-container: #2F0054;
+    --theme-secondary-container: #EADCFD;
+    --theme-background: #FAF4FF;
+    --theme-surface: #FCF8FF;
+    --theme-surface-alt: #F3E9FF;
+    --theme-text: #21182B;
+    --theme-text-muted: #4E4458;
+    --theme-outline: #CFC3DB;
+    --theme-outline-strong: #7E738B;
+    --theme-shadow: 0 18px 42px rgba(47, 0, 84, 0.14);
+    --theme-focus: rgba(132, 79, 193, 0.16);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: var(--theme-font);
+    font-size: 14px;
+    color: var(--theme-text);
+    background: var(--theme-background);
+    padding: 24px;
+  }
+
+  h1 {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: var(--theme-text);
+  }
+
+  /* ── 名前検索フォーム ── */
+  .search-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .search-form label {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--theme-text-muted);
+    white-space: nowrap;
+  }
+  .search-form input[type="text"] {
+    padding: 6px 12px;
+    border: 1px solid var(--theme-outline);
+    border-radius: 6px;
+    font-size: 14px;
+    font-family: var(--theme-font);
+    color: var(--theme-text);
+    background: var(--theme-surface);
+    min-width: 160px;
+    max-width: 260px;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  .search-form input[type="text"]:focus {
+    border-color: var(--theme-primary);
+    box-shadow: 0 0 0 2px var(--theme-focus);
+  }
+  .search-form input[type="text"][readonly] {
+    background: var(--theme-surface-alt);
+    color: var(--theme-text-muted);
+    cursor: default;
+    border-color: var(--theme-outline);
+  }
+  .search-form input[type="text"][readonly]:focus {
+    border-color: var(--theme-outline);
+    box-shadow: none;
+  }
+  .search-btn {
+    padding: 6px 16px;
+    border: none;
+    border-radius: 6px;
+    background: var(--theme-primary);
+    color: var(--theme-on-primary);
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--theme-font);
+    cursor: pointer;
+    transition: background 0.15s;
+    white-space: nowrap;
+  }
+  .search-btn:hover {
+    background: var(--theme-primary-hover);
+  }
+  .search-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+  .search-msg {
+    font-size: 12px;
+    color: var(--theme-primary);
+    margin-left: 4px;
+  }
+
+  /* ── 講師タブ（複数講師表示時のみ） ── */
+  .tab-bar {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid var(--theme-outline);
+  }
+  .tab-bar button {
+    padding: 8px 18px;
+    border: 1px solid var(--theme-outline);
+    border-bottom: none;
+    background: var(--theme-surface-alt);
+    cursor: pointer;
+    font-family: var(--theme-font);
+    font-size: 14px;
+    border-radius: 4px 4px 0 0;
+    color: var(--theme-text-muted);
+    transition: background .15s;
+  }
+  .tab-bar button:hover { background: var(--theme-primary-container); }
+  .tab-bar button.active {
+    background: var(--theme-surface);
+    color: var(--theme-text);
+    font-weight: 600;
+    border-color: var(--theme-outline);
+    position: relative;
+    bottom: -2px;
+    border-bottom: 2px solid var(--theme-surface);
+  }
+  .tab-bar.hidden { display: none; }
+
+  /* ── サマリー ── */
+  .summary {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+  }
+  .summary-card {
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-outline);
+    border-radius: var(--theme-radius-small);
+    padding: 12px 20px;
+    min-width: 120px;
+  }
+  .summary-card .label {
+    font-size: 11px;
+    color: var(--theme-text-muted);
+    margin-bottom: 4px;
+  }
+  .summary-card .value {
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--theme-text);
+  }
+
+  /* ── 校舎フィルター ── */
+  .filter-bar {
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .filter-bar label { font-size: 12px; color: var(--theme-text-muted); }
+  .filter-bar select {
+    padding: 4px 8px;
+    border: 1px solid var(--theme-outline);
+    border-radius: 4px;
+    font-size: 13px;
+    font-family: var(--theme-font);
+    background: var(--theme-surface);
+    color: var(--theme-text);
+  }
+
+  /* ── テーブル ── */
+  .table-wrap {
+    background: var(--theme-surface);
+    border: 1px solid var(--theme-outline);
+    border-radius: var(--theme-radius-small);
+    overflow: hidden;
+  }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: var(--theme-surface-alt); }
+  th, td {
+    text-align: left;
+    padding: 8px 14px;
+    font-size: 13px;
+  }
+  th {
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--theme-text-muted);
+    border-bottom: 1px solid var(--theme-outline);
+  }
+  td { border-bottom: none; }
+  tbody tr:hover { background: var(--theme-focus); }
+
+  /* 日付グループ区切り */
+  tr.date-break-before td {
+    border-bottom: 3px solid #ccc;
+  }
+
+  /* 校舎バッジ */
+  .campus-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-size: 12px;
+    background: var(--theme-surface-alt);
+    color: var(--theme-text-muted);
+  }
+  .campus-badge[data-campus="四条烏丸校"] { background: #e3f0ff; color: #1a6fbf; }
+  .campus-badge[data-campus="円町校"]     { background: #e8f8e8; color: #2a7a2a; }
+  .campus-badge[data-campus="京大前校"]   { background: #fff3e0; color: #b86e00; }
+
+  .no-data {
+    padding: 40px;
+    text-align: center;
+    color: var(--theme-text-muted);
+  }
+
+  .record-count {
+    font-size: 12px;
+    color: var(--theme-text-muted);
+    margin-bottom: 8px;
+  }
+
+  .teacher-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: var(--theme-text-muted);
+    margin-bottom: 16px;
+  }
+
+  /* ── ローディング ── */
+  .loading-overlay {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    gap: 16px;
+  }
+  .loading-overlay.hidden { display: none; }
+  .loading-spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--theme-outline);
+    border-top-color: var(--theme-primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .loading-text {
+    font-size: 13px;
+    color: var(--theme-text-muted);
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+  .main-content.hidden { display: none; }
+</style>
+</head>
+<body>
+
+<h1>出退勤記録 履歴の閲覧</h1>
+
+<!-- 名前検索フォーム -->
+<div class="search-form" id="searchForm">
+  <label for="nameInput">名前:</label>
+  <input type="text" id="nameInput" placeholder="講師名を入力" readonly>
+  <button type="button" class="search-btn" id="searchBtn" style="display:none;">表示</button>
+  <span class="search-msg" id="searchMsg"></span>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">データを読み込んでいます…</div>
+</div>
+
+<div class="main-content hidden" id="mainContent">
+
+<div class="tab-bar hidden" id="tabBar"></div>
+
+<div class="summary" id="summary"></div>
+
+<div class="filter-bar">
+  <label>校舎:</label>
+  <select id="campusFilter">
+    <option value="">すべて</option>
+  </select>
+</div>
+
+<div class="record-count" id="recordCount"></div>
+
+<div class="table-wrap">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:50px">#</th>
+        <th>日付</th>
+        <th>校舎</th>
+        <th>時刻</th>
+      </tr>
+    </thead>
+    <tbody id="tbody"></tbody>
+  </table>
+</div>
+
+</div><!-- /main-content -->
+
+<script>
+
+// ── 設定 ──
+const API_URL = 'https://script.google.com/macros/s/AKfycbyuJTeutjSMokFV4aZ0SKQ-mURuhT0__VdCHI5KDmbllGkKOiNQlse9tvymwQnAanVQ/exec';
+const params = new URLSearchParams(window.location.search);
+
+// テーマ適用
+const themeParam = params.get('theme') || 'parttime';
+if (themeParam === 'admin') {
+  document.documentElement.classList.add('theme-admin');
+}
+
+// パラメータ
+const teacherParam = params.get('teacher') || params.get('name') || '';
+const allowNameEdit = params.get('allowNameEdit') === '1';
+
+// DOM
+const nameInput = document.getElementById('nameInput');
+const searchBtn = document.getElementById('searchBtn');
+const searchMsg = document.getElementById('searchMsg');
+const loadingEl = document.getElementById('loadingOverlay');
+const mainEl = document.getElementById('mainContent');
+
+// ── 権限チェック & 初期名取得 ──
+async function checkPermissions() {
+  let hasManageUsers = false;
+  let meName = '';
+  try {
+    const res = await fetch('/kiweb/teacher-auth/api/me.php', {
+      method: 'GET',
+      credentials: 'include'
+    });
+    if (res.ok) {
+      const data = await res.json();
+      if (data && data.success && data.user) {
+        meName = (data.user.name || data.user.email || '').trim();
+        if (data.user.permissions && data.user.permissions.includes('manage_users')) {
+          hasManageUsers = true;
+        }
+      }
+    }
+  } catch (e) {
+    // ignore
+  }
+  return { hasManageUsers, meName };
+}
+
+// ── データ取得 ──
+async function fetchData(name) {
+  if (!name) return {};
+  const url = `${API_URL}?action=history&name=${encodeURIComponent(name)}`;
+  const res = await fetch(url);
+  const json = await res.json();
+
+  if (!res.ok || json.ok === false) {
+    throw new Error(json.error || 'history_fetch_failed');
+  }
+
+  return { [json.name]: json.history || [] };
+}
+
+// ── 状態 ──
+let DATA = {};
+let currentTeacher = '';
+let currentCampus = '';
+
+// ── 検索実行 ──
+async function doSearch(name) {
+  searchMsg.textContent = '';
+  if (!name || !name.trim()) {
+    searchMsg.textContent = '名前を入力してください';
+    return;
+  }
+
+  // ローディング表示
+  mainEl.classList.add('hidden');
+  loadingEl.classList.remove('hidden');
+  loadingEl.innerHTML = '<div class="loading-spinner"></div><div class="loading-text">データを読み込んでいます…</div>';
+
+  try {
+    const data = await fetchData(name.trim());
+    delete data['講師名'];
+    DATA = data;
+  } catch (e) {
+    loadingEl.innerHTML = `<div class="loading-text">データの取得に失敗しました</div>`;
+    console.error(e);
+    return;
+  }
+
+  // ローディング非表示 → メイン表示
+  loadingEl.classList.add('hidden');
+  mainEl.classList.remove('hidden');
+
+  const names = Object.keys(DATA);
+  const tabBar = document.getElementById('tabBar');
+
+  // タブリセット
+  tabBar.classList.add('hidden');
+  tabBar.innerHTML = '';
+
+  if (names.length === 0) {
+    currentTeacher = '';
+    renderEmpty();
+    return;
+  }
+
+  if (names.length === 1) {
+    selectTeacher(names[0]);
+  } else {
+    tabBar.classList.remove('hidden');
+    names.forEach(n => {
+      const btn = document.createElement('button');
+      btn.textContent = n;
+      btn.addEventListener('click', () => selectTeacher(n));
+      tabBar.appendChild(btn);
+    });
+    selectTeacher(names[0]);
+  }
+}
+
+function renderEmpty() {
+  document.getElementById('summary').innerHTML = '';
+  document.getElementById('recordCount').textContent = '';
+  const sel = document.getElementById('campusFilter');
+  sel.innerHTML = '<option value="">すべて</option>';
+  document.getElementById('tbody').innerHTML = '<tr><td colspan="4" class="no-data">データがありません</td></tr>';
+}
+
+// ── 講師選択 ──
+function selectTeacher(name) {
+  currentTeacher = name;
+  currentCampus = '';
+  document.getElementById('campusFilter').value = '';
+
+  // タブ更新
+  document.querySelectorAll('.tab-bar button').forEach(btn => {
+    btn.classList.toggle('active', btn.textContent === name);
+  });
+
+  // 校舎フィルター更新
+  const records = DATA[name] || [];
+  const campuses = [...new Set(records.map(r => r[1]))].sort();
+  const sel = document.getElementById('campusFilter');
+  sel.innerHTML = '<option value="">すべて</option>';
+  campuses.forEach(c => {
+    const opt = document.createElement('option');
+    opt.value = c;
+    opt.textContent = c;
+    sel.appendChild(opt);
+  });
+
+  render();
+}
+
+// ── 描画 ──
+function render() {
+  const allRecords = DATA[currentTeacher] || [];
+  const filtered = currentCampus
+    ? allRecords.filter(r => r[1] === currentCampus)
+    : allRecords;
+
+  // サマリー
+  const campusCounts = {};
+  filtered.forEach(r => { campusCounts[r[1]] = (campusCounts[r[1]] || 0) + 1; });
+  const uniqueDays = new Set(filtered.map(r => r[0].split(' ')[0]));
+
+  const summaryEl = document.getElementById('summary');
+  summaryEl.innerHTML = `
+    <div class="summary-card">
+      <div class="label">チェックイン数</div>
+      <div class="value">${filtered.length}</div>
+    </div>
+    <div class="summary-card">
+      <div class="label">出勤日数</div>
+      <div class="value">${uniqueDays.size}</div>
+    </div>
+    ${Object.entries(campusCounts).map(([c, n]) =>
+      `<div class="summary-card">
+        <div class="label">${c}</div>
+        <div class="value">${n}</div>
+      </div>`
+    ).join('')}
+  `;
+
+  // 件数表示
+  document.getElementById('recordCount').textContent =
+    `${filtered.length} 件${currentCampus ? `（${currentCampus}）` : ''}`;
+
+  // テーブル
+  const tbody = document.getElementById('tbody');
+  if (!filtered.length) {
+    tbody.innerHTML = '<tr><td colspan="4" class="no-data">データがありません</td></tr>';
+    return;
+  }
+
+  let prevDate = '';
+  const rows = filtered.map((r, i) => {
+    const [datetime, campus] = r;
+    const [date, time] = datetime.split(' ');
+    const d = new Date(date);
+    const weekday = ['日','月','火','水','木','金','土'][d.getDay()];
+    const dateStr = `${date}（${weekday}）`;
+    const dateChanged = date !== prevDate;
+    prevDate = date;
+
+    return { i, dateStr, campus, time, dateChanged };
+  });
+
+  tbody.innerHTML = rows.map((row, idx) => {
+    const isLast = idx === rows.length - 1;
+    const nextDateChanges = !isLast && rows[idx + 1].dateChanged;
+    const cls = nextDateChanges ? ' class="date-break-before"' : '';
+
+    return `<tr${cls}>
+      <td style="color:var(--theme-text-muted)">${row.i + 1}</td>
+      <td>${row.dateStr}</td>
+      <td><span class="campus-badge" data-campus="${row.campus}">${row.campus}</span></td>
+      <td>${row.time}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ── 初期化 ──
+async function init() {
+  // 権限確認
+  const { hasManageUsers, meName } = await checkPermissions();
+
+  // 初期名: teacher > name > me.php取得名
+  const initialName = teacherParam || meName;
+  nameInput.value = initialName;
+
+  // 編集可否の制御
+  const canEdit = allowNameEdit && hasManageUsers;
+  if (canEdit) {
+    nameInput.removeAttribute('readonly');
+    searchBtn.style.display = '';
+  } else {
+    nameInput.setAttribute('readonly', '');
+    searchBtn.style.display = 'none';
+  }
+
+  // 表示ボタン
+  searchBtn.addEventListener('click', () => {
+    doSearch(nameInput.value);
+  });
+
+  // Enter キーで検索
+  nameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && canEdit) {
+      e.preventDefault();
+      doSearch(nameInput.value);
+    }
+  });
+
+  // 校舎フィルター
+  document.getElementById('campusFilter').addEventListener('change', e => {
+    currentCampus = e.target.value;
+    render();
+  });
+
+  // 初期ロード
+  if (initialName) {
+    await doSearch(initialName);
+  } else {
+    loadingEl.classList.add('hidden');
+    mainEl.classList.remove('hidden');
+    renderEmpty();
+    if (!canEdit) {
+      searchMsg.textContent = '名前が指定されていません';
+    }
+  }
+}
+
+init();
+</script>
+</body>
+</html>

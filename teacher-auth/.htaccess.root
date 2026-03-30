@@ -1,0 +1,35 @@
+# お名前.com 共有サーバー用 .htaccess
+# 公開フォルダ直下に配置
+
+RewriteEngine On
+
+# ===== セキュリティ =====
+# 機密ファイルへのアクセスを遮断
+RewriteRule ^login/\.env$ - [F,L]
+RewriteRule ^login/(src|vendor|database)/ - [F,L]
+
+# ===== APIルーティング =====
+# /api/xxx → /login/api/xxx
+RewriteRule ^api/(.*)$ login/api/$1 [L,QSA]
+
+# ===== 画面ルーティング =====
+# /login.php → /login/public/login.php
+RewriteRule ^login\.php$ login/public/login.php [L]
+RewriteRule ^signup\.php$ login/public/signup.php [L]
+RewriteRule ^verify-email\.php$ login/public/verify-email.php [L]
+RewriteRule ^verify-code\.php$ login/public/verify-code.php [L]
+RewriteRule ^forgot-password\.php$ login/public/forgot-password.php [L]
+RewriteRule ^reset-password\.php$ login/public/reset-password.php [L]
+RewriteRule ^choose-login\.php$ login/public/choose-login.php [L]
+RewriteRule ^dashboard\.php$ login/public/dashboard.php [L]
+RewriteRule ^logout\.php$ login/public/logout.php [L]
+
+# /portal/ → /login/public/portal/
+RewriteRule ^portal/?$ login/public/portal/ [L]
+RewriteRule ^portal/(.*)$ login/public/portal/$1 [L]
+
+# ===== 静的ファイル =====
+# 実在するファイル/フォルダはそのまま返す
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]

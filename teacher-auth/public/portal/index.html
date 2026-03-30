@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>京都医塾ポータル</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,typography"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&family=Noto+Serif+JP:wght@400;700&family=Roboto:wght@400;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap"
+      rel="stylesheet"
+    />
+    <script>
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              primary: "#1a73e8", // Google-like Blue
+              "primary-hover": "#1557b0",
+              "kyoto-red": "#A30015", // Deep red from logo
+              "background-light": "#f0f2f5",
+              "surface-light": "#ffffff",
+              "text-primary": "#202124",
+              "text-secondary": "#5f6368",
+              "input-border": "#dadce0",
+            },
+            fontFamily: {
+              sans: ["'Noto Sans JP'", "'Roboto'", "sans-serif"],
+              serif: ["'Noto Serif JP'", "serif"],
+            },
+            boxShadow: {
+              card: "0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24)",
+              "card-hover": "0 4px 8px 3px rgba(0,0,0,0.15), 0 1px 3px rgba(0,0,0,0.3)",
+            },
+            backgroundImage: {
+              'hero-pattern': "linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://images.unsplash.com/photo-1497366216548-37526070297c?ixlib=rb-4.0.3&auto=format&fit=crop&w=2301&q=80')",
+            }
+          },
+        },
+      };
+    </script>
+    <style>
+      .material-symbols-outlined {
+        font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      }
+      .icon-filled {
+        font-variation-settings: "FILL" 1, "wght" 400, "GRAD" 0, "opsz" 24;
+      }
+      /* Floating Label Styles */
+      .floating-input:focus ~ label,
+      .floating-input:not(:placeholder-shown) ~ label {
+        transform: translateY(-1.5rem) scale(0.75);
+        background-color: white;
+        padding: 0 0.25rem;
+        color: #1a73e8;
+      }
+      .floating-input:not(:placeholder-shown) ~ label {
+        color: #5f6368;
+      }
+    
+      .portal-fallback {
+        max-width: 420px;
+        margin: 64px auto;
+        text-align: center;
+        color: #202124;
+      }
+      .portal-fallback h1 {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+      .portal-fallback p {
+        color: #5f6368;
+      }
+      .portal-fallback .login-link {
+        display: inline-block;
+        margin-top: 16px;
+        padding: 10px 16px;
+        background: #1a73e8;
+        color: #fff;
+        border-radius: 999px;
+        text-decoration: none;
+        font-weight: 600;
+      }
+      .portal-fallback .login-link:hover {
+        background: #1557b0;
+      }
+    </style>
+
+<link rel="stylesheet" href="/index.css">
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react-router-dom": "https://esm.sh/react-router-dom@^7.12.0"
+  }
+}
+</script>
+  <script type="module" crossorigin src="/kiweb/teacher-auth/public/portal/assets/index-BFcMwBsd.js"></script>
+  <link rel="icon" type="image/png" href="favicon.png" />
+</head>
+  <body class="bg-background-light text-text-primary font-sans antialiased">
+    <div id="root">
+      <div class="portal-fallback" role="status" aria-live="polite">
+        <h1>京都医塾ポータル</h1>
+        <p>読み込み中…</p>
+        <a class="login-link" href="/kiweb/teacher-auth/public/login.php">ログイン</a>
+      </div>
+    </div>
+</body>
+</html>

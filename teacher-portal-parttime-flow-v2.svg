@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1500" height="900" viewBox="0 0 1500 900" role="img" aria-labelledby="title desc">
+  <title id="title">非常勤ポータルから主画面への流れ</title>
+  <desc id="desc">kiweb2.html から授業申告、業務申告、欠勤申請、検索画面へ進み、それぞれが teacher-auth や GAS とつながる流れ</desc>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="9" refY="5" orient="auto" markerUnits="strokeWidth">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#495057"/>
+    </marker>
+    <style>
+      .bg { fill: #f8f5ef; }
+      .title { font: 700 30px 'Noto Sans JP', 'Yu Gothic', 'Meiryo', sans-serif; fill: #1f2933; }
+      .box { fill: #fffdf8; stroke: #475569; stroke-width: 2.5; rx: 18; ry: 18; }
+      .page { fill: #eef6ff; stroke: #2563eb; stroke-width: 3; }
+      .api { fill: #eefbf1; stroke: #2f855a; stroke-width: 3; }
+      .gas { fill: #fff6dc; stroke: #c98a1c; stroke-width: 3; }
+      .note { fill: #f8fafc; stroke: #94a3b8; stroke-width: 2; }
+      .label { font: 700 22px 'Noto Sans JP', 'Yu Gothic', 'Meiryo', sans-serif; fill: #1f2933; text-anchor: middle; }
+      .small { font: 500 17px 'Noto Sans JP', 'Yu Gothic', 'Meiryo', sans-serif; fill: #4b5563; text-anchor: middle; }
+      .line { stroke: #495057; stroke-width: 3.5; fill: none; marker-end: url(#arrow); }
+    </style>
+  </defs>
+
+  <rect class="bg" x="0" y="0" width="1500" height="900"/>
+  <text class="title" x="48" y="58">非常勤ポータルから主画面への流れ</text>
+
+  <rect class="box page" x="70" y="388" width="260" height="100"/>
+  <text class="label" x="200" y="428">非常勤ポータル</text>
+  <text class="small" x="200" y="460">kiweb2.html</text>
+
+  <rect class="box page" x="430" y="80" width="360" height="96"/>
+  <text class="label" x="610" y="120">授業実施申告</text>
+  <text class="small" x="610" y="152">class-declaration.html</text>
+
+  <rect class="box page" x="430" y="235" width="360" height="96"/>
+  <text class="label" x="610" y="275">業務実施申告</text>
+  <text class="small" x="610" y="307">work-record.html</text>
+
+  <rect class="box page" x="430" y="390" width="360" height="96"/>
+  <text class="label" x="610" y="430">欠勤・振替申請</text>
+  <text class="small" x="610" y="462">class-reschedule-parttime.html</text>
+
+  <rect class="box page" x="430" y="545" width="360" height="96"/>
+  <text class="label" x="610" y="585">授業履歴検索</text>
+  <text class="small" x="610" y="617">ClassReportSearchForm.html</text>
+
+  <rect class="box page" x="430" y="700" width="360" height="120"/>
+  <text class="label" x="610" y="740">業務履歴検索</text>
+  <text class="small" x="610" y="772">declaration_of_non_class_</text>
+  <text class="small" x="610" y="798">work_search_and_view.html</text>
+
+  <rect class="box api" x="930" y="80" width="410" height="82"/>
+  <text class="label" x="1135" y="120">ユーザー情報取得</text>
+  <text class="small" x="1135" y="150">teacher-auth/api/me.php</text>
+
+  <rect class="box gas" x="930" y="220" width="480" height="106"/>
+  <text class="label" x="1170" y="262">授業予定・申告・KAZASU</text>
+  <text class="small" x="1170" y="292">GAS: 予定業務データ / 実施申告記録 / kazasu-status</text>
+
+  <rect class="box gas" x="930" y="380" width="360" height="82"/>
+  <text class="label" x="1110" y="420">送信先</text>
+  <text class="small" x="1110" y="450">GAS or Form</text>
+
+  <rect class="box gas" x="930" y="540" width="460" height="106"/>
+  <text class="label" x="1160" y="582">欠勤申請の裏側</text>
+  <text class="small" x="1160" y="612">GAS: 欠勤振替申請 / 処理未定データ同期</text>
+
+  <rect class="box note" x="930" y="705" width="430" height="92"/>
+  <text class="label" x="1145" y="745">検索系の裏側</text>
+  <text class="small" x="1145" y="775">teacher-auth と GAS / API を参照</text>
+
+  <path class="line" d="M330 408 H370 V128 H430"/>
+  <path class="line" d="M330 423 H370 V283 H430"/>
+  <path class="line" d="M330 438 H430"/>
+  <path class="line" d="M330 453 H370 V593 H430"/>
+  <path class="line" d="M330 468 H370 V760 H430"/>
+
+  <path class="line" d="M300 388 H360 V121 H930"/>
+  <path class="line" d="M790 128 H930"/>
+  <path class="line" d="M790 283 H930"/>
+  <path class="line" d="M790 438 H930"/>
+  <path class="line" d="M790 593 H930"/>
+  <path class="line" d="M790 760 H930"/>
+</svg>

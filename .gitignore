@@ -1,0 +1,7 @@
+**/.env
+apis/justdb_teacher_bridge.php
+room-booking/api/service-account.json
+room-booking/api/config.local.php
+teacher-auth/storage/*.json
+gas/**/consts.gs
+teacher-auth/vendor/

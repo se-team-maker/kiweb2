@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>勤務記録の検索・閲覧</title>
+    <style>
+        :root {
+            --bg: #f4f7fb;
+            --surface: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --border: #d1d5db;
+            --primary: #1f6feb;
+            --primary-hover: #1659bf;
+            --error: #b42318;
+            --success: #027a48;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            color: var(--text);
+            background: var(--bg);
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            padding: 20px;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 1.4rem;
+        }
+
+        .description {
+            margin: 0 0 16px;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        form {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            align-items: end;
+            margin-bottom: 16px;
+        }
+
+        .field {
+            min-width: 180px;
+        }
+
+        label {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 6px;
+        }
+
+        input[type="month"],
+        input[type="text"] {
+            width: 100%;
+            padding: 8px 10px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 0.95rem;
+        }
+
+        button[type="submit"] {
+            border: none;
+            border-radius: 6px;
+            background: var(--primary);
+            color: #fff;
+            padding: 10px 18px;
+            font-size: 0.95rem;
+            cursor: pointer;
+        }
+
+        button[type="submit"]:hover {
+            background: var(--primary-hover);
+        }
+
+        button[disabled] {
+            opacity: 0.7;
+            cursor: wait;
+        }
+
+        .loading {
+            display: none;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 12px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .loading.is-active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 22px;
+            height: 22px;
+            border: 3px solid rgba(31, 111, 235, 0.2);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        .message {
+            display: none;
+            margin-bottom: 12px;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 1px solid transparent;
+            font-size: 0.92rem;
+        }
+
+        .message.is-show {
+            display: block;
+        }
+
+        .message.info {
+            background: #eff8ff;
+            border-color: #b2ddff;
+            color: #175cd3;
+        }
+
+        .message.error {
+            background: #fef3f2;
+            border-color: #fecdca;
+            color: var(--error);
+        }
+
+        .message.success {
+            background: #ecfdf3;
+            border-color: #abefc6;
+            color: var(--success);
+        }
+
+        .result-area {
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            background: #fff;
+            min-height: 120px;
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            min-width: 1600px;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border-bottom: 1px solid #e5e7eb;
+            border-right: 1px solid #e5e7eb;
+            padding: 8px 10px;
+            text-align: left;
+            vertical-align: top;
+            font-size: 0.86rem;
+            word-break: break-word;
+        }
+
+        th:last-child,
+        td:last-child {
+            border-right: none;
+        }
+
+        thead th {
+            position: sticky;
+            top: 0;
+            background: #f9fafb;
+            z-index: 1;
+            font-weight: 700;
+        }
+
+        tbody tr:nth-child(even) {
+            background: #fcfcfd;
+        }
+
+        .empty {
+            padding: 18px;
+            color: var(--muted);
+            font-size: 0.95rem;
+        }
+
+        .records-meta {
+            margin: 0 0 10px;
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+
+        @media (max-width: 700px) {
+            body {
+                padding: 12px;
+            }
+
+            .container {
+                padding: 14px;
+            }
+
+            form {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .field {
+                min-width: 0;
+            }
+
+            button[type="submit"] {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>勤務記録の検索・閲覧</h1>
+        <p class="description" id="descriptionText">ログイン中の本人データのみ検索できます。名前はログイン情報を表示（編集不可）します。年月を選択して検索してください。</p>
+
+        <form id="searchForm" novalidate>
+            <div class="field">
+                <label for="teacherName">名前</label>
+                <input type="text" id="teacherName" name="teacherName" readonly placeholder="ログイン名を表示">
+            </div>
+            <div class="field">
+                <label for="yearMonth">対象年月</label>
+                <input type="month" id="yearMonth" name="yearMonth" required>
+            </div>
+            <button id="searchButton" type="submit">検索</button>
+        </form>
+
+        <div id="loading" class="loading" role="status" aria-live="polite">
+            <span class="spinner" aria-hidden="true"></span>
+            <span>検索中...</span>
+        </div>
+
+        <div id="message" class="message" aria-live="polite"></div>
+        <p id="recordsMeta" class="records-meta"></p>
+
+        <div class="result-area">
+            <div id="resultContainer" class="empty">検索条件を入力して実行してください。</div>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const API_URL = '/kiweb/teacher-auth/api/work-record-search.php';
+            const ME_API_URL = '/kiweb/teacher-auth/api/me.php';
+            const COLUMNS = [
+                { key: 'timestamp', label: 'タイムスタンプ' },
+                { key: 'email', label: 'email' },
+                { key: 'name', label: 'name' },
+                { key: 'department', label: 'department' },
+                { key: 'date', label: 'date' },
+                { key: 'work_location', label: 'work_location' },
+                { key: 'start_time', label: 'start_time' },
+                { key: 'end_time', label: 'end_time' },
+                { key: 'total_time_value', label: 'total_time_value' },
+                { key: 'break_start', label: 'break_start' },
+                { key: 'break_end', label: 'break_end' },
+                { key: 'break_time_value', label: 'break_time_value' },
+                { key: 'work_time_value', label: 'work_time_value' },
+                { key: 'job_type', label: 'job_type' },
+                { key: 'requester_department', label: 'requester_department' },
+                { key: 'requester', label: 'requester' },
+                { key: 'job_description', label: 'job_description' },
+                { key: 'remarks', label: 'remarks' }
+            ];
+
+            const form = document.getElementById('searchForm');
+            const teacherNameInput = document.getElementById('teacherName');
+            const yearMonthInput = document.getElementById('yearMonth');
+            const searchButton = document.getElementById('searchButton');
+            const loading = document.getElementById('loading');
+            const message = document.getElementById('message');
+            const recordsMeta = document.getElementById('recordsMeta');
+            const resultContainer = document.getElementById('resultContainer');
+            const descriptionText = document.getElementById('descriptionText');
+            const urlParams = new URLSearchParams(window.location.search);
+            const allowNameEdit = urlParams.get('allowNameEdit') === '1';
+
+            async function canCurrentUserEditName() {
+                if (!allowNameEdit) {
+                    return false;
+                }
+
+                try {
+                    const response = await fetch(ME_API_URL, {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    if (!response.ok) {
+                        return false;
+                    }
+
+                    const data = await response.json();
+                    const permissions = data && data.user && Array.isArray(data.user.permissions)
+                        ? data.user.permissions
+                        : [];
+                    return permissions.includes('manage_users');
+                } catch (error) {
+                    return false;
+                }
+            }
+
+            function initializeTeacherName(canEditName) {
+                const teacherName = (urlParams.get('teacher') || urlParams.get('name') || '').trim();
+                if (teacherNameInput) {
+                    teacherNameInput.value = teacherName;
+                    teacherNameInput.readOnly = !canEditName;
+                    if (canEditName) {
+                        teacherNameInput.removeAttribute('readonly');
+                    } else {
+                        teacherNameInput.setAttribute('readonly', 'readonly');
+                    }
+                }
+
+                if (descriptionText && canEditName) {
+                    descriptionText.textContent = '管理者モードでは名前を変更して検索できます。年月を選択して検索してください。';
+                }
+            }
+
+            function setDefaultYearMonth() {
+                const now = new Date();
+                const y = now.getFullYear();
+                const m = String(now.getMonth() + 1).padStart(2, '0');
+                yearMonthInput.value = y + '-' + m;
+            }
+
+            function setLoading(isLoading) {
+                loading.classList.toggle('is-active', isLoading);
+                searchButton.disabled = isLoading;
+            }
+
+            function showMessage(text, type) {
+                message.textContent = text || '';
+                message.className = 'message';
+                if (!text) return;
+                message.classList.add('is-show', type || 'info');
+            }
+
+            function clearMessage() {
+                showMessage('', '');
+            }
+
+            function setEmptyResult(text) {
+                resultContainer.className = 'empty';
+                resultContainer.textContent = text;
+            }
+
+            function renderTable(records) {
+                const wrap = document.createElement('div');
+                wrap.className = 'table-wrap';
+
+                const table = document.createElement('table');
+                const thead = document.createElement('thead');
+                const headRow = document.createElement('tr');
+                COLUMNS.forEach(function (column) {
+                    const th = document.createElement('th');
+                    th.textContent = column.label;
+                    headRow.appendChild(th);
+                });
+                thead.appendChild(headRow);
+
+                const tbody = document.createElement('tbody');
+                records.forEach(function (record) {
+                    const row = document.createElement('tr');
+                    COLUMNS.forEach(function (column) {
+                        const td = document.createElement('td');
+                        const value = record && record[column.key] !== undefined && record[column.key] !== null
+                            ? String(record[column.key])
+                            : '';
+                        td.textContent = value;
+                        row.appendChild(td);
+                    });
+                    tbody.appendChild(row);
+                });
+
+                table.appendChild(thead);
+                table.appendChild(tbody);
+                wrap.appendChild(table);
+
+                resultContainer.className = '';
+                resultContainer.innerHTML = '';
+                resultContainer.appendChild(wrap);
+            }
+
+            async function search(yearMonth) {
+                const teacherName = (teacherNameInput.value || '').trim();
+                setLoading(true);
+                clearMessage();
+                recordsMeta.textContent = '';
+
+                try {
+                    const query = new URLSearchParams({ yearMonth: yearMonth });
+                    if (teacherName) {
+                        query.set('name', teacherName);
+                    }
+
+                    const response = await fetch(API_URL + '?' + query.toString(), {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+
+                    let payload = null;
+                    try {
+                        payload = await response.json();
+                    } catch (jsonError) {
+                        payload = null;
+                    }
+
+                    if (response.status === 401) {
+                        setEmptyResult('ログインが必要です。ログイン後に再度検索してください。');
+                        showMessage('ログイン状態を確認してください。', 'error');
+                        return;
+                    }
+
+                    if (!response.ok) {
+                        const msg = payload && payload.error ? payload.error : '検索中にエラーが発生しました。';
+                        setEmptyResult('検索結果を表示できません。');
+                        showMessage(msg, 'error');
+                        return;
+                    }
+
+                    if (!payload || payload.success !== true || !Array.isArray(payload.records)) {
+                        setEmptyResult('検索結果を表示できません。');
+                        showMessage('APIレスポンス形式が不正です。', 'error');
+                        return;
+                    }
+
+                    const count = Number(payload.count || 0);
+                    recordsMeta.textContent = '検索結果: ' + count + '件';
+
+                    if (count === 0) {
+                        setEmptyResult('該当データはありません。');
+                        showMessage('対象年月の勤務記録は0件です。', 'info');
+                        return;
+                    }
+
+                    renderTable(payload.records);
+                    showMessage('検索結果を表示しました。', 'success');
+                } catch (error) {
+                    setEmptyResult('検索結果を表示できません。');
+                    showMessage('通信エラーが発生しました。時間をおいて再試行してください。', 'error');
+                } finally {
+                    setLoading(false);
+                }
+            }
+
+            form.addEventListener('submit', function (event) {
+                event.preventDefault();
+                const yearMonth = (yearMonthInput.value || '').trim();
+                if (!yearMonth) {
+                    showMessage('対象年月を選択してください。', 'error');
+                    setEmptyResult('対象年月を選択してください。');
+                    return;
+                }
+                search(yearMonth);
+            });
+
+            async function init() {
+                const canEditName = await canCurrentUserEditName();
+                initializeTeacherName(canEditName);
+                setDefaultYearMonth();
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>

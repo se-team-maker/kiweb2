@@ -1,0 +1,1583 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>授業予定の閲覧・実施申告</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL@24,400,0&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --md-sys-color-primary: #AF1E2B;
+            --md-sys-color-primary-hover: #8F141F;
+            --md-sys-color-on-primary: #ffffff;
+            --md-sys-color-on-surface: #291819;
+            --md-sys-color-surface: #FFF7F8;
+            --md-sys-color-background: #FFF4F5;
+            --md-sys-color-surface-container: #FFF0F2;
+            --md-sys-color-outline-variant: #E3C4C7;
+        }
+
+        body {
+            font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'メイリオ', Meiryo, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: var(--md-sys-color-background);
+            color: var(--md-sys-color-on-surface);
+            font-size: 16px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+            box-sizing: border-box;
+            background: var(--md-sys-color-surface);
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .1);
+        }
+
+        h1 {
+            color: var(--md-sys-color-on-surface);
+            margin-bottom: 30px;
+            font-size: 20px;
+            white-space: nowrap;
+            border-bottom: 3px solid var(--md-sys-color-primary);
+            padding-bottom: 10px;
+            text-align: center;
+        }
+
+        .guide {
+            background-color: var(--md-sys-color-surface-container, #f5f5f5);
+            border: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            border-radius: var(--md-sys-shape-corner-medium, 12px);
+            box-shadow: var(--md-sys-elevation-1, 0 1px 3px rgba(0,0,0,0.08));
+            max-height: 7em;
+            overflow-y: auto;
+        }
+
+        .guide::-webkit-scrollbar {
+            width: 6px;
+        }
+        .guide::-webkit-scrollbar-track {
+            background: #f0f0f0;
+            border-radius: 3px;
+        }
+        .guide::-webkit-scrollbar-thumb {
+            background: #c0c0c0;
+            border-radius: 3px;
+        }
+        .guide::-webkit-scrollbar-thumb:hover {
+            background: #a0a0a0;
+        }
+
+        .guide ol,
+        .guide ul {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .guide li {
+            margin-bottom: 8px;
+            font-size: 0.95rem;
+            line-height: 1.45;
+        }
+
+        .close-btn {
+            float: right;
+            cursor: pointer;
+        }
+
+        form {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex-grow: 1;
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+            min-width: 0;
+        }
+
+        /* 講師名欄（編集不可）のグレーアウト - 文字は濃く保つ */
+        #teacherName[readonly] {
+            background-color: #EEEEEE !important;
+            border-color: #CCCCCC !important;
+            color: var(--md-sys-color-on-surface, #291819) !important;
+            cursor: not-allowed;
+        }
+
+        button {
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            padding: 10px 20px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+
+        button:hover {
+            background-color: var(--md-sys-color-primary-hover);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+
+        th,
+        td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background-color: var(--md-sys-color-primary);
+            color: var(--md-sys-color-on-primary);
+        }
+
+        tr:nth-child(even) {
+            background-color: #f8f8f8;
+        }
+
+        tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        tr.today {
+            background-color: #ffeeeb;
+            font-weight: bold;
+        }
+
+        .class-name-cell {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .class-name-text {
+            display: inline-block;
+        }
+
+        .kazasu-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            font-size: 12px;
+            font-weight: 600;
+            line-height: 1.4;
+            text-decoration: none;
+            white-space: nowrap;
+        }
+
+        .kazasu-badge--in {
+            background-color: #E3F2FD;
+            border-color: #BBDEFB;
+            color: #1565C0;
+        }
+
+        .kazasu-badge--out {
+            background-color: #ECEFF1;
+            border-color: #CFD8DC;
+            color: #455A64;
+        }
+
+        .kazasu-badge--other {
+            background-color: #FFF3E0;
+            border-color: #FFE0B2;
+            color: #E65100;
+        }
+
+        .kazasu-badge:hover {
+            opacity: 0.92;
+        }
+
+        .status-row {
+            background-color: #f9f9f9;
+        }
+
+        .status-options {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            padding: 3px;
+        }
+
+        .status-options label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-options select {
+            padding: 5px;
+            font-size: 1em;
+        }
+
+        .status-options button {
+            font-size: 1em;
+            padding: 5px 10px;
+        }
+
+        .status-options button.submitted {
+            background-color: #808080;
+            cursor: default;
+        }
+
+        #loading {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin: 12px 0 16px;
+            color: var(--md-sys-color-primary, #D32F2F);
+            font-weight: 500;
+        }
+
+        #loading.is-active {
+            display: flex;
+        }
+
+        #loading .loading-spinner,
+        #submittedSyncLoading .loading-spinner,
+        .status-loading .loading-spinner {
+            width: 38px;
+            height: 38px;
+            animation: rotator 1.4s linear infinite;
+            flex: 0 0 38px;
+            display: block;
+        }
+
+        #loading .loading-spinner-path,
+        #submittedSyncLoading .loading-spinner-path,
+        .status-loading .loading-spinner-path {
+            stroke: var(--md-sys-color-primary, #AF1E2B);
+            stroke-dasharray: 187;
+            stroke-dashoffset: 0;
+            transform-origin: center;
+            animation: dash 1.4s ease-in-out infinite;
+        }
+
+        #loading .loading-text {
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+
+        #loading.is-error .loading-spinner {
+            display: none;
+        }
+
+        #submittedSyncLoading {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            margin: 0 0 12px;
+            padding: 10px 12px;
+            border: 1px solid var(--md-sys-color-outline-variant, #E3C4C7);
+            border-radius: 8px;
+            background: var(--md-sys-color-surface-container, #FFF0F2);
+            color: var(--md-sys-color-primary, #AF1E2B);
+        }
+
+        #submittedSyncLoading.is-active {
+            display: flex;
+        }
+
+        #submittedSyncLoading .loading-spinner {
+            width: 24px;
+            height: 24px;
+            flex: 0 0 24px;
+        }
+
+        #submittedSyncLoading.is-error .loading-spinner {
+            display: none;
+        }
+
+        .status-loading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--md-sys-color-primary, #AF1E2B);
+            padding: 4px 0;
+        }
+
+        .status-loading .loading-spinner {
+            width: 24px;
+            height: 24px;
+            flex: 0 0 24px;
+        }
+
+        @keyframes rotator {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(270deg);
+            }
+        }
+
+        @keyframes dash {
+            0% {
+                stroke-dashoffset: 187;
+            }
+
+            50% {
+                stroke-dashoffset: 46.75;
+                transform: rotate(135deg);
+            }
+
+            100% {
+                stroke-dashoffset: 187;
+                transform: rotate(450deg);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            #loading .loading-spinner,
+            #loading .loading-spinner-path,
+            #submittedSyncLoading .loading-spinner,
+            #submittedSyncLoading .loading-spinner-path,
+            .status-loading .loading-spinner,
+            .status-loading .loading-spinner-path {
+                animation: none;
+            }
+        }
+
+        /* ここを追加／書き換え */
+        .sub-option {
+            /* ふだんは隠す */
+            display: none;
+            margin-left: 20px;
+            margin-top: 5px;
+        }
+
+        .sub-option.show {
+            /* JS で .show を付けたときだけ表示 */
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                font-size: 14px;
+            }
+
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 1em;
+                padding-bottom: 8px;
+                white-space: nowrap;
+            }
+
+            input[type="text"],
+            button {
+                font-size: 1em;
+                padding: 8px;
+            }
+
+            th,
+            td {
+                padding: 8px;
+            }
+
+            .status-options {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .sub-option {
+                display: none;
+                margin-left: 20px;
+                margin-top: 5px;
+            }
+
+            .sub-option.show {
+                display: block;
+            }
+        }
+
+
+
+        /* ===== iframe埋め込みモード ===== */
+        body.embed {
+            background: transparent !important;
+            margin: 0 !important;
+            padding: 0 !important;
+        }
+
+        body.embed .container {
+            width: 100% !important;
+            max-width: 100% !important;
+            margin: 0 !important;
+            padding: 18px !important;
+            background: transparent !important;
+        }
+
+        body.embed h1 {
+            font-size: 16px;
+            margin-bottom: 16px;
+            padding-bottom: 8px;
+            white-space: nowrap;
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+            font-size: 1rem;
+            vertical-align: middle;
+        }
+        .status-dot {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+            vertical-align: middle;
+        }
+        .status-dot--blue { background: #2196F3; }
+        .status-dot--red { background: #F44336; }
+        .status-dot--yellow { background: #FFC107; }
+        .submitted-label {
+            display: inline-block;
+            padding: 3px 8px;
+            border-radius: 999px;
+            background: #e0e0e0;
+            color: #424242;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+    </style>
+  <link rel="icon" type="image/png" href="favicon.png" />
+</head>
+
+<body>
+    <div class="container">
+        <h1>京都医塾　授業予定の閲覧・実施申告 ver.3.0</h1>
+        <div id="guideContainer" class="guide">
+            <ol style="font-weight: bold;">
+                <li><span style="color: #FF0000;"><span class="material-symbols-outlined" style="font-size: 0.9em;">star</span> <u>表示されている日時通り</u>に授業を実施完了した場合のみ、「A正常実施」を選択してください。</span></li>
+                <li><span class="material-symbols-outlined" style="font-size: 0.9em;">star</span> 授業が実施されなかった場合は、「B実施せず」を選択し、さらに、プルダウンから「生徒の欠席」または「時間割に存在しない」を選択してください。</li>
+                <li><span class="material-symbols-outlined" style="font-size: 0.9em;">star</span> 授業が<span
+                        style="color: #FF0000;"><u>表示されている時間より短かった</u>場合は、「C短縮実施」を選択</span>したあと、プルダウンの「不足分の補填実施」「講師の遅刻・早退」「オンライントラブル」「生徒の遅刻・早退」から該当するものを選択し、さらに実施した分数を記入してください。
+                </li>
+                <li style="background-color: #FFDDDD; color: #FF0000">予定業務が表示されていない場合、<a
+                        href="https://docs.google.com/forms/d/e/1FAIpQLSeonc0XVI1SrzbHZvFx5OL6ITHzwF1IDn9hoAzaHgXXys-kmQ/viewform">問い合わせフォームから申し出てください</a>。
+                </li>
+                <li><span style="color: #FF0000;">不要な予定業務が表示されている場合</span>は、[B実施せず]→[時間割に存在しない]を選んで下さい。</li>
+                <li><span style="color: #FF0000;">当日キャンセルに伴って交通費のみ申請する場合</span>は、<a
+                        href="https://docs.google.com/forms/d/e/1FAIpQLSdFi-DIjOBa4Hqmb4Ta-MmOLHuNYgLu2icgclxERfoK1fjnig/viewform">こちらのフォーム</a>
+                    から申請してください。</li>
+
+                <li style="background-color: #FFFFCB;"><s>実施申告は、当日しか行えません。</s><br>暫定的に前日の実施申告をできるようにしています。日付間違いにご注意ください。
+                </li>
+                <li style="background-color: #FFDDDD;">
+                    現時点のシステム稼働状況では、振替・代講・生徒欠席などの反映に時間がかかることがあります。別途、変更の情報がある場合は、そちらと合わせてご認識ください。</li>
+                <li>一度送信（申告）したあと、検索・更新をすると画面上ではもとに戻りますが、記録は正しく行われています。</li>
+                <li>寺子屋チューター業務も授業と同様に、予定業務として表示されます。表示されていない場合は、<a
+                        href="https://docs.google.com/forms/d/e/1FAIpQLSeonc0XVI1SrzbHZvFx5OL6ITHzwF1IDn9hoAzaHgXXys-kmQ/viewform">問い合わせフォーム</a>から申し出てください。
+                </li>
+                <li>申告内容を間違えて送信した場合は、再送信ではなく、必ず、<a
+                        href="https://docs.google.com/forms/d/e/1FAIpQLSeonc0XVI1SrzbHZvFx5OL6ITHzwF1IDn9hoAzaHgXXys-kmQ/viewform">問い合わせフォーム</a>から申し出てください。
+                </li>
+                <li>実施申告を「送信」すると、授業報告書作成へのリンクが現れます。</li>
+                <li>日時のリンクをクリックすると、Googleカレンダーに予定を追加する画面に移行します。</li>
+            </ol>
+        </div>
+        <form id="searchForm">
+            <input type="text" id="teacherName" placeholder="データを読み込んでいます..." required disabled readonly>
+            <button type="submit" disabled>
+                <nobr>更新</nobr>
+            </button>
+        </form>
+        <div id="loading" role="status" aria-live="polite">
+            <svg class="loading-spinner" width="38" height="38" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true">
+                <circle class="loading-spinner-path" fill="none" stroke-width="6" stroke-linecap="round" cx="33"
+                    cy="33" r="30"></circle>
+            </svg>
+            <span class="loading-text">データを読み込んでいます...</span>
+        </div>
+        <div id="submittedSyncLoading" role="status" aria-live="polite">
+            <svg class="loading-spinner" width="24" height="24" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true">
+                <circle class="loading-spinner-path" fill="none" stroke-width="6" stroke-linecap="round" cx="33"
+                    cy="33" r="30"></circle>
+            </svg>
+            <span class="loading-text">送信済み状態を確認中...</span>
+        </div>
+        <table>
+            <thead>
+                <tr>
+                    <th>日時</th>
+                    <th>授業名</th>
+                    <th>予定業務No</th>
+                </tr>
+            </thead>
+            <tbody id="resultsBody">
+            </tbody>
+        </table>
+    </div>
+    <br><br><br><br><br>
+
+    <script>
+        const SCHEDULE_API_URL = '/kiweb/teacher-auth/api/declaration-schedule.php';
+        const GAS_URL2 = 'https://script.google.com/macros/s/AKfycbzozR4uy7VzH7IT0OcBeCebV9htAVOZPJhokWzq88BancZEgDlj4guIbzkxhzblHC1N/exec';
+        const KAZASU_GAS_URL = 'https://script.google.com/macros/s/AKfycbzRuCk9FgseDPyaJO0WOcJMpAGiqJcmHkyRHpdAd5XZ0D6MF8RYpYbgo_kCxXlVPALR/exec';
+        const SOURCE_KIWEB2 = 'kiweb2';
+        const KAZASU_STATUS_ACTION = 'getLatestKazasuStatus';
+        let allData = [];
+        let submittedStatusByTaskNo = {};
+        let submittedStatusPromise = null;
+        let submittedStatusLoaded = false;
+        let submittedStatusLoading = false;
+        let submittedStatusLoadError = false;
+        let submittedStatusFetchToken = 0;
+        let kazasuStatusMap = {};
+        let kazasuStatusPromise = null;
+        let kazasuStatusLoaded = false;
+        let kazasuStatusLoading = false;
+        let kazasuStatusFetchToken = 0;
+        let hasRenderedSearchResults = false;
+        let lastSearchedTeacherName = '';
+        window.onload = fetchData;
+        function normalizeTaskNo(value) {
+            return String(value === undefined || value === null ? '' : value).trim();
+        }
+        function setLoading(active, message = 'データを読み込んでいます...', isError = false) {
+            const loading = document.getElementById('loading');
+            if (!loading) return;
+            const textEl = loading.querySelector('.loading-text');
+            if (textEl) textEl.textContent = message;
+            loading.classList.toggle('is-active', active);
+            loading.classList.toggle('is-error', !!isError);
+        }
+        function setSubmittedSyncLoading(active, message = '送信済み状態を確認中...', isError = false) {
+            const loading = document.getElementById('submittedSyncLoading');
+            if (!loading) return;
+            const textEl = loading.querySelector('.loading-text');
+            if (textEl) textEl.textContent = message;
+            loading.classList.toggle('is-active', active);
+            loading.classList.toggle('is-error', !!isError);
+        }
+        // 1. 授業タイプと科目を判定する関数を追加（scriptタグ内の最初に追加）
+        function determineClassTypeAndSubject(className) {
+            if (!className) return { type: 'individual', subject: '' };
+
+            // アンダーバーが含まれていれば個別、なければ集団
+            const isIndividual = className.includes('_');
+            const type = isIndividual ? 'individual' : 'group';
+
+            // 科目を判定（正規表現を使用）
+            let subject = '';
+            if (/英語/i.test(className)) {
+                subject = 'english';
+            } else if (/数学/i.test(className)) {
+                subject = 'math';
+            } else if (/化学/i.test(className)) {
+                subject = 'chemistry';
+            } else if (/物理/i.test(className)) {
+                subject = 'physics';
+            } else if (/生物/i.test(className)) {
+                subject = 'biology';
+            } else if (/国語/i.test(className)) {
+                subject = 'japanese';
+            }
+
+            return { type, subject };
+        }
+
+        // 2. 授業タイプと科目に応じたURLを生成する関数を追加
+        function generateReportFormUrl(type, subject) {
+            const baseUrl = 'https://system.kyotoijuku.com/';
+
+            if (type === 'individual') {
+                return `${baseUrl}lesson-report-form.html`;
+            } else {
+                // 集団の場合
+                return `${baseUrl}lesson-report-form.html`;
+                // return `${baseUrl}dev/group_report_form.html`;
+            }
+        }
+
+        // 3. 生徒名を処理する関数を追加
+        function processStudentNames(studentNamesString, type) {
+            if (!studentNamesString) return '';
+
+            // カンマ区切りで分割して前後の空白を削除
+            const studentNames = studentNamesString.split(',').map(name => name.trim());
+
+            if (type === 'individual') {
+                // 個別の場合は最初の生徒名のみ
+                return studentNames[0] || '';
+            } else {
+                // 集団の場合はすべての生徒を|で連結
+                return studentNames.join('|');
+            }
+        }
+        function processClassName(className) {
+            /*
+            ここでは「URL クエリにそのまま載せても安全な文字列」に整形するだけにします。
+            例：空白削除 → スペースを _ に置換 → 全角記号を除去 など
+            必要に応じてロジックを調整してください。
+            */
+            if (!className) return '';
+            return className
+                .trim()
+                .replace(/\s+/g, '_')          // 空白をアンダーバーに
+                .replace(/[\\?#&=%]/g, '');    // URL に問題が出そうな記号を除去
+        }
+        function buildReportFormUrl(teacherName, className, startDateString, endDateString, studentNamesString, taskNo, status) {
+            const startDate = new Date(startDateString);
+            const endDate = new Date(endDateString);
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                return '';
+            }
+
+            const { type, subject } = determineClassTypeAndSubject(className);
+            const processedStudentNames = processStudentNames(studentNamesString, type);
+            const baseReportFormUrl = generateReportFormUrl(type, subject);
+            const formattedDate = formatDateForURL(startDate);
+            const formattedTimeSlot = formatTimeSlotForURL(startDate, endDate);
+
+            if (type === 'group') {
+                const processedClassName = processClassName(className);
+                return `${baseReportFormUrl}?teacherName=${encodeURIComponent(teacherName)}&date=${encodeURIComponent(formattedDate)}&timeSlot=${encodeURIComponent(formattedTimeSlot)}&studentName=${encodeURIComponent(processedStudentNames)}&taskNo=${encodeURIComponent(taskNo)}&className=${encodeURIComponent(processedClassName)}&status=${encodeURIComponent(status)}`;
+            }
+
+            return `${baseReportFormUrl}?teacherName=${encodeURIComponent(teacherName)}&date=${encodeURIComponent(formattedDate)}&timeSlot=${encodeURIComponent(formattedTimeSlot)}&studentName=${encodeURIComponent(processedStudentNames)}&taskNo=${encodeURIComponent(taskNo)}&status=${encodeURIComponent(status)}`;
+        }
+        function normalizeSubmittedStatusMap(rawMap) {
+            if (!rawMap || typeof rawMap !== 'object' || Array.isArray(rawMap)) {
+                return {};
+            }
+
+            const normalized = {};
+            Object.keys(rawMap).forEach(key => {
+                const taskNo = normalizeTaskNo(key);
+                if (!taskNo) return;
+                normalized[taskNo] = String(rawMap[key] || '');
+            });
+            return normalized;
+        }
+        function normalizeSubmittedStatusList(rawList) {
+            if (!Array.isArray(rawList)) return {};
+            const normalized = {};
+            rawList.forEach(item => {
+                if (!item || typeof item !== 'object') return;
+                const taskNo = normalizeTaskNo(item.taskNo);
+                if (!taskNo) return;
+                normalized[taskNo] = String(item.status || '');
+            });
+            return normalized;
+        }
+        function parseJsonResponseText(responseText) {
+            const trimmed = String(responseText || '').trim();
+            if (!trimmed) {
+                throw new Error('Empty response body');
+            }
+            return JSON.parse(trimmed);
+        }
+        function normalizeStudentNameForKazasu(name) {
+            return String(name === undefined || name === null ? '' : name)
+                .replace(/[\s\u3000]+/g, '')
+                .trim();
+        }
+        function normalizeKazasuStatusMap(rawMap) {
+            if (!rawMap || typeof rawMap !== 'object' || Array.isArray(rawMap)) {
+                return {};
+            }
+
+            const normalized = {};
+            Object.keys(rawMap).forEach(key => {
+                const normalizedStudentName = normalizeStudentNameForKazasu(key);
+                if (!normalizedStudentName) return;
+
+                const item = rawMap[key];
+                if (!item || typeof item !== 'object' || Array.isArray(item)) return;
+
+                normalized[normalizedStudentName] = {
+                    studentName: String(item.studentName || key || '').trim(),
+                    action: String(item.action || '').trim(),
+                    time: String(item.time || '').trim(),
+                    imageUrl: String(item.imageUrl || '').trim(),
+                    date: String(item.date || '').trim(),
+                    timestamp: String(item.timestamp || '').trim()
+                };
+            });
+            return normalized;
+        }
+        async function fetchKazasuStatusMapOnce() {
+            const cacheBust = `t=${Date.now()}`;
+            const url = `${KAZASU_GAS_URL}?action=${encodeURIComponent(KAZASU_STATUS_ACTION)}&${cacheBust}`;
+            const response = await fetchWithTimeout(url, 10000, {
+                cache: 'no-store'
+            });
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            const bodyText = await response.text();
+            const parsed = parseJsonResponseText(bodyText);
+            return normalizeKazasuStatusMap(parsed);
+        }
+        async function fetchSubmittedStatusMapOnce() {
+            const cacheBust = `t=${Date.now()}`;
+            const primaryUrl = `${GAS_URL2}?action=getAllSubmittedTaskNos&source=${encodeURIComponent(SOURCE_KIWEB2)}&${cacheBust}`;
+            const fallbackUrl = `${GAS_URL2}?action=getSubmittedList&source=${encodeURIComponent(SOURCE_KIWEB2)}&${cacheBust}`;
+
+            const fetchAndNormalize = async (url) => {
+                const response = await fetchWithTimeout(url, 10000);
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const bodyText = await response.text();
+                const parsed = parseJsonResponseText(bodyText);
+                if (Array.isArray(parsed)) {
+                    return normalizeSubmittedStatusList(parsed);
+                }
+                return normalizeSubmittedStatusMap(parsed);
+            };
+
+            try {
+                return await fetchAndNormalize(primaryUrl);
+            } catch (primaryError) {
+                console.warn('getAllSubmittedTaskNos failed, fallback to getSubmittedList', primaryError);
+                return await fetchAndNormalize(fallbackUrl);
+            }
+        }
+        async function fetchWithTimeout(url, timeoutMs = 10000, options = {}) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                return await fetch(url, { ...options, signal: controller.signal });
+            } finally {
+                clearTimeout(timer);
+            }
+        }
+        function sleep_(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+        async function postDeclarationWithTimeout_(postData, timeoutMs = 35000) {
+            const controller = new AbortController();
+            const timer = setTimeout(() => controller.abort(), timeoutMs);
+            try {
+                const response = await fetch(`${GAS_URL2}?source=${encodeURIComponent(SOURCE_KIWEB2)}`, {
+                    method: 'POST',
+                    body: JSON.stringify(postData),
+                    signal: controller.signal
+                });
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                const bodyText = await response.text();
+                return parseJsonResponseText(bodyText);
+            } finally {
+                clearTimeout(timer);
+            }
+        }
+        function isLikelyCorsError_(error) {
+            if (!error) return false;
+            const message = String(error.message || error);
+            return error.name === 'TypeError' || /Failed to fetch|NetworkError|Load failed|CORS/i.test(message);
+        }
+        async function postDeclarationNoCorsFallback_(postData) {
+            await fetch(`${GAS_URL2}?source=${encodeURIComponent(SOURCE_KIWEB2)}`, {
+                method: 'POST',
+                mode: 'no-cors',
+                body: JSON.stringify(postData)
+            });
+        }
+        async function verifySubmittedAfterFallback_(taskNo, fallbackStatus) {
+            const retryIntervalsMs = [250, 500, 900];
+            for (const waitMs of retryIntervalsMs) {
+                await sleep_(waitMs);
+                const refreshedMap = await refetchSubmittedStatusMap_();
+                if (Object.prototype.hasOwnProperty.call(refreshedMap, taskNo)) {
+                    return {
+                        confirmed: true,
+                        status: String(refreshedMap[taskNo] || fallbackStatus || '')
+                    };
+                }
+            }
+            return {
+                confirmed: false,
+                status: String(fallbackStatus || '')
+            };
+        }
+        async function refetchSubmittedStatusMap_() {
+            const latestMap = await fetchSubmittedStatusMapOnce();
+            submittedStatusByTaskNo = latestMap || {};
+            submittedStatusLoaded = true;
+            submittedStatusPromise = Promise.resolve(submittedStatusByTaskNo);
+            return submittedStatusByTaskNo;
+        }
+        function applySubmittedUi_(index, button, reportFormUrl) {
+            const link = document.createElement('a');
+            link.href = reportFormUrl;
+            link.innerHTML = '<span class="material-symbols-outlined" style="font-size: 1em; vertical-align: middle;">description</span> 報告書作成へ';
+            link.className = "button";
+            link.target = "_blank";
+            if (button.parentNode) {
+                button.parentNode.replaceChild(link, button);
+            }
+
+            const radioButtons = document.querySelectorAll(`input[name="status_${index}"]`);
+            radioButtons.forEach(radio => {
+                radio.disabled = true;
+            });
+
+            const subOptionB = document.querySelector(`select[name="sub_option_b_${index}"]`);
+            const subOptionC = document.querySelector(`select[name="sub_option_c_${index}"]`);
+            const minutesInput = document.querySelector(`input[name="minutes_${index}"]`);
+            if (subOptionB) subOptionB.disabled = true;
+            if (subOptionC) subOptionC.disabled = true;
+            if (minutesInput) minutesInput.disabled = true;
+        }
+        function ensureSubmittedStatusPromise() {
+            if (submittedStatusPromise) return submittedStatusPromise;
+
+            submittedStatusPromise = (async () => {
+                try {
+                    submittedStatusByTaskNo = await fetchSubmittedStatusMapOnce();
+                    submittedStatusLoaded = true;
+                    return submittedStatusByTaskNo;
+                } catch (error) {
+                    console.error('送信済みJSONの取得に失敗しました。', error);
+                    submittedStatusLoaded = false;
+                    submittedStatusPromise = null; // 失敗時は次回再試行可能にする
+                    submittedStatusByTaskNo = {};
+                    throw error;
+                }
+            })();
+
+            return submittedStatusPromise;
+        }
+        function ensureKazasuStatusPromise_() {
+            if (kazasuStatusPromise) return kazasuStatusPromise;
+
+            const previousKazasuStatusMap = kazasuStatusMap;
+            kazasuStatusPromise = (async () => {
+                try {
+                    kazasuStatusMap = await fetchKazasuStatusMapOnce();
+                    kazasuStatusLoaded = true;
+                    return kazasuStatusMap;
+                } catch (error) {
+                    console.error('Kazasuステータスの取得に失敗しました。', error);
+                    kazasuStatusLoaded = false;
+                    kazasuStatusPromise = null;
+                    kazasuStatusMap = previousKazasuStatusMap || {};
+                    throw error;
+                }
+            })();
+
+            return kazasuStatusPromise;
+        }
+        function startKazasuStatusFetch_(options = {}) {
+            const forceRefetch = options.forceRefetch === true;
+            if (forceRefetch) {
+                kazasuStatusPromise = null;
+                kazasuStatusLoaded = false;
+            }
+            if (kazasuStatusLoaded) {
+                kazasuStatusLoading = false;
+                return Promise.resolve(kazasuStatusMap);
+            }
+
+            kazasuStatusLoading = true;
+            const fetchToken = forceRefetch || !kazasuStatusPromise
+                ? ++kazasuStatusFetchToken
+                : kazasuStatusFetchToken;
+
+            return ensureKazasuStatusPromise_()
+                .then(statusMap => {
+                    if (fetchToken !== kazasuStatusFetchToken) {
+                        return kazasuStatusMap;
+                    }
+                    kazasuStatusMap = statusMap || {};
+                    kazasuStatusLoaded = true;
+                    kazasuStatusLoading = false;
+                    rerenderCurrentResultsIfNeeded_();
+                    return kazasuStatusMap;
+                })
+                .catch(error => {
+                    if (fetchToken !== kazasuStatusFetchToken) {
+                        return null;
+                    }
+                    kazasuStatusLoading = false;
+                    console.warn('Kazasuステータスは未取得のまま継続します。', error);
+                    rerenderCurrentResultsIfNeeded_();
+                    return null;
+                });
+        }
+        function getFilteredDataForTeacher_(teacherName) {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            today.setDate(today.getDate() - 1); // 1日減算して昨日にする
+            return allData
+                .filter(record =>
+                    record.講師名 &&
+                    record.講師名.trim() === teacherName &&
+                    new Date(record.予定開始日時) >= today
+                )
+                .sort((a, b) => new Date(a.予定開始日時) - new Date(b.予定開始日時));
+        }
+        function renderSearchResults_(teacherName) {
+            const filteredData = getFilteredDataForTeacher_(teacherName);
+            lastSearchedTeacherName = teacherName;
+            hasRenderedSearchResults = true;
+            if (submittedStatusLoading) {
+                setSubmittedSyncLoading(true, '送信済み状態を確認中...');
+            } else if (submittedStatusLoadError) {
+                setSubmittedSyncLoading(true, '送信済み状態の確認に失敗しました。未送信表示のまま操作できます。', true);
+            } else {
+                setSubmittedSyncLoading(false);
+            }
+            displayResults(filteredData, submittedStatusByTaskNo, teacherName);
+        }
+        function rerenderCurrentResultsIfNeeded_() {
+            if (!hasRenderedSearchResults) return;
+            renderSearchResults_(lastSearchedTeacherName);
+        }
+        function startSubmittedStatusFetch_(options = {}) {
+            const forceRefetch = options.forceRefetch === true;
+            if (forceRefetch) {
+                submittedStatusPromise = null;
+                submittedStatusLoaded = false;
+                submittedStatusLoadError = false;
+            }
+            if (submittedStatusLoaded) {
+                submittedStatusLoading = false;
+                submittedStatusLoadError = false;
+                setSubmittedSyncLoading(false);
+                return Promise.resolve(submittedStatusByTaskNo);
+            }
+
+            const shouldRerenderAsLoading = hasRenderedSearchResults && !submittedStatusLoading;
+            submittedStatusLoading = true;
+            submittedStatusLoadError = false;
+            const fetchToken = forceRefetch || !submittedStatusPromise
+                ? ++submittedStatusFetchToken
+                : submittedStatusFetchToken;
+            if (hasRenderedSearchResults) {
+                setSubmittedSyncLoading(true, '送信済み状態を確認中...');
+            }
+            if (shouldRerenderAsLoading) {
+                rerenderCurrentResultsIfNeeded_();
+            }
+
+            return ensureSubmittedStatusPromise()
+                .then(submittedMap => {
+                    if (fetchToken !== submittedStatusFetchToken) {
+                        return submittedStatusByTaskNo;
+                    }
+                    submittedStatusByTaskNo = submittedMap || {};
+                    submittedStatusLoaded = true;
+                    submittedStatusLoading = false;
+                    submittedStatusLoadError = false;
+                    setSubmittedSyncLoading(false);
+                    rerenderCurrentResultsIfNeeded_();
+                    return submittedStatusByTaskNo;
+                })
+                .catch(error => {
+                    if (fetchToken !== submittedStatusFetchToken) {
+                        return null;
+                    }
+                    submittedStatusLoading = false;
+                    submittedStatusLoadError = true;
+                    if (hasRenderedSearchResults) {
+                        setSubmittedSyncLoading(true, '送信済み状態の確認に失敗しました。未送信表示のまま操作できます。', true);
+                    }
+                    rerenderCurrentResultsIfNeeded_();
+                    console.warn('送信済み情報は未取得のまま継続します。', error);
+                    return null;
+                });
+        }
+
+        function formatDateTime(startDateString, endDateString) {
+            const startDate = new Date(startDateString);
+            const endDate = new Date(endDateString);
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+                return 'Invalid Date';
+            }
+            const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+            const year = startDate.getFullYear();
+            const month = String(startDate.getMonth() + 1).padStart(2, '0');
+            const day = String(startDate.getDate()).padStart(2, '0');
+            const weekday = weekdays[startDate.getDay()];
+            const startHours = String(startDate.getHours()).padStart(2, '0');
+            const startMinutes = String(startDate.getMinutes()).padStart(2, '0');
+            const endHours = String(endDate.getHours()).padStart(2, '0');
+            const endMinutes = String(endDate.getMinutes()).padStart(2, '0');
+            return `${year}/${month}/${day} (${weekday}) ${startHours}:${startMinutes}～${endHours}:${endMinutes}`;
+        }
+        function createGoogleCalendarLink(startDateString, endDateString, className) {
+            const startDate = new Date(startDateString);
+            const endDate = new Date(endDateString);
+            const eventTitle = encodeURIComponent(className);
+            const startDateTime = startDate.toISOString().replace(/-|:|\.\d\d\d/g, "");
+            const endDateTime = endDate.toISOString().replace(/-|:|\.\d\d\d/g, "");
+            return `https://www.google.com/calendar/render?action=TEMPLATE&text=${eventTitle}&dates=${startDateTime}/${endDateTime}`;
+        }
+        function isNameEditAllowed() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('allowNameEdit') === '1';
+        }
+
+        async function canCurrentUserEditTeacherName() {
+            if (!isNameEditAllowed()) {
+                return false;
+            }
+
+            try {
+                const response = await fetch('/kiweb/teacher-auth/api/me.php', {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+                if (!response.ok) {
+                    return false;
+                }
+
+                const data = await response.json();
+                const permissions = data && data.user && Array.isArray(data.user.permissions)
+                    ? data.user.permissions
+                    : [];
+                return permissions.includes('manage_users');
+            } catch (error) {
+                return false;
+            }
+        }
+
+        function applyTeacherNameEditability(input, editable) {
+            input.readOnly = !editable;
+            if (editable) {
+                input.removeAttribute('readonly');
+                input.placeholder = "講師名はポータルから自動設定されます（管理者は編集可）";
+            } else {
+                input.setAttribute('readonly', 'readonly');
+                input.placeholder = "講師名はポータルから自動設定されます（編集不可）";
+            }
+        }
+
+        async function fetchData() {
+            const teacherNameInput = document.getElementById('teacherName');
+            const searchButton = document.querySelector('#searchForm button');
+
+            teacherNameInput.disabled = true;
+            teacherNameInput.readOnly = true;
+            searchButton.disabled = true;
+            teacherNameInput.placeholder = "データを読み込んでいます...";
+            setLoading(true, 'データを読み込んでいます...');
+
+            try {
+                void startSubmittedStatusFetch_();
+                void startKazasuStatusFetch_();
+                const scheduleUrl = `${SCHEDULE_API_URL}?t=${Date.now()}`;
+                const [scheduleResponse, allowNameEdit] = await Promise.all([
+                    fetchWithTimeout(scheduleUrl, 15000, {
+                        credentials: 'include',
+                        cache: 'no-store'
+                    }),
+                    canCurrentUserEditTeacherName()
+                ]);
+                if (!scheduleResponse.ok) throw new Error('予定データの取得に失敗しました');
+
+                const scheduleData = await scheduleResponse.json();
+                if (!Array.isArray(scheduleData)) {
+                    throw new Error('予定データの形式が不正です');
+                }
+                allData = scheduleData;
+
+                teacherNameInput.disabled = false;
+                searchButton.disabled = false;
+                applyTeacherNameEditability(teacherNameInput, allowNameEdit);
+                setLoading(false);
+
+                // デバッグ用：データが正しく読み込まれているかのチェック
+                console.log('データ読み込み完了:', allData.length + '件のデータを取得');
+
+                // URLパラメータから講師名を取得して自動入力・自動検索
+                const urlParams = new URLSearchParams(window.location.search);
+                const teacherFromUrl = urlParams.get('teacher');
+                if (teacherFromUrl) {
+                    teacherNameInput.value = teacherFromUrl;
+                    // 少し待ってから自動検索を実行
+                    setTimeout(() => {
+                        document.getElementById('searchForm').dispatchEvent(new Event('submit'));
+                    }, 100);
+                }
+
+            } catch (error) {
+                console.error('データの取得に失敗しました:', error);
+                teacherNameInput.placeholder = "初期データ取得に失敗しました";
+                setLoading(true, '初期データ取得に失敗しました。ページを再読み込みしてください。', true);
+
+                // エラーの詳細をコンソールに表示
+                console.error('詳細なエラー:', error);
+
+                // テスト用：エラーの場合でも進められるように仮のデータをセット
+                allData = [];
+                teacherNameInput.disabled = true;
+                searchButton.disabled = true;
+            }
+        }
+        document.getElementById('searchForm').addEventListener('submit', async function (e) {
+            e.preventDefault();
+            const teacherName = document.getElementById('teacherName').value.trim();
+            renderSearchResults_(teacherName);
+            await Promise.all([
+                startSubmittedStatusFetch_({ forceRefetch: true }),
+                startKazasuStatusFetch_({ forceRefetch: true })
+            ]);
+        });
+
+        function handleStatusChange(index) {
+            const selectedStatus = document.querySelector(`input[name="status_${index}"]:checked`);
+            const subOptionB = document.getElementById(`sub_option_b_${index}`);
+            const subOptionC = document.getElementById(`sub_option_c_${index}`);
+
+            // すべてのサブオプションを非表示にする
+            if (subOptionB) subOptionB.classList.remove('show');
+            if (subOptionC) subOptionC.classList.remove('show');
+
+            if (selectedStatus) {
+                if (selectedStatus.value === 'B実施せず' && subOptionB) {
+                    // プルダウンの表示テキストを更新
+                    const selectB = subOptionB.querySelector('select');
+                    if (selectB) {
+                        selectB.options[0].text = '▼Bの詳細を選択してください';
+                    }
+                    subOptionB.classList.add('show');
+                } else if (selectedStatus.value === 'C短縮実施' && subOptionC) {
+                    // プルダウンの表示テキストを更新
+                    const selectC = subOptionC.querySelector('select');
+                    if (selectC) {
+                        selectC.options[0].text = '▼Cの詳細を選択し、実施分数を記入してください';
+                    }
+                    subOptionC.classList.add('show');
+                }
+            }
+        }
+
+        function escapeHtml_(value) {
+            return String(value === undefined || value === null ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function getSingleStudentNameForKazasu_(studentNamesString, className) {
+            const studentNames = String(studentNamesString || '')
+                .split(',')
+                .map(name => name.trim())
+                .filter(Boolean);
+
+            if (studentNames.length === 1) {
+                return studentNames[0];
+            }
+            if (studentNames.length === 0 && className && className.includes('_')) {
+                return extractStudentNameFromClassName(className);
+            }
+            return '';
+        }
+
+        function getKazasuBadgeClass_(action) {
+            const normalizedAction = String(action || '');
+            if (/入|登校|チェックイン/.test(normalizedAction)) {
+                return 'kazasu-badge kazasu-badge--in';
+            }
+            if (/退|下校|チェックアウト/.test(normalizedAction)) {
+                return 'kazasu-badge kazasu-badge--out';
+            }
+            return 'kazasu-badge kazasu-badge--other';
+        }
+
+        function getKazasuStatusForRecord_(record, recordDate, today) {
+            if (!record || !(recordDate instanceof Date) || isNaN(recordDate.getTime())) {
+                return null;
+            }
+
+            const studentName = getSingleStudentNameForKazasu_(record.生徒名 || '', record.授業名 || '');
+            const normalizedStudentName = normalizeStudentNameForKazasu(studentName);
+            if (!normalizedStudentName) {
+                return null;
+            }
+
+            return kazasuStatusMap[normalizedStudentName] || null;
+        }
+
+        function formatKazasuDateLabel_(statusInfo) {
+            const rawDate = String(statusInfo && statusInfo.date ? statusInfo.date : '').trim();
+            const rawTimestamp = String(statusInfo && statusInfo.timestamp ? statusInfo.timestamp : '').trim();
+            const dateMatch = rawDate.match(/(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+            if (dateMatch) {
+                return `${('0' + dateMatch[2]).slice(-2)}/${('0' + dateMatch[3]).slice(-2)}`;
+            }
+
+            const timestampMatch = rawTimestamp.match(/(\d{4})[\/-](\d{1,2})[\/-](\d{1,2})/);
+            if (timestampMatch) {
+                return `${('0' + timestampMatch[2]).slice(-2)}/${('0' + timestampMatch[3]).slice(-2)}`;
+            }
+
+            return '';
+        }
+
+        function buildKazasuBadgeHtml_(statusInfo) {
+            if (!statusInfo || !statusInfo.action) {
+                return '';
+            }
+
+            const labelParts = [];
+            const dateLabel = formatKazasuDateLabel_(statusInfo);
+            if (dateLabel) {
+                labelParts.push(dateLabel);
+            }
+            labelParts.push(statusInfo.action);
+            if (statusInfo.time) {
+                labelParts.push(statusInfo.time);
+            }
+
+            const label = labelParts.join(' ');
+            const badgeClass = getKazasuBadgeClass_(statusInfo.action);
+            const title = statusInfo.timestamp || statusInfo.date || '';
+            const safeLabel = escapeHtml_(label);
+            const safeTitle = escapeHtml_(title);
+
+            if (statusInfo.imageUrl) {
+                return `<a href="${escapeHtml_(statusInfo.imageUrl)}" class="${badgeClass}" target="_blank" rel="noopener noreferrer" title="${safeTitle}">${safeLabel}</a>`;
+            }
+
+            return `<span class="${badgeClass}" title="${safeTitle}">${safeLabel}</span>`;
+        }
+
+        function buildClassNameCellHtml_(record, recordDate, today) {
+            const rawClassName = String(record.授業名 || '');
+            const displayClassName = rawClassName || 'N/A';
+            const kazasuStatus = getKazasuStatusForRecord_(record, recordDate, today);
+            const badgeHtml = buildKazasuBadgeHtml_(kazasuStatus);
+
+            return `
+                <td data-class-name="${escapeHtml_(rawClassName)}">
+                    <div class="class-name-cell">
+                        <span class="class-name-text">${escapeHtml_(displayClassName)}</span>
+                        ${badgeHtml}
+                    </div>
+                </td>
+            `;
+        }
+
+        // 4. displayResults関数を変更（生徒名をhiddenで保持）
+        function displayResults(data, submittedStatusMap = {}, teacherName = '') {
+            const resultsBody = document.getElementById('resultsBody');
+            if (data.length === 0) {
+                resultsBody.innerHTML = '<tr><td colspan="3">該当する講師のレコードが見つかりません。</td></tr>';
+                return;
+            }
+            resultsBody.innerHTML = '';
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            data.forEach((record, index) => {
+                const recordDate = new Date(record.予定開始日時);
+                recordDate.setHours(0, 0, 0, 0);
+                const isToday = recordDate.getTime() <= today.getTime();
+                const rowClass = isToday ? 'today' : '';
+                const taskNo = normalizeTaskNo(record.予定業務No);
+                const isSubmitted = Object.prototype.hasOwnProperty.call(submittedStatusMap, taskNo);
+                const submittedStatus = isSubmitted ? String(submittedStatusMap[taskNo] || '') : '';
+                const calendarLink = createGoogleCalendarLink(record.予定開始日時, record.予定終了日時, record.授業名);
+                const formattedDateTime = formatDateTime(record.予定開始日時, record.予定終了日時);
+                const classNameCellHtml = buildClassNameCellHtml_(record, recordDate, today);
+                const row = document.createElement('tr');
+                row.className = rowClass;
+                row.innerHTML = `
+                <td><a href="${calendarLink}" target="_blank">${formattedDateTime}</a></td>
+                ${classNameCellHtml}
+                <td>${escapeHtml_(record.予定業務No || 'N/A')}</td>
+                <input type="hidden" id="studentName_${index}" value="${escapeHtml_(record.生徒名 || '')}">
+            `;
+                resultsBody.appendChild(row);
+                if (isToday) {
+                    const statusRow = document.createElement('tr');
+                    statusRow.className = 'status-row';
+                    if (submittedStatusLoading) {
+                        statusRow.innerHTML = `
+                    <td colspan="3">
+                        <div class="status-loading">
+                            <svg class="loading-spinner" width="24" height="24" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                                <circle class="loading-spinner-path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+                            </svg>
+                            <span>送信済み状態を確認中...</span>
+                        </div>
+                    </td>
+                `;
+                    } else if (isSubmitted) {
+                        const submittedReportFormUrl = buildReportFormUrl(
+                            teacherName,
+                            record.授業名 || '',
+                            record.予定開始日時,
+                            record.予定終了日時,
+                            record.生徒名 || '',
+                            taskNo,
+                            submittedStatus
+                        );
+                        statusRow.innerHTML = `
+                    <td colspan="2">
+                        <div class="status-options">
+                            <span class="submitted-label">送信済み</span>
+                            ${submittedStatus ? `<span>${submittedStatus}</span>` : ''}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="status-options">
+                            ${submittedReportFormUrl
+                                ? `<a href="${submittedReportFormUrl}" class="button" target="_blank"><span class="material-symbols-outlined" style="font-size: 1em; vertical-align: middle;">description</span> 報告書を開く</a>`
+                                : '<span>報告書リンクなし</span>'}
+                        </div>
+                    </td>
+                `;
+                    } else {
+                        statusRow.innerHTML = `
+                    <td colspan="2">
+                        <div class="status-options">
+                            <label><input type="radio" name="status_${index}" value="A正常実施" onchange="handleStatusChange(${index})"><span class="status-dot status-dot--blue"></span>A正常実施</label>
+                            <label><input type="radio" name="status_${index}" value="B実施せず" onchange="handleStatusChange(${index})"><span class="status-dot status-dot--red"></span>B実施せず</label>
+                            <label><input type="radio" name="status_${index}" value="C短縮実施" onchange="handleStatusChange(${index})"><span class="status-dot status-dot--yellow"></span>C短縮実施</label>
+                        </div>
+                        <div id="sub_option_b_${index}" class="sub-option">
+                            <select name="sub_option_b_${index}">
+                                <option value="">▼Bの詳細を選択してください</option>
+                                <option value="生徒の欠席">生徒の欠席</option>
+                                <option value="時間割に存在しない">時間割に存在しない</option>
+                                <option value="講師の欠勤">講師の欠勤</option>
+                            </select>
+                        </div>
+                        <div id="sub_option_c_${index}" class="sub-option">
+                            <select name="sub_option_c_${index}">
+                                <option value="">▼Cの詳細を選択し、実施分数を記入してください</option>
+                                <option value="不足分の補填実施">不足分の補填実施</option>
+                                <option value="講師の遅刻">講師の遅刻</option>
+                                <option value="講師の早退">講師の早退</option>
+                                <option value="オンライントラブル">オンライントラブル</option>
+                                <option value="生徒の遅刻">生徒の遅刻</option>
+                                <option value="生徒の早退">生徒の早退</option>
+                            </select>
+                                <label>実施分数: <input type="number" name="minutes_${index}" placeholder="分" min="1" max="999" style="width: 60px; padding: 2px;"> 分</label>
+                            <div style="margin-top: 5px;">
+                            </div>
+                        </div>
+                    </td>
+                    <td>
+                        <div class="status-options">
+                            <button onclick="updateStatus(${index}, this, '${record.予定開始日時}', '${record.予定終了日時}', '${record.授業名 || ''}')">送信</button>
+                        </div>
+                    </td>
+                `;
+                    }
+                    resultsBody.appendChild(statusRow);
+                }
+            });
+        }
+
+        function extractStudentNameFromClassName(className) {
+            // 授業名から生徒名を抽出する簡易的なロジック
+            // 形式によって適宜調整が必要
+            if (!className) return "";
+
+            // スペース、アンダースコア、「の」などで区切られた最初の部分を取得
+            const match = className.match(/^([^_\s]+)/);
+            return match ? match[1] : "";
+        }
+
+        function formatDateForURL(date) {
+            return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+        }
+
+        function formatTimeSlotForURL(startDate, endDate) {
+            return `${String(startDate.getHours()).padStart(2, '0')}:${String(startDate.getMinutes()).padStart(2, '0')}-${String(endDate.getHours()).padStart(2, '0')}:${String(endDate.getMinutes()).padStart(2, '0')}`;
+        }
+
+        // 6. updateStatus関数を変更（新しいパラメータ名とURL生成ロジックを使用）
+        async function updateStatus(index, button, startDateString, endDateString, className) {
+
+            const selectedStatus = document.querySelector(`input[name="status_${index}"]:checked`);
+
+            if (!selectedStatus) {
+                alert('ステータスを選択してください。');
+                return;
+            }
+
+            let status = selectedStatus.value;
+            let subStatus = '';
+
+            if (status === 'B実施せず') {
+                const subOptionB = document.querySelector(`select[name="sub_option_b_${index}"]`);
+                if (subOptionB && subOptionB.value) {
+                    subStatus = subOptionB.value;
+                    status = `${status};${subStatus}`;
+                } else {
+                    alert('実施しない理由を選択してください。');
+                    return;
+                }
+            } else if (status === 'C短縮実施') {
+                const subOptionC = document.querySelector(`select[name="sub_option_c_${index}"]`);
+                const minutesInput = document.querySelector(`input[name="minutes_${index}"]`);
+
+                if (subOptionC && subOptionC.value && minutesInput && minutesInput.value) {
+                    subStatus = subOptionC.value;
+                    const minutes = minutesInput.value;
+                    status = `${status};${subStatus};${minutes}`;
+                } else {
+                    alert('短縮実施の理由と実施分数を入力してください。');
+                    return;
+                }
+            }
+
+            button.textContent = "処理中...";
+            button.disabled = true;
+            const row = button.closest('tr').previousElementSibling;
+            const teacherName = document.getElementById('teacherName').value;
+            const dateTime = row.cells[0].textContent;
+            const classCell = row.cells[1];
+            const classNameFromRow = (classCell && classCell.dataset && classCell.dataset.className)
+                || (classCell && classCell.querySelector('.class-name-text') ? classCell.querySelector('.class-name-text').textContent.trim() : '');
+            const taskNo = normalizeTaskNo(row.cells[2].textContent);
+
+            // hiddenから生徒名を取得
+            const studentNamesFromHidden = document.getElementById(`studentName_${index}`).value;
+            const reportFormUrl = buildReportFormUrl(
+                teacherName,
+                classNameFromRow,
+                startDateString,
+                endDateString,
+                studentNamesFromHidden,
+                taskNo,
+                status
+            );
+
+            if (!reportFormUrl) {
+                alert('報告書URLの生成に失敗しました。');
+                button.textContent = "送信";
+                button.disabled = false;
+                return;
+            }
+
+            const postData = {
+                from: 'lecture_app',
+                source: SOURCE_KIWEB2,
+                action: 'updateStatus',
+                teacherName: teacherName,
+                className: classNameFromRow,
+                dateTime: dateTime,
+                taskNo: taskNo,
+                status: status,
+                reportFormUrl: reportFormUrl
+            };
+
+            setLoading(true, '送信中...');
+            const slowLoadingTimer = setTimeout(() => {
+                setLoading(true, '送信処理が混み合っています。もう少しお待ちください...');
+            }, 3000);
+
+            try {
+                let resultPayload;
+
+                try {
+                    resultPayload = await postDeclarationWithTimeout_(postData, 35000);
+                } catch (primaryError) {
+                    if (!isLikelyCorsError_(primaryError)) {
+                        throw primaryError;
+                    }
+                    console.warn('CORS/opaque response on declaration POST. Fallback to no-cors.', primaryError);
+                    await postDeclarationNoCorsFallback_(postData);
+
+                    // no-cors は結果取得不可のため、送信済み一覧を再読込して反映確認
+                    const fallbackVerification = await verifySubmittedAfterFallback_(taskNo, status);
+                    if (!fallbackVerification.confirmed) {
+                        throw new Error('送信結果を確認できませんでした。時間をおいて再読み込みしてください。');
+                    }
+                    resultPayload = {
+                        result: 'success',
+                        status: String(fallbackVerification.status || status),
+                        fallback: true
+                    };
+                }
+
+                const result = String((resultPayload && resultPayload.result) || '');
+                if (result === 'success') {
+                    const finalStatus = String((resultPayload && resultPayload.status) || status);
+                    submittedStatusByTaskNo[taskNo] = finalStatus;
+                    applySubmittedUi_(index, button, reportFormUrl);
+                    if (resultPayload && resultPayload.fallback) {
+                        alert('送信を確認しました（フォールバック経由）。');
+                    } else {
+                        alert(`業務のステータスを "${finalStatus}" に更新しました。`);
+                    }
+                    return;
+                }
+
+                if (result === 'duplicate') {
+                    submittedStatusByTaskNo[taskNo] = String(submittedStatusByTaskNo[taskNo] || status);
+                    applySubmittedUi_(index, button, reportFormUrl);
+                    alert('この業務はすでに送信済みです。');
+                    return;
+                }
+
+                throw new Error(String((resultPayload && resultPayload.message) || 'サーバー応答が不正です。'));
+            } catch (error) {
+                console.error('Error:', error);
+                alert('ステータスの更新中にエラーが発生しました。' + (error && error.message ? '\n' + error.message : ''));
+                button.textContent = "送信";
+                button.disabled = false;
+            } finally {
+                clearTimeout(slowLoadingTimer);
+                setLoading(false);
+            }
+        }
+
+        function closeGuide() {
+            var guide = document.getElementById('guideContainer');
+            guide.style.display = 'none';
+        }
+    </script>
+
+    <script>
+        (function () {
+            function isEmbed() {
+                const p = new URLSearchParams(location.search);
+                if (p.get('embed') === '1') return true;
+                try { return window.self !== window.top; } catch (e) { return true; }
+            }
+
+            function applyEmbed() {
+                document.body.classList.add('embed');
+            }
+
+            document.addEventListener('DOMContentLoaded', function () {
+                if (isEmbed()) applyEmbed();
+            });
+        })();
+    </script>
+</body>
+
+</html>

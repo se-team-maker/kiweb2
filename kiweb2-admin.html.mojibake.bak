@@ -1,0 +1,1332 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ki-web2 莠ｬ驛ｽ蛹ｻ蝪ｾ 邂｡逅・・畑</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL@24,400,0&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* Material Design 3 Color Tokens (System Admin Theme: #844FC1) */
+      --md-sys-color-primary: #844FC1;
+      --md-sys-color-primary-hover: #68389D;
+      --md-sys-color-on-primary: #ffffff;
+      --md-sys-color-primary-container: #F0DBFF;
+      --md-sys-color-on-primary-container: #2F0054;
+
+      --md-sys-color-secondary: #6F5A89;
+      --md-sys-color-on-secondary: #ffffff;
+      --md-sys-color-secondary-container: #EADCFD;
+      --md-sys-color-on-secondary-container: #28153F;
+
+      --md-sys-color-tertiary: #7C5A78;
+      --md-sys-color-on-tertiary: #ffffff;
+      --md-sys-color-tertiary-container: #FFD7F5;
+      --md-sys-color-on-tertiary-container: #31112F;
+
+      --md-sys-color-error: #ba1a1a;
+      --md-sys-color-on-error: #ffffff;
+
+      --md-sys-color-background: #FAF4FF;
+      --md-sys-color-on-background: #21182B;
+
+      --md-sys-color-surface: #FCF8FF;
+      --md-sys-color-surface-container: #F3E9FF;
+      --md-sys-color-on-surface: #21182B;
+      --md-sys-color-surface-variant: #E9DFF3;
+      --md-sys-color-on-surface-variant: #4E4458;
+
+      --md-sys-color-outline: #7E738B;
+      --md-sys-color-outline-variant: #CFC3DB;
+      --md-sys-color-hover-layer: rgba(132, 79, 193, 0.08);
+
+      /* Elevation */
+      --md-sys-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.3), 0 1px 3px 1px rgba(0, 0, 0, 0.15);
+      --md-sys-elevation-2: 0 1px 2px rgba(0, 0, 0, 0.3), 0 2px 6px 2px rgba(0, 0, 0, 0.15);
+      --md-sys-elevation-3: 0 1px 3px rgba(0, 0, 0, 0.3), 0 4px 8px 3px rgba(0, 0, 0, 0.15);
+
+      /* Shape */
+      --md-sys-shape-corner-extra-small: 4px;
+      --md-sys-shape-corner-small: 8px;
+      --md-sys-shape-corner-medium: 12px;
+      --md-sys-shape-corner-large: 16px;
+      --md-sys-shape-corner-extra-large: 28px;
+      --md-sys-shape-corner-full: 9999px;
+
+      /* Typography */
+      /* Reverting to original safe font stack for better legibility on Windows (avoiding thin Yu Gothic issues) */
+      --md-sys-typescale-body-large-font: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+      --md-sys-typescale-body-large-line-height: 1.5;
+      --md-sys-typescale-body-large-size: 1rem;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    body {
+      font-family: var(--md-sys-typescale-body-large-font);
+      background-color: var(--md-sys-color-background);
+      color: var(--md-sys-color-on-background);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      line-height: var(--md-sys-typescale-body-large-line-height);
+    }
+
+    /* ========== App Bar (Header) ========== */
+    .header {
+      /* Reverting to Filled App Bar style for better visibility/branding */
+      background-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+      height: 64px;
+      padding: 0 24px;
+      display: flex;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      box-shadow: var(--md-sys-elevation-2);
+    }
+
+    .header-content {
+      width: 100%;
+      max-width: 1600px;
+      margin: 0 auto;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .header h1 {
+      font-size: 1.375rem;
+      font-weight: 500;
+      color: var(--md-sys-color-on-primary);
+      /* White text */
+      letter-spacing: 0;
+      line-height: 28px;
+    }
+
+    .brand-color-text {
+      /* On dark background, use white or a light variant. Using on-primary (white) */
+      color: var(--md-sys-color-on-primary);
+      font-weight: 700;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .user-profile-chip {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 4px 8px 4px 4px;
+      border-radius: var(--md-sys-shape-corner-full);
+      background-color: rgba(255, 255, 255, 0.1);
+      /* Subtle background on red */
+    }
+
+    .user-icon {
+      width: 40px;
+      height: 40px;
+      background-color: var(--md-sys-color-on-primary);
+      /* White icon bg */
+      color: var(--md-sys-color-primary);
+      /* Red icon */
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      font-weight: 500;
+      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+
+    .user-meta {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      line-height: 1.2;
+    }
+
+    .user-welcome {
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.8);
+      /* White with opacity */
+    }
+
+    .user-name {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--md-sys-color-on-primary);
+      /* White */
+      max-width: 150px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* Login button adjustment for dark header */
+    .header .login-button {
+      background-color: var(--md-sys-color-on-primary);
+      /* White button */
+      color: var(--md-sys-color-primary);
+      /* Red text */
+      box-shadow: none;
+    }
+
+    .header .login-button:hover {
+      background-color: rgba(255, 255, 255, 0.9);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    }
+
+    /* ========== Important Notice (Card) ========== */
+    .important-notice {
+      background: var(--md-sys-color-surface);
+      /* M3 Elevated Card style */
+      box-shadow: var(--md-sys-elevation-1);
+      border-radius: var(--md-sys-shape-corner-medium);
+      padding: 16px 24px;
+      margin: 24px auto 0;
+      max-width: 1600px;
+      /* Match header max-width */
+      width: calc(100% - 48px);
+      /* Padding considerations */
+      display: flex;
+      align-items: flex-start;
+      gap: 16px;
+    }
+
+    .notice-icon {
+      color: var(--md-sys-color-tertiary);
+      font-size: 1.5rem;
+      line-height: 1;
+    }
+
+    .notice-content-wrapper {
+      flex: 1;
+    }
+
+    .notice-header {
+      font-weight: 500;
+      color: var(--md-sys-color-tertiary);
+      /* Tertiary is good for highlights/accents that aren't primary */
+      font-size: 1rem;
+      margin-bottom: 4px;
+    }
+
+    .notice-content {
+      color: var(--md-sys-color-on-surface-variant);
+      font-size: 0.875rem;
+      line-height: 1.4;
+    }
+
+    .notice-content ul {
+      list-style: none;
+    }
+
+    /* ========== Main Layout ========== */
+    .main-container {
+      max-width: 1600px;
+      /* Wider */
+      margin: 0 auto;
+      padding: 24px;
+      width: 100%;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .dashboard-layout {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      /* Standard drawer width */
+      gap: 24px;
+      height: 100%;
+      align-items: start;
+    }
+
+    /* ========== Navigation Navigation (Drawer) ========== */
+    .sidebar {
+      /* Transparent/Surface background for standard drawer in M3 desktop usually blends or is own surface */
+      background: transparent;
+      padding: 0;
+      /* Sticky */
+      position: sticky;
+      top: 88px;
+      /* Header + gap */
+    }
+
+    .sidebar-title {
+      font-size: 0.75rem;
+      font-weight: 500;
+      color: var(--md-sys-color-on-surface-variant);
+      margin: 0 0 12px 16px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .nav-menu {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      /* Gap between items */
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 0 16px 0 24px;
+      /* 24px start padding for icon, 16px end */
+      height: 56px;
+      /* M3 Standard Drawer Item Height */
+      color: var(--md-sys-color-on-surface-variant);
+      text-decoration: none;
+      border-radius: var(--md-sys-shape-corner-full);
+      /* Pill shape */
+      transition: background-color 0.2s ease, color 0.2s ease;
+      font-weight: 500;
+      font-size: 0.95rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .nav-link:hover {
+      background-color: var(--md-sys-color-hover-layer);
+      /* Subtle hover overlay */
+      color: var(--md-sys-color-on-surface);
+    }
+
+    .nav-link.active {
+      background-color: var(--md-sys-color-secondary-container);
+      color: var(--md-sys-color-on-secondary-container);
+    }
+
+    /* Icons in nav */
+    .nav-icon {
+      width: 24px;
+      text-align: center;
+      font-size: 1.2rem;
+    }
+
+    /* ========== Divider ========== */
+    .nav-divider {
+      height: 1px;
+      background-color: var(--md-sys-color-outline-variant);
+      margin: 12px 16px;
+    }
+
+    .nav-section {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .nav-section-toggle {
+      width: 100%;
+      border: none;
+      background: transparent;
+      height: 52px;
+      justify-content: space-between;
+      transition: background-color 0.2s ease, color 0.2s ease;
+    }
+
+    .nav-section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .nav-chevron {
+      font-size: 1.25rem;
+      line-height: 1;
+      transition: transform 0.24s cubic-bezier(0.3, 0, 0, 1);
+    }
+
+    .nav-submenu {
+      overflow: hidden;
+      max-height: 0;
+      opacity: 0;
+      transform: translateY(-4px);
+      transition:
+        max-height 0.28s cubic-bezier(0.3, 0, 0, 1),
+        opacity 0.2s ease,
+        transform 0.28s cubic-bezier(0.3, 0, 0, 1);
+    }
+
+    .nav-section.open .nav-submenu {
+      max-height: 280px;
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .nav-section.open .nav-chevron {
+      transform: rotate(180deg);
+    }
+
+    .nav-submenu .nav-link {
+      padding-left: 44px;
+    }
+
+    /* ========== Mobile Tabs (Bottom or Top) ========== */
+    .mobile-tabs {
+      display: none;
+      /* Desktop default */
+    }
+
+    /* ========== Content Area (Main) ========== */
+    .content-area {
+      background: var(--md-sys-color-surface);
+      border-radius: var(--md-sys-shape-corner-large);
+      /* No border, just faint outline or elevation if needed. M3 prefers subtle tonal diff or elevation. */
+      /* Let's go with a very subtle outline variant for containment */
+      border: 1px solid var(--md-sys-color-outline-variant);
+      overflow: hidden;
+      position: relative;
+      min-height: 600px;
+      /* Min height */
+      height: calc(100vh - 140px);
+      /* Fill space roughly */
+    }
+
+    iframe#mainFrame {
+      width: 100%;
+      height: 100%;
+      border: none;
+      display: block;
+      background: var(--md-sys-color-surface);
+    }
+
+    .iframe-loading {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background: rgba(255, 255, 255, 0.8);
+      color: var(--md-sys-color-primary);
+      text-align: center;
+      z-index: 5;
+    }
+
+    .iframe-loading-spinner {
+      font-size: 38px;
+      line-height: 1;
+      animation: iframe-spinner-rotate 1333ms linear infinite;
+      transform-origin: center;
+      color: var(--md-sys-color-primary);
+    }
+
+    .iframe-loading-text {
+      font-size: 0.95rem;
+      font-weight: 500;
+      letter-spacing: 0.01em;
+    }
+
+    .iframe-loading.hidden {
+      display: none;
+    }
+
+    @keyframes iframe-spinner-rotate {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .iframe-loading-spinner {
+        animation: none;
+      }
+    }
+
+
+    /* ========== Buttons ========== */
+    .login-button {
+      background-color: var(--md-sys-color-primary);
+      color: var(--md-sys-color-on-primary);
+      border: none;
+      padding: 0 24px;
+      height: 40px;
+      border-radius: var(--md-sys-shape-corner-full);
+      font-weight: 500;
+      cursor: pointer;
+      transition: box-shadow 0.2s ease, background-color 0.2s ease;
+      font-size: 0.9rem;
+      box-shadow: var(--md-sys-elevation-1);
+    }
+
+    .login-button:hover {
+      background-color: var(--md-sys-color-primary-hover);
+      /* Slightly Darker */
+      box-shadow: var(--md-sys-elevation-2);
+    }
+
+    /* ========== Modal ========== */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      /* Scrim */
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .modal-overlay.show {
+      display: flex;
+      opacity: 1;
+    }
+
+    .modal-content {
+      width: min(900px, 90%);
+      height: min(700px, 80vh);
+      background: var(--md-sys-color-surface-container);
+      border-radius: var(--md-sys-shape-corner-extra-large);
+      box-shadow: var(--md-sys-elevation-3);
+      position: relative;
+      overflow: hidden;
+      transform: scale(0.9);
+      transition: transform 0.2s cubic-bezier(0.2, 0, 0, 1);
+    }
+
+    .modal-overlay.show .modal-content {
+      transform: scale(1);
+    }
+
+    .modal-close {
+      position: absolute;
+      top: 16px;
+      right: 16px;
+      background: rgba(0, 0, 0, 0.1);
+      color: var(--md-sys-color-on-surface-variant);
+      border: none;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      font-size: 20px;
+      cursor: pointer;
+      z-index: 10;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background-color 0.2s;
+    }
+
+    .modal-close:hover {
+      background: rgba(0, 0, 0, 0.2);
+    }
+
+    .modal-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* ========== Ripple Effects (Global) ========== */
+    .ripple {
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      background-color: rgba(0, 0, 0, 0.1);
+      pointer-events: none;
+    }
+
+    @keyframes ripple {
+      to {
+        transform: scale(4);
+        opacity: 0;
+      }
+    }
+
+    .nav-link,
+    .login-button,
+    .tab-button {
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* ========== Responsive ========== */
+    @media (max-width: 768px) {
+      .header-content {
+        justify-content: space-between;
+        gap: 8px;
+      }
+
+      .header h1 {
+        font-size: 1.05rem;
+      }
+
+      .user-welcome {
+        display: none;
+      }
+
+      .header {
+        height: 56px;
+        padding: 0 12px;
+      }
+
+      .user-info {
+        gap: 8px;
+      }
+
+      .user-profile-chip {
+        gap: 8px;
+        padding: 2px 6px 2px 2px;
+      }
+
+      .user-icon {
+        width: 32px;
+        height: 32px;
+        font-size: 1rem;
+      }
+
+      .user-name {
+        max-width: 90px;
+        font-size: 0.78rem;
+      }
+
+      .header .login-button {
+        height: 32px;
+        padding: 0 16px;
+        font-size: 0.8rem;
+      }
+
+      .important-notice {
+        margin: 16px;
+        width: calc(100% - 32px);
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .notice-icon {
+        display: none;
+      }
+
+      /* Save space */
+
+      .main-container {
+        padding: 0;
+      }
+
+      .dashboard-layout {
+        grid-template-columns: 1fr;
+        gap: 0;
+        display: block;
+        /* Stack */
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      /* Mobile Nav (Bottom Bar) */
+      .mobile-tabs {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: var(--md-sys-color-surface);
+        /* Top border for separation */
+        border-top: 1px solid var(--md-sys-color-outline-variant);
+        height: 80px;
+        /* Standard M3 Bottom Nav height */
+        z-index: 100;
+        padding-bottom: 0;
+        /* adjustments for safe area if needed */
+        justify-content: space-around;
+        align-items: center;
+        box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.05);
+        /* very subtle */
+        /* Ripple container behavior */
+        overflow: hidden;
+      }
+
+      .tab-list {
+        display: flex;
+        width: 100%;
+        justify-content: space-around;
+        list-style: none;
+      }
+
+      .tab-item {
+        flex: 1;
+        display: flex;
+        justify-content: center;
+        min-width: 0;
+      }
+
+      .tab-button {
+        background: none;
+        border: none;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 4px;
+        color: var(--md-sys-color-on-surface-variant);
+        font-size: 0.7rem;
+        font-weight: 500;
+        padding: 12px 0;
+        width: 100%;
+        cursor: pointer;
+        width: 100%;
+        cursor: pointer;
+        text-decoration: none;
+        line-height: 1.1;
+      }
+
+      .tab-icon-container {
+        width: 56px;
+        height: 28px;
+        border-radius: 16px;
+        /* Pill */
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background-color 0.2s;
+        font-size: 1.1rem;
+        pointer-events: none;
+        /* Let clicks pass to button */
+      }
+
+      .tab-button span {
+        white-space: nowrap;
+      }
+
+
+
+      .tab-button.active .tab-icon-container {
+        background-color: var(--md-sys-color-secondary-container);
+      }
+
+      .tab-button.active {
+        color: var(--md-sys-color-on-secondary-container);
+      }
+
+      .content-area {
+        border-radius: 0;
+        /* Full width on mobile */
+        border: none;
+        height: calc(100vh - 56px - 80px);
+        /* Header(56) + BottomNav(80) */
+        padding-bottom: calc(80px + env(safe-area-inset-bottom));
+        /* Space for bottom nav */
+      }
+
+      .mobile-tabs {
+        height: calc(80px + env(safe-area-inset-bottom));
+        padding-bottom: env(safe-area-inset-bottom);
+      }
+    }
+
+    /* Material Symbols */
+    .material-symbols-outlined {
+      font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+      font-size: 1.25rem;
+      vertical-align: middle;
+    }
+  </style>
+  <link rel="icon" type="image/png" href="favicon.png" />
+</head>
+
+<body>
+  <!-- Top App Bar (Header) -->
+  <header class="header">
+    <div class="header-content">
+      <h1><span class="material-symbols-outlined">school</span> ki-web2 <span class="brand-color-text">莠ｬ驛ｽ蛹ｻ蝪ｾ 邂｡逅・・畑</span></h1>
+
+      <div class="user-info">
+        <div class="user-profile-chip">
+          <div class="user-icon"><span class="material-symbols-outlined">person</span></div>
+          <div class="user-meta">
+            <div class="user-welcome">繧医≧縺薙◎</div>
+          <div class="user-name" data-placeholder="繝ｭ繧ｰ繧､繝ｳ縺励※縺上□縺輔＞"></div>
+          </div>
+        </div>
+        <button class="login-button" id="openLoginModal">繝ｭ繧ｰ繧､繝ｳ</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Important Notice Card -->
+  <div class="important-notice">
+    <div class="notice-icon"><span class="material-symbols-outlined">campaign</span></div>
+    <div class="notice-content-wrapper">
+      <div class="notice-header">驥崎ｦ√↑縺顔衍繧峨○</div>
+      <div class="notice-content">
+        <ul>
+          <li><strong>縲先肢讌ｭ莠亥ｮ壹・/strong>謗域･ｭ莠亥ｮ壹・螟画峩縺檎匱逕溘＠縺ｾ縺励◆縲りｩｳ邏ｰ繧偵＃遒ｺ隱阪￥縺縺輔＞縲・/li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Container -->
+  <div class="main-container">
+    <div class="dashboard-layout">
+      <!-- Navigation Drawer (Sidebar) -->
+      <aside class="sidebar">
+        <div class="sidebar-title">繝｡繝九Η繝ｼ</div>
+        <nav>
+          <ul class="nav-menu">
+            <li class="nav-section open">
+              <button class="nav-link nav-section-toggle" type="button" data-nav-toggle="procedure-records" aria-expanded="true" aria-controls="nav-submenu-procedure-records">
+                <span class="nav-section-label">
+                  <span class="nav-icon material-symbols-outlined">folder_open</span>
+                  <span>謇狗ｶ壹″繝ｻ險倬鹸</span>
+                </span>
+                <span class="nav-chevron material-symbols-outlined">expand_more</span>
+              </button>
+              <ul class="nav-submenu nav-menu" id="nav-submenu-procedure-records">
+                <li class="nav-item">
+                  <a class="nav-link active" data-page="lessons">
+                    <span class="nav-icon material-symbols-outlined">menu_book</span>
+                    <span>謗域･ｭ莠亥ｮ壹・螳滓命逕ｳ蜻・/span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="work">
+                    <span class="nav-icon material-symbols-outlined">edit_note</span>
+                    <span>蜍､蜍呵ｨ倬鹸繝輔か繝ｼ繝</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="absence">
+                    <span class="nav-icon material-symbols-outlined">description</span>
+                    <span>谺蜍､繝ｻ謖ｯ譖ｿ逕ｳ隲・/span>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="nav-section open">
+              <button class="nav-link nav-section-toggle" type="button" data-nav-toggle="search-view" aria-expanded="true" aria-controls="nav-submenu-search-view">
+                <span class="nav-section-label">
+                  <span class="nav-icon material-symbols-outlined">search</span>
+                  <span>讀懃ｴ｢繝ｻ髢ｲ隕ｧ</span>
+                </span>
+                <span class="nav-chevron material-symbols-outlined">expand_more</span>
+              </button>
+              <ul class="nav-submenu nav-menu" id="nav-submenu-search-view">
+                <li class="nav-item">
+                  <a class="nav-link" data-page="class-report-search">
+                    <span class="nav-icon material-symbols-outlined">description</span>
+                    <span>謗域･ｭ蝣ｱ蜻頑嶌縺ｮ讀懃ｴ｢繝ｻ髢ｲ隕ｧ</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="implementation-record-search">
+                    <span class="nav-icon material-symbols-outlined">history</span>
+                    <span>螳滓命逕ｳ蜻願ｨ倬鹸縺ｮ髢ｲ隕ｧ</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="non-class-work-search">
+                    <span class="nav-icon material-symbols-outlined">fact_check</span>
+                    <span>蜍､蜍呵ｨ倬鹸縺ｮ髢ｲ隕ｧ</span>
+                  </a>
+                </li>
+              </ul>
+            </li>
+            <li class="nav-item admin-only" style="display: none;">
+              <a href="/kiweb/teacher-auth/public/admin.php" class="nav-link">
+                <span class="nav-icon material-symbols-outlined">settings</span>
+                <span>邂｡逅・・判髱｢</span>
+              </a>
+            </li>
+          </ul>
+        </nav>
+
+        <div class="nav-divider"></div>
+
+        <div class="sidebar-title">繧ｯ繧､繝・け繝ｪ繝ｳ繧ｯ</div>
+        <nav>
+          <ul class="nav-menu">
+            <li class="nav-item"><a href="#" class="nav-link"><span class="nav-icon material-symbols-outlined">bookmark</span><span>繝槭ル繝･繧｢繝ｫ</span></a>
+            </li>
+          </ul>
+        </nav>
+      </aside>
+
+      <!-- Main Content Area (Iframe Container) -->
+      <main class="content-area">
+        <div id="iframeLoading" class="iframe-loading hidden" role="status" aria-live="polite">
+          <span class="iframe-loading-spinner material-symbols-outlined" aria-hidden="true">progress_activity</span>
+          <span class="iframe-loading-text">隱ｭ縺ｿ霎ｼ縺ｿ荳ｭ窶ｦ</span>
+        </div>
+        <iframe id="mainFrame" title="ki-web2 main" src="class-declaration.html?v=20260225-submitted-preload"></iframe>
+      </main>
+    </div>
+  </div>
+
+  <!-- Mobile Bottom Navigation (Tabs) -->
+  <nav class="mobile-tabs" aria-label="繝壹・繧ｸ蛻・ｊ譖ｿ縺・>
+    <ul class="tab-list">
+      <li class="tab-item">
+        <button class="tab-button active" data-page="lessons">
+          <div class="tab-icon-container"><span class="material-symbols-outlined">menu_book</span></div>
+          <span>謗域･ｭ莠亥ｮ・/span>
+        </button>
+      </li>
+      <li class="tab-item">
+        <button class="tab-button" data-page="work">
+          <div class="tab-icon-container"><span class="material-symbols-outlined">edit_note</span></div>
+          <span>蜍､蜍呵ｨ倬鹸</span>
+        </button>
+      </li>
+      <li class="tab-item">
+        <button class="tab-button" data-page="absence">
+          <div class="tab-icon-container"><span class="material-symbols-outlined">description</span></div>
+          <span>谺蜍､繝ｻ謖ｯ譖ｿ</span>
+        </button>
+      </li>
+      <li class="tab-item admin-only" data-display="flex" style="display: none;">
+        <a class="tab-button" href="/kiweb/teacher-auth/public/admin.php">
+          <div class="tab-icon-container"><span class="material-symbols-outlined">settings</span></div>
+          <span>邂｡逅・/span>
+        </a>
+      </li>
+    </ul>
+  </nav>
+
+  <!-- Login Modal -->
+  <div id="loginModal" class="modal-overlay" aria-hidden="true">
+    <div class="modal-content" role="dialog" aria-modal="true" aria-label="繝ｭ繧ｰ繧､繝ｳ">
+      <button class="modal-close" id="closeLoginModal" aria-label="髢峨§繧・>ﾃ・/button>
+      <iframe id="loginFrame" class="modal-frame" title="繝ｭ繧ｰ繧､繝ｳ"></iframe>
+    </div>
+  </div>
+  <script>
+    // 笘・蜷御ｸ繝輔か繝ｫ繝縺ｫ縺ゅｋ3繝壹・繧ｸ繧・iframe 縺ｧ蛻・ｊ譖ｿ縺・    const PAGES = {
+      lessons: { file: 'class-declaration.html?v=20260225-submitted-preload' }, // 謗域･ｭ莠亥ｮ壹・螳滓命逕ｳ蜻・      work: { file: 'work-record.html?v=20260226-timefit15' },       // 蜍､蜍呵ｨ倬鹸
+      absence: { file: 'class-reschedule.html' },   // 谺蜍､繝ｻ謖ｯ譖ｿ
+      'class-report-search': { file: 'ClassReportSearchForm.html' }, // 謗域･ｭ蝣ｱ蜻頑嶌縺ｮ讀懃ｴ｢繝ｻ髢ｲ隕ｧ
+      'implementation-record-search': { file: 'search_for_class_implementation_declaration.html' }, // 螳滓命逕ｳ蜻願ｨ倬鹸縺ｮ髢ｲ隕ｧ
+      'non-class-work-search': { file: 'declaration_of_non_class_work_search_and_view.html' } // 蜍､蜍呵ｨ倬鹸縺ｮ髢ｲ隕ｧ
+    };
+
+    const iframe = document.getElementById('mainFrame');
+    const loading = document.getElementById('iframeLoading');
+    const loginModal = document.getElementById('loginModal');
+    const loginFrame = document.getElementById('loginFrame');
+    const openLoginModal = document.getElementById('openLoginModal');
+    const closeLoginModal = document.getElementById('closeLoginModal');
+    const LOGIN_URL = '/kiweb/teacher-auth/public/login.php';
+    const NAME_STORAGE_KEY = 'kiweb_user_name';
+    const NAME_PLACEHOLDER = '繝ｭ繧ｰ繧､繝ｳ縺励※縺上□縺輔＞';
+    const ABSENCE_DATA_URL = 'https://script.google.com/macros/s/AKfycbybH6gXsvA8BcuxHxaiuFrTP7M2ANLd_f1RvT8Qp-xMOiXHy5IyviqYKfUKI786c-1g/exec?action=getCachedJson';
+    const ABSENCE_CACHE_KEY = 'kiweb_absence_cache_v1';
+    const ABSENCE_CACHE_TTL_MS = 60000;
+    let isLoggedIn = false;
+    let loginCheckTimer = null;
+    let userScopes = {};
+    let absenceCachePrimePromise = null;
+
+    function formatDisplayName(name) {
+      return name ? name + '縺輔ｓ' : NAME_PLACEHOLDER;
+    }
+
+    function getStoredName() {
+      try {
+        return (sessionStorage.getItem(NAME_STORAGE_KEY) || '').trim();
+      } catch (e) {
+        return '';
+      }
+    }
+
+    function setStoredName(name) {
+      try {
+        if (name) {
+          sessionStorage.setItem(NAME_STORAGE_KEY, name);
+        } else {
+          sessionStorage.removeItem(NAME_STORAGE_KEY);
+        }
+      } catch (e) {
+        // ignore
+      }
+    }
+
+    function getLoginName() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const urlName = urlParams.get('name');
+      if (urlName) return urlName;
+      const storedName = getStoredName();
+      if (storedName) return storedName;
+      const headerName = document.querySelector('.user-name');
+      const text = headerName ? headerName.textContent.trim() : '';
+      if (!text || text === NAME_PLACEHOLDER) return '';
+      return text.replace(/(縺輔ｓ)+$/u, '').trim();
+    }
+
+    function openLogin(nameOverride) {
+      const name = (nameOverride !== undefined && nameOverride !== null) ? nameOverride : getLoginName();
+      const url = name ? `${LOGIN_URL}?name=${encodeURIComponent(name)}` : LOGIN_URL;
+      window.location.href = url;
+    }
+
+    window.openLoginModal = openLogin;
+
+    function setLoginState(user) {
+      isLoggedIn = !!user;
+      if (openLoginModal) {
+        openLoginModal.textContent = isLoggedIn ? '繝ｭ繧ｰ繧｢繧ｦ繝・ : '繝ｭ繧ｰ繧､繝ｳ';
+      }
+      if (!isLoggedIn) {
+        const nameEl = document.querySelector('.user-name');
+        if (nameEl) {
+          nameEl.textContent = formatDisplayName('');
+        }
+        setStoredName('');
+      }
+    }
+
+    function getPrimaryScope(type) {
+      if (!userScopes || !userScopes[type] || !Array.isArray(userScopes[type])) {
+        return '';
+      }
+      return userScopes[type].find(Boolean) || '';
+    }
+
+    function readAbsenceCacheEnvelope() {
+      try {
+        const raw = sessionStorage.getItem(ABSENCE_CACHE_KEY);
+        if (!raw) return null;
+        const parsed = JSON.parse(raw);
+        const fetchedAt = Number(parsed && parsed.fetchedAt);
+        if (!Array.isArray(parsed && parsed.rows) || !Number.isFinite(fetchedAt)) {
+          sessionStorage.removeItem(ABSENCE_CACHE_KEY);
+          return null;
+        }
+        if ((Date.now() - fetchedAt) > ABSENCE_CACHE_TTL_MS) {
+          sessionStorage.removeItem(ABSENCE_CACHE_KEY);
+          return null;
+        }
+        return parsed;
+      } catch (error) {
+        try { sessionStorage.removeItem(ABSENCE_CACHE_KEY); } catch (e) {}
+        return null;
+      }
+    }
+
+    async function primeAbsenceDataCache() {
+      if (readAbsenceCacheEnvelope()) {
+        return;
+      }
+      if (absenceCachePrimePromise) {
+        return absenceCachePrimePromise;
+      }
+
+      absenceCachePrimePromise = (async () => {
+        try {
+          const response = await fetch(ABSENCE_DATA_URL, {
+            method: 'GET',
+            cache: 'no-store'
+          });
+          if (!response.ok) {
+            return;
+          }
+          const rows = await response.json();
+          if (!Array.isArray(rows)) {
+            return;
+          }
+          try {
+            sessionStorage.setItem(ABSENCE_CACHE_KEY, JSON.stringify({
+              fetchedAt: Date.now(),
+              rows
+            }));
+          } catch (e) {
+            // ignore storage failures
+          }
+        } catch (error) {
+          // ignore prefetch failures
+        } finally {
+          absenceCachePrimePromise = null;
+        }
+      })();
+
+      return absenceCachePrimePromise;
+    }
+
+    async function logout() {
+      try {
+        await fetch('/kiweb/teacher-auth/api/logout.php', {
+          method: 'POST',
+          credentials: 'include'
+        });
+      } catch (error) {
+        // ignore
+      } finally {
+        window.location.href = '/kiweb/kiweb2.html';
+      }
+    }
+
+    async function refreshUserName(options = {}) {
+      const { redirectOnFail = false } = options;
+      const nameEl = document.querySelector('.user-name');
+      if (!nameEl) return false;
+      try {
+        const response = await fetch('/kiweb/teacher-auth/api/me.php', {
+          method: 'GET',
+          credentials: 'include'
+        });
+        if (!response.ok) {
+          setLoginState(null);
+          if (redirectOnFail && (response.status === 401 || response.status === 403)) {
+            window.location.href = LOGIN_URL;
+          }
+          return false;
+        }
+        const data = await response.json();
+        if (!data || !data.success || !data.user) {
+          setLoginState(null);
+          if (redirectOnFail) {
+            window.location.href = LOGIN_URL;
+          }
+          return false;
+        }
+        userScopes = data.user.scopes || {};
+        const name = (data.user.name || data.user.email || '').trim();
+        if (name) {
+          nameEl.textContent = formatDisplayName(name);
+          setStoredName(name);
+        } else {
+          nameEl.textContent = formatDisplayName('');
+          setStoredName('');
+        }
+        setLoginState(data.user);
+
+        // 邂｡逅・・Μ繝ｳ繧ｯ縺ｮ陦ｨ遉ｺ蛻ｶ蠕｡
+        const isAdmin = data.user.permissions && data.user.permissions.includes('manage_users');
+        document.querySelectorAll('.admin-only').forEach(el => {
+          const display = isAdmin ? (el.dataset.display || 'block') : 'none';
+          el.style.display = display;
+        });
+
+        const department = getPrimaryScope('department');
+        if (department && iframe && iframe.src && iframe.src.includes('work-record.html') && !iframe.src.includes('department=')) {
+          try {
+            const currentUrl = new URL(iframe.src, window.location.origin);
+            currentUrl.searchParams.set('department', department);
+            iframe.src = currentUrl.pathname + currentUrl.search;
+          } catch (e) {
+            // ignore
+          }
+        }
+
+        // 谺蜍､繝輔か繝ｼ繝繧帝幕縺丞燕縺ｫ縲∵･ｭ蜍吶ョ繝ｼ繧ｿ繧貞酔荳繧ｿ繝・sessionStorage 縺ｸ蜈郁ｪｭ縺ｿ縺吶ｋ
+        primeAbsenceDataCache();
+
+        return true;
+      } catch (error) {
+        // no-op: keep default name if API fails
+        setLoginState(null);
+        return false;
+      }
+    }
+
+    function closeLogin() {
+      if (loginModal) {
+        loginModal.classList.remove('show');
+        loginModal.setAttribute('aria-hidden', 'true');
+      }
+      if (loginFrame) {
+        loginFrame.src = 'about:blank';
+      }
+      stopLoginCheck();
+    }
+
+    function startLoginCheck() {
+      stopLoginCheck();
+      loginCheckTimer = setInterval(async () => {
+        const ok = await refreshUserName();
+        if (ok) {
+          closeLogin();
+        }
+      }, 1500);
+    }
+
+    function stopLoginCheck() {
+      if (loginCheckTimer) {
+        clearInterval(loginCheckTimer);
+        loginCheckTimer = null;
+      }
+    }
+
+
+    function showLoading(on) {
+      if (!loading) return;
+      loading.classList.toggle('hidden', !on);
+    }
+
+    function setNavSectionExpanded(toggleEl, expanded) {
+      if (!toggleEl) return;
+      const section = toggleEl.closest('.nav-section');
+      if (!section) return;
+      const controlsId = toggleEl.getAttribute('aria-controls');
+      const submenu = controlsId ? document.getElementById(controlsId) : section.querySelector('.nav-submenu');
+      toggleEl.setAttribute('aria-expanded', String(expanded));
+      section.classList.toggle('open', expanded);
+      if (submenu) {
+        submenu.setAttribute('aria-hidden', String(!expanded));
+      }
+    }
+
+    function initializeNavSections() {
+      document.querySelectorAll('.nav-section-toggle').forEach((toggleEl) => {
+        const expanded = toggleEl.getAttribute('aria-expanded') !== 'false';
+        setNavSectionExpanded(toggleEl, expanded);
+      });
+    }
+
+    function setActive(pageKey) {
+      document.querySelectorAll('.nav-link[data-page]').forEach(el => {
+        el.classList.toggle('active', el.dataset.page === pageKey);
+      });
+      document.querySelectorAll('.tab-button').forEach(el => {
+        el.classList.toggle('active', el.dataset.page === pageKey);
+      });
+    }
+
+    function loadPage(pageKey, { updateHash = true } = {}) {
+      const key = PAGES[pageKey] ? pageKey : 'lessons';
+      showLoading(true);
+      setActive(key);
+
+      // 蜷御ｸ繝輔か繝ｫ繝謖・ｮ壹・逶ｸ蟇ｾ繝代せ + 隰帛ｸｫ蜷阪ヱ繝ｩ繝｡繝ｼ繧ｿ
+      const teacherName = getLoginName();
+      let url = PAGES[key].file;
+      if (teacherName && key !== 'non-class-work-search') {
+        url += (url.includes('?') ? '&' : '?') + 'teacher=' + encodeURIComponent(teacherName);
+      }
+      if (key === 'work') {
+        url += (url.includes('?') ? '&' : '?') + 'theme=admin';
+        const department = getPrimaryScope('department');
+        if (department) {
+          url += '&department=' + encodeURIComponent(department);
+        }
+      }
+      iframe.src = url;
+
+      if (updateHash) {
+        history.replaceState(null, '', '#' + key);
+      }
+    }
+
+    // iframe 隱ｭ縺ｿ霎ｼ縺ｿ螳御ｺ・〒繝ｭ繝ｼ繝・ぅ繝ｳ繧ｰOFF
+    iframe.addEventListener('load', () => showLoading(false));
+
+    // 繧ｯ繝ｪ繝・け縺ｧ蛻・崛・医し繧､繝峨ヰ繝ｼ / 繝｢繝舌う繝ｫ繧ｿ繝厄ｼ・    document.addEventListener('click', (e) => {
+      const sectionToggle = e.target.closest('.nav-section-toggle[data-nav-toggle]');
+      if (sectionToggle) {
+        e.preventDefault();
+        const expanded = sectionToggle.getAttribute('aria-expanded') === 'true';
+        setNavSectionExpanded(sectionToggle, !expanded);
+        return;
+      }
+
+      const nav = e.target.closest('[data-page]');
+      if (!nav) return;
+      const pageKey = nav.dataset.page;
+      if (!pageKey) return;
+      e.preventDefault();
+      loadPage(pageKey);
+    });
+
+
+    if (openLoginModal) {
+      openLoginModal.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (isLoggedIn) {
+          logout();
+        } else {
+          openLogin();
+        }
+      });
+    }
+    document.querySelectorAll('.js-open-login').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (isLoggedIn) {
+          logout();
+        } else {
+          openLogin();
+        }
+      });
+    });
+    if (closeLoginModal) {
+      closeLoginModal.addEventListener('click', (e) => {
+        e.preventDefault();
+        closeLogin();
+      });
+    }
+    if (loginModal) {
+      loginModal.addEventListener('click', (e) => {
+        if (e.target === loginModal) {
+          closeLogin();
+        }
+      });
+    }
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        closeLogin();
+      }
+    });
+    // 蛻晄悄陦ｨ遉ｺ・啅RL縺ｮ # 縺ｫ蜷医ｏ縺帙ｋ・・lessons / #work / #absence・・    (function init() {
+      const hash = (location.hash || '').replace('#', '').trim();
+      const nameEl = document.querySelector('.user-name');
+      if (nameEl) {
+        const storedName = getStoredName();
+        nameEl.textContent = formatDisplayName(storedName);
+      }
+      initializeNavSections();
+      loadPage(hash || 'lessons', { updateHash: true });
+      refreshUserName({ redirectOnFail: true });
+
+      // Init Ripple Effects
+      const createRipple = (event) => {
+        const button = event.currentTarget;
+        const circle = document.createElement("span");
+        const diameter = Math.max(button.clientWidth, button.clientHeight);
+        const radius = diameter / 2;
+
+        circle.style.width = circle.style.height = `${diameter}px`;
+        circle.style.left = `${event.clientX - button.getBoundingClientRect().left - radius}px`;
+        circle.style.top = `${event.clientY - button.getBoundingClientRect().top - radius}px`;
+        circle.classList.add("ripple");
+
+        const existingRipple = button.getElementsByClassName("ripple")[0];
+        if (existingRipple) {
+          existingRipple.remove();
+        }
+
+        button.appendChild(circle);
+      };
+
+      const buttons = document.querySelectorAll(".nav-link, .tab-button, .login-button");
+      buttons.forEach((btn) => {
+        btn.addEventListener("click", createRipple);
+      });
+    })();
+  </script>
+</body>
+
+</html>
+
+

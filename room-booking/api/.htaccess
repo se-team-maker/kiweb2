@@ -1,0 +1,13 @@
+# API用 .htaccess
+# /api/ へのアクセスで index.php を実行
+DirectoryIndex index.php
+
+# ディレクトリ一覧を無効化
+Options -Indexes
+
+# JSON レスポンスのための CORS ヘッダー（必要に応じて）
+<IfModule mod_headers.c>
+    Header set Access-Control-Allow-Origin "*"
+    Header set Access-Control-Allow-Methods "GET, POST, OPTIONS"
+    Header set Access-Control-Allow-Headers "Content-Type"
+</IfModule>

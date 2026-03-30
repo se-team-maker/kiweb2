@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>講師業務実施申告フォーム</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-top: 10px;
+        }
+        input {
+            margin-bottom: 10px;
+            padding: 5px;
+        }
+        input[type="submit"] {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        input[type="submit"]:hover {
+            background-color: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <h1>講師業務実施申告フォーム</h1>
+    <form id="teacherForm" method="get" action="<?= getScriptUrl(); ?>">
+        <label for="teacherName">講師氏名:</label>
+        <input type="text" id="teacherName" name="teacherName" required>
+        
+        <label for="startDate">期間開始日:</label>
+        <input type="date" id="startDate" name="startDate" required>
+        
+        <label for="endDate">期間終了日:</label>
+        <input type="date" id="endDate" name="endDate" required>
+        
+        <input type="submit" value="送信">
+    </form>
+</body>
+</html>

@@ -1,0 +1,356 @@
+/**
+ * @fileoverview ユーザーアカウント情報をスプレッドシートに同期するWebhookレシーバー。
+ *
+ * 主な機能:
+ *   - `user_created` イベントを受信し、ユーザー情報をシートに登録または更新する
+ *   - 既存ユーザーを一括でシートへ反映するバックフィル機能を提供する
+ *   - シートが存在しない場合は自動で作成し、ヘッダー行も初期化する
+ *
+ * 対象スプレッドシート: アカウント一覧シート
+ * 関連エンドポイント: backfill-users-to-sheet.php
+ */
+
+/** @const {string} アカウント一覧を管理するスプレッドシートのID。 */
+const SPREADSHEET_ID = '1LyEWa1qi_8vM3nZ-AoBcaMkuT0Ech-H32Mn2tPU2tyY';
+
+/** @const {string} 書き込み対象のシート名。 */
+const SHEET_NAME = 'アカウント一覧';
+
+/**
+ * @const {string} 既存ユーザーを一括反映するバックフィルAPIのエンドポイント。
+ * manualBackfillUsers() および resetAndBackfillUsers() から呼び出される。
+ */
+const BACKFILL_URL =
+  'https://system.kyotoijuku.com/kiweb/teacher-auth/api/internal/backfill-users-to-sheet.php';
+
+/** @const {string} バックフィルAPIの認証トークン。クエリパラメータ経由で送信する。 */
+const BACKFILL_TOKEN = '8d7b6d8429834c7da7fd673abf9c98ad';
+
+/**
+ * WebhookからのPOSTリクエストを受け取るエントリーポイント。
+ *
+ * 受信したデータの内容を確認し、ユーザー情報がシートに存在する場合は更新、
+ * 存在しない場合は新規登録する（upsert）。
+ *
+ * 期待するペイロード例:
+ * ```json
+ * {
+ *   "event": "user_created",
+ *   "occurred_at": "2025-01-01T00:00:00Z",
+ *   "user": { "id": 1, "name": "山田太郎", ... }
+ * }
+ * ```
+ *
+ * @param {GoogleAppsScript.Events.DoPost} e POSTイベントオブジェクト。
+ * @return {GoogleAppsScript.Content.TextOutput} 処理結果を示すJSONレスポンス。
+ */
+function doPost(e) {
+  try {
+    if (!e || !e.postData || !e.postData.contents) {
+      return jsonResponse({ ok: false, error: 'empty body' });
+    }
+
+    const payload = JSON.parse(e.postData.contents);
+
+    if (payload.event !== 'user_created' || !payload.user || !payload.user.id) {
+      return jsonResponse({ ok: false, error: 'invalid payload' });
+    }
+
+    upsertUser_(payload.user, payload.occurred_at);
+
+    return jsonResponse({ ok: true, user_id: payload.user.id });
+  } catch (error) {
+    return jsonResponse({ ok: false, error: error.message });
+  }
+}
+
+/**
+ * 【手動実行用】既存ユーザーを一括でスプレッドシートへ反映する。
+ *
+ * Apps Scriptエディタから直接実行することを想定している。
+ * バックフィルAPIを呼び出し、サーバー側で全ユーザーの同期処理を行う。
+ * シートの初期化は行わないため、差分追加・上書きのみ実施される。
+ *
+ * 認証トークンはAuthorizationヘッダーではなく、クエリパラメータ経由で送信する。
+ * （GASからのリクエストではヘッダーが正しく送信されないケースがあるため）
+ *
+ * @return {Object} APIから返却されたレスポンスボディ。
+ * @throws {Error} API呼び出しが失敗した場合、またはレスポンスのパースに失敗した場合。
+ */
+function manualBackfillUsers() {
+  // トークンをクエリパラメータに付与してURLを組み立てる。
+  const url = BACKFILL_URL + '?token=' + encodeURIComponent(BACKFILL_TOKEN);
+
+  const response = UrlFetchApp.fetch(url, {
+    method: 'post',
+    muteHttpExceptions: true
+  });
+
+  const bodyText = response.getContentText();
+  let body;
+
+  try {
+    body = JSON.parse(bodyText);
+  } catch (error) {
+    throw new Error('API response parse failed: ' + bodyText);
+  }
+
+  if (!body.success) {
+    throw new Error('Backfill failed: ' + bodyText);
+  }
+
+  // API から受け取ったユーザー一覧をシートへ一括書き込みする。
+  if (Array.isArray(body.users) && body.users.length > 0) {
+    bulkUpsertUsers_(body.users);
+  }
+
+  Logger.log({
+    total: body.total,
+    written: (body.users || []).length,
+    failed: body.failed,
+    failed_ids: body.failed_ids,
+  });
+
+  return body;
+}
+
+/**
+ * 【手動実行用】シートのデータ行を全件削除したうえで、ユーザー情報を再同期する。
+ *
+ * スプレッドシートの内容が古くなった場合や、データ不整合が発生した際の
+ * リセット手段として使用する。ヘッダー行は保持される。
+ *
+ * 注意: 実行するとシートの既存データがすべて消去されるため、慎重に使用すること。
+ *
+ * @return {Object} manualBackfillUsers() の戻り値と同様。
+ */
+function resetAndBackfillUsers() {
+  const sheet = getSheet_();
+  ensureHeader_(sheet);
+  clearDataRows_(sheet);
+  return manualBackfillUsers();
+}
+
+/**
+ * ユーザー情報をシートに登録または更新する（upsert）。
+ * ユーザーIDをキーとして既存行を検索し、存在すれば上書き、なければ末尾に追加する。
+ *
+ * @param {Object} user ユーザー情報オブジェクト。
+ * @param {string|undefined} occurredAt イベント発生日時（ISO 8601形式）。
+ *     未指定の場合は現在時刻で代替する。
+ * @private
+ */
+function upsertUser_(user, occurredAt) {
+  const sheet = getSheet_();
+  ensureHeader_(sheet);
+
+  const rowValues = [
+    user.id || '',
+    user.name || '',
+    user.email || '',
+    mapStatus_(user.status),
+    user.email_verified_at ? '済' : '未',
+    Array.isArray(user.roles) ? user.roles.join(' / ') : '',
+    formatScopes_(user.scopes),
+    user.created_at || '',
+    user.updated_at || '',
+    // イベントタイムスタンプが欠落している場合は現在時刻で代替する。
+    occurredAt || new Date().toISOString(),
+  ];
+
+  const targetRow = findRowByUserId_(sheet, user.id);
+
+  // 既存行があれば上書き、なければ末尾に追加（upsert）。
+  if (targetRow > 0) {
+    sheet.getRange(targetRow, 1, 1, rowValues.length).setValues([rowValues]);
+  } else {
+    sheet.appendRow(rowValues);
+  }
+}
+
+/**
+ * 複数ユーザーをシートへ一括で書き込む。
+ *
+ * バックフィルAPIから受け取ったユーザー配列をまとめてシートに反映する。
+ * 既存行がある場合は上書き、ない場合は末尾にまとめて追加する（upsert）。
+ * setValues() を使ったバッチ書き込みにより、1件ずつ appendRow するよりも
+ * 大幅に高速化される。
+ *
+ * @param {Object[]} users ユーザー情報オブジェクトの配列。
+ * @private
+ */
+function bulkUpsertUsers_(users) {
+  const sheet = getSheet_();
+  ensureHeader_(sheet);
+
+  const now = new Date().toISOString();
+
+  // 既存のユーザーIDマップを作成（高速検索用）。
+  const lastRow = sheet.getLastRow();
+  const existingIdMap = {};
+  if (lastRow >= 2) {
+    const ids = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+    for (let i = 0; i < ids.length; i++) {
+      existingIdMap[String(ids[i][0])] = i + 2; // 行番号（1始まり）
+    }
+  }
+
+  const newRows = [];
+
+  for (const user of users) {
+    const rowValues = [
+      user.id || '',
+      user.name || '',
+      user.email || '',
+      mapStatus_(user.status),
+      user.email_verified_at ? '済' : '未',
+      Array.isArray(user.roles) ? user.roles.join(' / ') : '',
+      formatScopes_(user.scopes),
+      user.created_at || '',
+      user.updated_at || '',
+      now,
+    ];
+
+    const existingRow = existingIdMap[String(user.id)];
+    if (existingRow) {
+      // 既存行を上書き。
+      sheet.getRange(existingRow, 1, 1, rowValues.length).setValues([rowValues]);
+    } else {
+      // 新規ユーザーはまとめて追加。
+      newRows.push(rowValues);
+    }
+  }
+
+  // 新規行をバッチで一括追加。
+  if (newRows.length > 0) {
+    const startRow = sheet.getLastRow() + 1;
+    sheet.getRange(startRow, 1, newRows.length, newRows[0].length).setValues(newRows);
+  }
+}
+
+/**
+ * 対象シートを取得する。シートが存在しない場合は新規作成して返す。
+ *
+ * @return {GoogleAppsScript.Spreadsheet.Sheet}
+ * @private
+ */
+function getSheet_() {
+  const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+  return ss.getSheetByName(SHEET_NAME) || ss.insertSheet(SHEET_NAME);
+}
+
+/**
+ * シートが空の場合のみヘッダー行を書き込む。
+ * データが既に存在する場合は何もしない（冪等）。
+ *
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
+ * @private
+ */
+function ensureHeader_(sheet) {
+  if (sheet.getLastRow() > 0) return;
+
+  sheet.appendRow([
+    '管理ID',
+    '氏名',
+    'メールアドレス',
+    'ステータス',
+    'メール認証済み',
+    '役職',
+    'スコープ',
+    '登録日',
+    '更新日',
+    '反映日時',
+  ]);
+}
+
+/**
+ * ヘッダー行（1行目）を残して、データ行を全件削除する。
+ * resetAndBackfillUsers() の前処理として使用する。
+ *
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
+ * @private
+ */
+function clearDataRows_(sheet) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow <= 1) return; // データ行が存在しない場合は何もしない。
+  sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).clearContent();
+}
+
+/**
+ * A列からユーザーIDに一致する行を探し、1始まりの行番号を返す。
+ * ヘッダー行（1行目）はスキップして2行目から検索する。
+ *
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
+ * @param {string|number} userId 検索するユーザーID。
+ * @return {number} 一致した行番号（1始まり）。見つからない場合は -1。
+ * @private
+ */
+function findRowByUserId_(sheet, userId) {
+  const lastRow = sheet.getLastRow();
+  if (lastRow < 2) return -1;
+
+  const values = sheet.getRange(2, 1, lastRow - 1, 1).getValues();
+  for (let i = 0; i < values.length; i++) {
+    if (String(values[i][0]) === String(userId)) {
+      return i + 2; // +2 = 0始まりのインデックス補正 + スキップしたヘッダー行分
+    }
+  }
+  return -1;
+}
+
+/**
+ * 英語のステータスコードを日本語の表示ラベルに変換する。
+ * マッピングに存在しない値はそのまま返す。
+ *
+ * @param {string} status ペイロードから取得した生のステータス文字列。
+ * @return {string} 日本語ラベル。未定義の場合は元の値または空文字。
+ * @private
+ */
+function mapStatus_(status) {
+  const STATUS_LABELS = {
+    active: '有効',
+    locked: 'ロック',
+    deleted: '削除',
+  };
+  return STATUS_LABELS[status] || status || '';
+}
+
+/**
+ * scopesオブジェクトを人間が読みやすい文字列に変換する。
+ * 各キーとその値をペアにして " / " で連結する。
+ *
+ * 出力例: "read: posts, comments / write: posts"
+ *
+ * @param {Object<string, Array<string>>|null|undefined} scopes
+ * @return {string} フォーマット済みのスコープ文字列。入力が不正な場合は空文字。
+ * @private
+ */
+function formatScopes_(scopes) {
+  if (!scopes || typeof scopes !== 'object') return '';
+
+  const parts = [];
+  Object.keys(scopes).forEach((key) => {
+    const values = Array.isArray(scopes[key]) ? scopes[key] : [];
+    if (values.length > 0) {
+      parts.push(key + ': ' + values.join(', '));
+    }
+  });
+
+  return parts.join(' / ');
+}
+
+/**
+ * JSONレスポンスを組み立てて返す。
+ *
+ * 注意: Apps Script の ContentService はカスタムHTTPステータスコードに
+ * 対応していないため、エラー時もHTTP 200で返却される。
+ * 呼び出し元は `ok` フィールドで成否を判定すること。
+ *
+ * @param {Object} obj レスポンスとして返すオブジェクト。
+ * @return {GoogleAppsScript.Content.TextOutput}
+ */
+function jsonResponse(obj) {
+  return ContentService
+    .createTextOutput(JSON.stringify(obj))
+    .setMimeType(ContentService.MimeType.JSON);
+}

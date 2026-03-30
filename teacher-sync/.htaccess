@@ -1,0 +1,12 @@
+Options -Indexes
+
+<Files ".env">
+    Require all denied
+</Files>
+
+<IfModule !mod_authz_core.c>
+    <Files ".env">
+        Order allow,deny
+        Deny from all
+    </Files>
+</IfModule>

@@ -1,0 +1,1706 @@
+
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>授業以外の業務実施申告 3.0</title>
+    <style>
+        :root {
+            --theme-primary: #AF1E2B;
+            --theme-primary-hover: #8F141F;
+            --theme-on-primary: #ffffff;
+            --theme-primary-container: #FFD9DD;
+            --theme-on-primary-container: #400009;
+            --theme-secondary-container: #FFD8DC;
+            --theme-background: #FFF4F5;
+            --theme-surface: #FFF7F8;
+            --theme-surface-alt: #FFF0F2;
+            --theme-text: #291819;
+            --theme-text-muted: #5C4346;
+            --theme-outline: #E3C4C7;
+            --theme-outline-strong: #8F7275;
+            --theme-shadow: 0 18px 42px rgba(64, 0, 9, 0.14);
+            --theme-shadow-strong: 0 14px 28px rgba(64, 0, 9, 0.18);
+            --theme-focus: rgba(175, 30, 43, 0.16);
+            --theme-font: 'Helvetica Neue', Arial, 'Hiragino Kaku Gothic ProN', 'Hiragino Sans', Meiryo, sans-serif;
+            --theme-radius-small: 12px;
+            --theme-radius-medium: 18px;
+            --theme-radius-large: 24px;
+        }
+
+        body[data-theme="fulltime"] {
+            --theme-primary: #0F3568;
+            --theme-primary-hover: #0B2A53;
+            --theme-on-primary: #ffffff;
+            --theme-primary-container: #D6E3FF;
+            --theme-on-primary-container: #001B3F;
+            --theme-secondary-container: #D8E4FF;
+            --theme-background: #F3F7FF;
+            --theme-surface: #F8FAFF;
+            --theme-surface-alt: #E9F0FF;
+            --theme-text: #141D2C;
+            --theme-text-muted: #3F4858;
+            --theme-outline: #C0C8D7;
+            --theme-outline-strong: #6F7788;
+            --theme-shadow: 0 18px 42px rgba(0, 27, 63, 0.14);
+            --theme-shadow-strong: 0 14px 28px rgba(0, 27, 63, 0.18);
+            --theme-focus: rgba(15, 53, 104, 0.16);
+        }
+
+        body[data-theme="admin"] {
+            --theme-primary: #844FC1;
+            --theme-primary-hover: #68389D;
+            --theme-on-primary: #ffffff;
+            --theme-primary-container: #F0DBFF;
+            --theme-on-primary-container: #2F0054;
+            --theme-secondary-container: #EADCFD;
+            --theme-background: #FBF7FF;
+            --theme-surface: #FFFBFF;
+            --theme-surface-alt: #F6EEFF;
+            --theme-text: #22182A;
+            --theme-text-muted: #52435F;
+            --theme-outline: #D4C2E8;
+            --theme-outline-strong: #826D96;
+            --theme-shadow: 0 18px 42px rgba(47, 0, 84, 0.14);
+            --theme-shadow-strong: 0 14px 28px rgba(47, 0, 84, 0.18);
+            --theme-focus: rgba(132, 79, 193, 0.16);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--theme-font);
+            font-size: 18px;
+            line-height: 1.5;
+            width: 100%;
+            max-width: none;
+            margin: 0;
+            padding: 24px 18px 40px;
+            background:
+                radial-gradient(circle at top, var(--theme-primary-container) 0, transparent 32%),
+                linear-gradient(180deg, var(--theme-background) 0%, var(--theme-surface) 100%);
+            color: var(--theme-text);
+        }
+
+        .page-shell {
+            width: 100%;
+            max-width: 1180px;
+            margin: 0 auto;
+        }
+
+        .page-layout {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .form-container {
+            width: 100%;
+            max-width: 100%;
+            margin: 0 auto;
+            padding: 18px;
+            background-color: var(--theme-surface);
+            border: 1px solid var(--theme-outline);
+            border-radius: var(--theme-radius-large);
+            box-shadow: var(--theme-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        h1 {
+            margin: 0 0 16px 0;
+            padding: 18px 14px;
+            border-radius: var(--theme-radius-medium);
+            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%);
+            color: var(--theme-on-primary);
+            text-align: center;
+            font-size: 1.3rem;
+            line-height: 1.35;
+            letter-spacing: 0.01em;
+            box-shadow: var(--theme-shadow-strong);
+        }
+
+        form {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-shortcut {
+            margin-bottom: 6px;
+            padding: 10px 12px;
+            background: linear-gradient(90deg, var(--theme-primary-container) 0%, rgba(255, 255, 255, 0) 100%);
+            border-left: 4px solid var(--theme-primary);
+            border-radius: 10px;
+        }
+
+        .view-records-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            max-width: 100%;
+            color: #0000ee;
+            font-size: 0.98rem;
+            font-weight: 700;
+            line-height: 1.5;
+            text-decoration: underline;
+            text-decoration-thickness: 2px;
+            text-underline-offset: 0.2em;
+            transition: color 0.2s ease, text-decoration-color 0.2s ease;
+        }
+
+        .view-records-link:visited {
+            color: #0000ee;
+        }
+
+        .view-records-link::after {
+            content: ">";
+            flex: 0 0 auto;
+            font-size: 0.9em;
+            text-decoration: none;
+        }
+
+        .view-records-link:hover {
+            color: #0000ee;
+            text-decoration-color: #0000ee;
+        }
+
+        .view-records-link:focus-visible {
+            outline: none;
+            border-radius: 6px;
+            box-shadow: 0 0 0 4px var(--theme-focus);
+        }
+
+        label {
+            font-weight: 700;
+            font-size: 0.94rem;
+            color: var(--theme-text);
+        }
+
+        label font {
+            color: var(--theme-primary);
+        }
+
+        input[type="text"],
+        input[type="email"],
+        input[type="date"],
+        input[type="time"],
+        input[type="password"],
+        select,
+        textarea {
+            width: 100%;
+            padding: 12px 14px;
+            font-size: 1rem;
+            font-family: inherit;
+            color: var(--theme-text);
+            background-color: #ffffff;
+            border: 1px solid var(--theme-outline);
+            border-radius: var(--theme-radius-small);
+            transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="email"]:focus,
+        input[type="date"]:focus,
+        input[type="time"]:focus,
+        input[type="password"]:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            border-color: var(--theme-primary);
+            box-shadow: 0 0 0 4px var(--theme-focus);
+        }
+
+        /* 氏名欄（編集不可）のグレーアウト - 実施申告と同じデザイン、文字は濃く保つ */
+        #name[readonly] {
+            background-color: #EEEEEE !important;
+            border-color: #CCCCCC !important;
+            color: var(--theme-text, #291819) !important;
+            cursor: not-allowed;
+        }
+
+        textarea {
+            min-height: 112px;
+            resize: vertical;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .radio-group label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 14px;
+            font-weight: 400;
+            font-size: 1rem;
+            background-color: #ffffff;
+            border: 1px solid var(--theme-outline);
+            border-radius: var(--theme-radius-small);
+        }
+
+        .radio-group input[type="radio"] {
+            flex: 0 0 auto;
+            width: auto;
+            margin: 0;
+            transform: scale(1.15);
+            accent-color: var(--theme-primary);
+        }
+
+        .time-display {
+            padding: 12px 14px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--theme-text);
+            background-color: var(--theme-surface-alt);
+            border: 1px solid var(--theme-outline);
+            border-radius: var(--theme-radius-small);
+        }
+
+        .notice-column {
+            margin-top: 0;
+            order: -1;
+        }
+
+        .info-notice {
+            margin: 0;
+            padding: 16px;
+            background-color: var(--md-sys-color-surface-container, #f5f5f5);
+            border: 1px solid var(--md-sys-color-outline-variant, #e0e0e0);
+            border-radius: var(--md-sys-shape-corner-medium, 12px);
+            box-shadow: var(--md-sys-elevation-1, 0 1px 3px rgba(0, 0, 0, 0.08));
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #2f2f2f;
+        }
+
+        .info-notice-summary {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 700;
+            color: #c62828;
+            list-style: none;
+        }
+
+        .info-notice-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .info-notice-summary-title {
+            font-size: 1.2rem;
+        }
+
+        .info-notice-summary-note {
+            font-size: 0.9rem;
+            color: #7a1f1f;
+        }
+
+        .info-notice[open] .info-notice-summary {
+            margin-bottom: 10px;
+        }
+
+        .info-notice-title {
+            display: none;
+            margin: 0 0 8px;
+            font-size: 1.1rem;
+            color: #c62828;
+        }
+
+        .info-notice-lead {
+            display: none;
+            margin: 0 0 12px;
+            font-size: 0.9rem;
+            color: #555;
+        }
+
+        .info-notice-body {
+            margin: 0;
+        }
+
+        .info-notice ol {
+            margin: 0;
+            padding-left: 20px;
+        }
+
+        .info-notice ul {
+            margin: 4px 0 0;
+            padding-left: 16px;
+        }
+
+        .info-notice li {
+            margin-bottom: 12px;
+        }
+
+        .info-notice::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .info-notice::-webkit-scrollbar-thumb {
+            background: #c0c0c0;
+            border-radius: 3px;
+        }
+
+        .date-control {
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 10px;
+            width: 100%;
+        }
+
+        .date-display {
+            width: 100%;
+            padding: 14px 12px;
+            text-align: center;
+            font-size: 1.12rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            color: var(--theme-text);
+            background-color: var(--theme-surface-alt);
+            border: 1px solid var(--theme-outline);
+            border-radius: var(--theme-radius-small);
+        }
+
+        .date-buttons {
+            display: flex;
+            gap: 8px;
+            width: 100%;
+        }
+
+        .custom-time-input[readonly] {
+            cursor: pointer;
+            background-color: #ffffff;
+            font-variant-numeric: tabular-nums;
+        }
+
+        .custom-time-input[readonly]:focus {
+            outline: none;
+        }
+
+        .timepicker-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 2100;
+            background: rgba(0, 0, 0, 0.66);
+            align-items: center;
+            justify-content: center;
+            padding: 18px;
+        }
+
+        .timepicker-overlay.is-open {
+            display: flex;
+        }
+
+        .timepicker-modal {
+            width: 100%;
+            max-width: 460px;
+            background: #ffffff;
+            border: 1px solid var(--theme-outline);
+            border-radius: var(--theme-radius-medium);
+            box-shadow: var(--theme-shadow-strong);
+            overflow: hidden;
+        }
+
+        .timepicker-header {
+            padding: 14px 12px;
+            text-align: center;
+            font-weight: 800;
+            color: var(--theme-on-primary);
+            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%);
+        }
+
+        .timepicker-body {
+            padding: 16px;
+            background: var(--theme-surface);
+        }
+
+        .timepicker-wheels {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .timewheel {
+            padding: 12px;
+            border: 1px solid var(--theme-outline);
+            border-radius: var(--theme-radius-small);
+            background: var(--theme-surface-alt);
+            text-align: center;
+        }
+
+        .timewheel-label {
+            margin-bottom: 8px;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: var(--theme-text-muted);
+        }
+
+        .timewheel-main {
+            display: grid;
+            gap: 10px;
+        }
+
+        .timewheel-step-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            align-items: stretch;
+        }
+
+        .timewheel-btn {
+            border: 1px solid var(--theme-outline);
+            background: #ffffff;
+            color: var(--theme-text);
+            border-radius: 10px;
+            min-height: 40px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+        }
+
+        .timewheel-btn--main {
+            min-height: 54px;
+            font-size: 1.24rem;
+            font-weight: 800;
+        }
+
+        .timewheel-btn--sub {
+            min-height: 36px;
+            font-size: 0.86rem;
+            color: var(--theme-text-muted);
+        }
+
+        .timewheel-btn:hover {
+            background: var(--theme-primary-container);
+            border-color: var(--theme-outline-strong);
+        }
+
+        .timewheel-btn:active {
+            transform: translateY(1px);
+        }
+
+        .timewheel-value {
+            margin: 0;
+            padding: 12px 0;
+            background: #ffffff;
+            border: 2px solid var(--theme-primary-container);
+            border-radius: 12px;
+            font-size: 2.05rem;
+            font-weight: 800;
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+        }
+
+        .timepicker-hint {
+            margin-top: 10px;
+            text-align: center;
+            font-size: 0.82rem;
+            color: var(--theme-text-muted);
+        }
+
+        .timepicker-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            padding: 14px 16px 16px;
+            border-top: 1px solid var(--theme-outline);
+            background: #ffffff;
+        }
+
+        .submit-overlay {
+            position: absolute;
+            inset: 0;
+            display: none;
+            background: rgba(255, 255, 255, 0.8);
+            z-index: 30;
+        }
+
+        .submit-overlay.is-active {
+            display: block;
+        }
+
+        .submit-status {
+            position: absolute;
+            inset: 0;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            z-index: 40;
+            pointer-events: none;
+        }
+
+        .submit-status.is-active {
+            display: flex;
+        }
+
+        .submit-status-card {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            min-width: 180px;
+            padding: 22px 26px;
+            border: 1px solid var(--theme-outline);
+            border-radius: 24px;
+            background: rgba(255, 255, 255, 0.94);
+            box-shadow: var(--theme-shadow-strong);
+            color: var(--theme-primary);
+            text-align: center;
+        }
+
+        .submit-status .loading-spinner {
+            width: 64px;
+            height: 64px;
+            animation: work-submit-rotator 1.4s linear infinite;
+            flex: 0 0 64px;
+            display: block;
+        }
+
+        .submit-status .loading-spinner-path {
+            stroke: var(--theme-primary);
+            stroke-dasharray: 187;
+            stroke-dashoffset: 0;
+            transform-origin: center;
+            animation: work-submit-dash 1.4s ease-in-out infinite;
+        }
+
+        .submit-status .loading-text {
+            font-size: 1.02rem;
+            font-weight: 700;
+            letter-spacing: 0.01em;
+        }
+
+        @keyframes work-submit-rotator {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(270deg);
+            }
+        }
+
+        @keyframes work-submit-dash {
+            0% {
+                stroke-dashoffset: 187;
+            }
+
+            50% {
+                stroke-dashoffset: 46.75;
+                transform: rotate(135deg);
+            }
+
+            100% {
+                stroke-dashoffset: 187;
+                transform: rotate(450deg);
+            }
+        }
+
+        .timepicker-cancel,
+        .timepicker-now,
+        .timepicker-confirm {
+            min-height: 42px;
+            border-radius: 10px;
+            border: none;
+            font-size: 0.96rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+
+        .timepicker-cancel {
+            color: var(--theme-text);
+            background: #e9ecef;
+        }
+
+        .timepicker-cancel:hover {
+            background: #dfe3e7;
+        }
+
+        .timepicker-now {
+            color: var(--theme-text);
+            background: var(--theme-primary-container);
+        }
+
+        .timepicker-now:hover {
+            filter: brightness(0.98);
+        }
+
+        .timepicker-confirm {
+            color: var(--theme-on-primary);
+            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%);
+        }
+
+        .timepicker-confirm:hover {
+            filter: brightness(1.06);
+        }
+
+        .date-control button,
+        .submit-button {
+            border: none;
+            cursor: pointer;
+            color: var(--theme-on-primary);
+            background: linear-gradient(135deg, var(--theme-primary) 0%, var(--theme-primary-hover) 100%);
+            transition: transform 0.2s ease, filter 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .date-control button {
+            padding: 11px 8px;
+            border-radius: var(--theme-radius-small);
+            flex: 1;
+            white-space: nowrap;
+            font-size: 0.88rem;
+            box-shadow: 0 8px 18px rgba(0, 0, 0, 0.12);
+        }
+
+        .date-control button:hover,
+        .submit-button:hover {
+            filter: brightness(1.06);
+        }
+
+        .date-control button:active,
+        .submit-button:active {
+            transform: translateY(1px);
+        }
+
+        .submit-button {
+            display: block;
+            width: 100%;
+            margin: 8px 0 0;
+            padding: 15px 0;
+            font-size: 1.15rem;
+            font-weight: 700;
+            text-align: center;
+            text-decoration: none;
+            border-radius: 16px;
+            box-shadow: var(--theme-shadow-strong);
+        }
+
+        .submit-button[disabled] {
+            cursor: wait;
+            opacity: 0.8;
+            filter: none;
+            transform: none;
+            box-shadow: 0 10px 22px rgba(0, 0, 0, 0.16);
+        }
+
+        a {
+            color: var(--theme-primary);
+        }
+
+        a:hover {
+            color: var(--theme-primary-hover);
+        }
+
+        #cat-paw-button {
+            width: 200px;
+            height: 200px;
+            cursor: pointer;
+            display: block;
+            margin: 20px auto;
+        }
+
+        #cat-paw-button:hover {
+            filter: brightness(1.1);
+        }
+
+        @media (min-width: 1024px) {
+            .page-layout {
+                display: grid;
+                grid-template-columns: minmax(0, 1fr) 360px;
+                gap: 22px;
+                align-items: start;
+            }
+
+            .notice-column {
+                order: 0;
+                margin-top: 0;
+                position: sticky;
+                top: 20px;
+            }
+
+            .info-notice {
+                max-height: calc(100vh - 40px);
+                overflow-y: auto;
+            }
+
+            .info-notice[open] .info-notice-summary {
+                display: none;
+            }
+
+            .info-notice[open] .info-notice-title,
+            .info-notice[open] .info-notice-lead {
+                display: block;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                font-size: 14px;
+                padding: 14px 10px 28px;
+            }
+
+            .form-container {
+                padding: 14px;
+                border-radius: 20px;
+            }
+
+            h1 {
+                font-size: 1.16rem;
+                padding: 16px 12px;
+            }
+
+            input,
+            select,
+            textarea {
+                font-size: 16px;
+            }
+
+            label {
+                font-size: 14px;
+            }
+
+            .radio-group label {
+                align-items: flex-start;
+            }
+
+            .date-display {
+                font-size: 16px;
+                padding: 12px 8px;
+            }
+
+            .date-buttons {
+                gap: 6px;
+            }
+
+            .date-control button {
+                padding: 10px 6px;
+                font-size: 14px;
+            }
+
+            .submit-button {
+                padding: 15px 0;
+                font-size: 18px;
+            }
+
+            .time-display {
+                font-size: 16px;
+            }
+
+            .timepicker-modal {
+                max-width: 390px;
+            }
+
+            .timepicker-body {
+                padding: 12px;
+            }
+
+            .timepicker-wheels {
+                gap: 8px;
+            }
+
+            .timewheel {
+                padding: 10px 8px;
+            }
+
+            .timewheel-value {
+                font-size: 1.8rem;
+            }
+
+            .timewheel-btn {
+                min-height: 34px;
+                font-size: 0.86rem;
+            }
+
+            .timewheel-btn--main {
+                min-height: 46px;
+                font-size: 1.06rem;
+            }
+
+            .timewheel-btn--sub {
+                min-height: 32px;
+                font-size: 0.8rem;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .submit-status .loading-spinner,
+            .submit-status .loading-spinner-path {
+                animation: none;
+            }
+        }
+    </style>
+</head>
+<body data-theme="parttime">
+    <div class="page-shell">
+        <div class="page-layout">
+            <div class="form-container">
+                <h1>授業以外の業務実施申告 （ver.3.1）</h1>
+        
+        
+        <form action="https://script.google.com/macros/s/AKfycbykklCZCo66cwqqJl71UInD1FiottaoXsVCA2cxSd9K6fm27-j5bjGikh3PZtBAA2rj/exec" method="POST" id="timesheet-form">
+            <input type="hidden" name="department" id="department" value="">
+
+            <div class="form-shortcut">
+                <a id="viewWorkRecordsLink" class="view-records-link" href="declaration_of_non_class_work_search_and_view.html">履歴の閲覧はこちらへ</a>
+            </div>
+
+            <div class="form-group" id="name-group">
+                <label for="name">氏名<font color="red">（フルネーム。氏名間空白なし）</font>:</label>
+                <input type="text" id="name" name="name" required readonly>
+            </div>
+
+            <!-- パスワード欄を追加
+            <div class="form-group">
+                <label for="password">パスコード:</label>
+                <input type="password" id="password" name="password" >
+            </div>
+             -->
+            
+            <div class="form-group">
+                <label for="date">日付:</label>
+                <div class="date-control">
+                    <input type="hidden" id="date" name="date" required>
+                    <div id="date_display" class="date-display"></div>
+                    <div class="date-buttons">
+                        <button type="button" id="prevDay"><nobr>1日戻す</nobr></button>
+                        <button type="button" id="todayBtn"><nobr>今日</nobr></button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="start_time">勤務開始時刻:</label>
+                <input type="text" id="start_time" name="start_time" class="custom-time-input" required readonly inputmode="none" placeholder="タップして選択" onchange="calculateTimes()">
+            </div>
+
+            <div class="form-group">
+                <label for="end_time">勤務終了時刻:</label>
+                <input type="text" id="end_time" name="end_time" class="custom-time-input" required readonly inputmode="none" placeholder="タップして選択" onchange="calculateTimes()">
+            </div>
+
+            <div class="form-group">
+                <label for="total_time">総分数:</label>
+                <div id="total_time" class="time-display"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="break_start">休憩開始時刻:</label>
+                <input type="text" id="break_start" name="break_start" class="custom-time-input" readonly inputmode="none" placeholder="タップして選択" onchange="calculateTimes()">
+            </div>
+
+            <div class="form-group">
+                <label for="break_end">休憩終了時刻:</label>
+                <input type="text" id="break_end" name="break_end" class="custom-time-input" readonly inputmode="none" placeholder="タップして選択" onchange="calculateTimes()">
+            </div>
+
+            <div class="form-group">
+                <label for="break_time">休憩分数:</label>
+                <div id="break_time" class="time-display"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="work_time">実質勤務時分数:</label>
+                <div id="work_time" class="time-display"></div>
+            </div>
+
+            <div class="form-group">
+                <label for="work_location">勤務場所:</label>
+                <div class="radio-group">
+                    <label><input type="radio" name="work_location" value="四条烏丸校" required> 四条烏丸校</label>
+                    <label><input type="radio" name="work_location" value="円町校" required> 円町校</label>
+                    <label><input type="radio" name="work_location" value="京大前校" required> 京大前校</label>
+                    <label><input type="radio" name="work_location" value="在宅リモート" required> 在宅リモート</label>
+                    <label><input type="radio" name="work_location" value="社外" required> 社外　<a href="https://forms.gle/Kpy69xGjNNdRWtUw5">特別交通費申請フォーム</a></label>
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="job_type">業務種別:</label>
+                <select id="job_type" name="job_type" required>
+                    <option value="">選択してください</option>
+                    <option value="一般事務">一般事務</option>
+                    <option value="カウンセリング">心理士によるカウンセリング（依頼部署：高卒本部OR現役本部｜指示担当者：各本部長）</option>
+                    <option value="ヘルプデスク">ヘルプデスク</option>
+                    <option value="清掃">清掃</option>
+                    <option value="依頼事務">依頼事務</option>
+                    <option value="集団調整給">集団調整給</option>
+                    <option value="質問対応">質問対応</option>
+                    <option value="生徒キャンセル">生徒キャンセル（依頼部署：高卒本部、現役本部の該当校｜指示担当者：生徒チャンセルを伝えた連絡担当者）</option>
+                    <option value="研修指導">研修指導</option>
+                    <option value="被研修">被研修</option>
+                    <option value="テスト監督">テスト監督</option>
+                    <option value="軽作業">軽作業</option>
+                    <option value="エンジニア">エンジニア</option>
+                    <option value="社外作業">社外作業</option>
+                    <option value="広報協力">広報協力</option>
+                    <option value="特定業務A">特定業務A</option>
+                    <option value="その他">その他</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="requester_department">依頼部署:</label>
+                <select name="requester_department" id="requester_department" required>
+                    <option value="">選択してください</option>
+                    <option value="高卒本部">高卒本部</option>
+                    <option value="現役本部">現役本部-四条烏丸校</option>
+                    <option value="現役本部">現役本部-円町校</option>
+                    <option value="現役本部">現役本部-オンライン校</option>
+                    <option value="経営企画部">経営企画部</option>
+                    <option value="業務推進部">業務推進部</option>
+                    <option value="広報営業課">広報営業課</option>
+                    <option value="人事採用課">人事採用課</option>
+                    <option value="総合受付課">総合受付課</option>
+                    <option value="経理課">経理課</option>
+                    <option value="事務集中課">事務集中課</option>
+                    <option value="総務課">総務課</option>
+                    <option value="講師部">講師部</option>
+                    <option value="講師部執行室">講師部執行室</option>
+                    <option value="英語科">英語科</option>
+                    <option value="数学科">数学科</option>
+                    <option value="化学科">化学科</option>
+                    <option value="生物科">生物科</option>
+                    <option value="物理科">物理科</option>
+                    <option value="国語・社会科">国語・社会科</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="requester">指示担当者（フルネーム。氏名間空白なし）:</label>
+                <input type="text" id="requester" name="requester" required>
+            </div>
+
+            <div class="form-group">
+                <label for="job_description">業務内容:</label>（改行禁止）<br>
+                <textarea id="job_description" name="job_description" rows="4"></textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="remarks">備考:</label>
+                <input type="text" id="remarks" name="remarks">
+            </div>
+
+            <input type="hidden" id="total_time_value" name="total_time_value">
+            <input type="hidden" id="break_time_value" name="break_time_value">
+            <input type="hidden" id="work_time_value" name="work_time_value">
+
+            <!-- おしゃれな送信ボタン -->
+            <button type="submit" class="submit-button">送信</button>
+
+        </form>
+                <div class="submit-overlay" id="submitOverlay" aria-hidden="true"></div>
+                <div class="submit-status" id="submitStatus" role="status" aria-live="polite" aria-hidden="true">
+                    <div class="submit-status-card">
+                        <svg class="loading-spinner" width="64" height="64" viewBox="0 0 66 66" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                            <circle class="loading-spinner-path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+                        </svg>
+                        <span class="loading-text">送信中...</span>
+                    </div>
+                </div>
+            </div>
+            <aside class="notice-column">
+                <details class="info-notice" aria-labelledby="work-record-notice-title">
+                    <summary class="info-notice-summary">
+                        <span class="info-notice-summary-title">記入上の注意事項</span><br>
+                        <span class="info-notice-summary-note">クリックすると表示されます。必ずお読みください。</span>
+                    </summary>
+                    <h2 class="info-notice-title" id="work-record-notice-title">記入上の注意事項</h2>
+                    <p class="info-notice-lead">必ずお読みください。</p>
+                    <div class="info-notice-body">
+                        <ol>
+                            <li><strong>入力について</strong><br>
+                                ・入力は原則として勤務した日のうちに行ってください。<br>
+                                ・勤務日の翌月2日午前9時を過ぎて入力されたものは、支給が勤務日の翌々月となる場合があります。
+                            </li>
+
+                            <li id="notice-name"><strong>氏名入力について</strong><br>
+                                ・氏名はフルネーム（例：山田太郎）で入力してください。<br>
+                                ・姓と名の間にスペースは入れないでください。
+                            </li>
+
+                            <li id="notice-date"><strong>日付入力について</strong><br>
+                                ・実施日を選択してください。<br>
+                            </li>
+
+                            <li id="notice-work-time"><strong>勤務時間入力について</strong><br>
+                                ・勤務開始・終了時刻は、実際に業務を行った時刻を記入してください。<br>
+                                ・時刻入力後、総勤務分数が自動計算されるので確認してください。
+                            </li>
+
+                            <li id="notice-break-time"><strong>休憩時間入力について</strong><br>
+                                ・取得した場合は開始・終了時刻を記入してください。<br>
+                                ・休憩を取っていない場合は空欄のままで構いません（0分になります）。
+                            </li>
+
+                            <li id="notice-work-location"><strong>勤務場所選択について</strong><br>
+                                ・当日実際に勤務した場所を選択してください（例：四条烏丸校）。<br>
+                                ・在宅勤務の場合は「在宅リモート」を選択。<br>
+                                ・交通費が異なる場合は<a href="https://forms.gle/Kpy69xGjNNdRWtUw5">特別交通費申請フォーム</a>で申請してください。
+                            </li>
+
+                            <li id="notice-job-type-dept"><strong>業務種別・依頼部署について</strong><br>
+                                ・主な業務内容に合わせて選択してください。<br>
+                                ・依頼部署と指示担当者の記載ルール：<br>
+                                <ul>
+                                    <li>被研修（合同）：講師部 / 研修担当者名</li>
+                                    <li>被研修（各科研修）：自身の所属部署 / 研修担当者名</li>
+                                    <li>テスト監督（高卒）：高卒本部 / 大迫忠史</li>
+                                    <li>テスト監督（現役）：現役本部 / 佐々木朗洋</li>
+                                    <li>依頼事務（例：採点等）：(依頼部署) / (担当者)</li>
+                                    <li>質問対応（※寺子屋でない）：(所属科) / (上長 ：例)野口剛）</li>
+                                    <li>生徒キャンセル（待機時間分）：総合受付課 / 矢野佑佳</li>
+                                    <li>その他：所属科 / 上長</li>
+                                </ul>
+                                ・不明点は<a href="https://forms.gle/D335uDwQEA4eyzzt7" target="_blank">お問い合わせフォーム</a>へ。
+                            </li>
+
+                            <li id="notice-job-desc-remarks"><strong>業務内容・備考について</strong><br>
+                                ・具体的に簡潔に記入（例：合同研修参加）<br>
+                                ・特記事項がある場合は備考欄へ記載。
+                            </li>
+
+                            <li id="notice-before-submit"><strong>送信前の確認</strong><br>
+                                ・内容に誤りがないか確認してください。
+                            </li>
+
+                            <li><strong>その他</strong><br>
+                                ・面談コメントやマンスリーは授業給に含まれます。<br>
+                                ・システム不具合や入力不明点は<a href="https://forms.gle/D335uDwQEA4eyzzt7" target="_blank">お問い合わせフォーム</a>からご連絡ください。
+                            </li>
+                        </ol>
+                    </div>
+                </details>
+            </aside>
+        </div>
+    </div>
+
+    <div class="timepicker-overlay" id="timePickerOverlay" aria-hidden="true">
+        <div class="timepicker-modal" role="dialog" aria-modal="true" aria-labelledby="timePickerTitle">
+            <div class="timepicker-header" id="timePickerTitle">時刻を選択</div>
+            <div class="timepicker-body">
+                <div class="timepicker-wheels">
+                    <div class="timewheel">
+                        <div class="timewheel-label">時</div>
+                        <div class="timewheel-main">
+                            <button type="button" class="timewheel-btn timewheel-btn--main" id="tpHourUp">+</button>
+                            <div class="timewheel-value" id="tpHourValue">09</div>
+                            <button type="button" class="timewheel-btn timewheel-btn--main" id="tpHourDown">-</button>
+                        </div>
+                    </div>
+                    <div class="timewheel">
+                        <div class="timewheel-label">分</div>
+                        <div class="timewheel-main timewheel-main--minute">
+                            <div class="timewheel-step-row">
+                                <button type="button" class="timewheel-btn timewheel-btn--main" id="tpMinUp5">+5</button>
+                                <button type="button" class="timewheel-btn timewheel-btn--sub" id="tpMinUp1">+1</button>
+                            </div>
+                            <div class="timewheel-value" id="tpMinValue">00</div>
+                            <div class="timewheel-step-row">
+                                <button type="button" class="timewheel-btn timewheel-btn--main" id="tpMinDown5">-5</button>
+                                <button type="button" class="timewheel-btn timewheel-btn--sub" id="tpMinDown1">-1</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="timepicker-hint">分は5分刻み操作に加えて1分単位で微調整できます。</div>
+            </div>
+            <div class="timepicker-buttons">
+                <button type="button" class="timepicker-cancel" id="tpCancel">キャンセル</button>
+                <button type="button" class="timepicker-now" id="tpNow">現在時刻</button>
+                <button type="button" class="timepicker-confirm" id="tpOk">確定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            const dateInput = document.getElementById('date');
+            const dateDisplay = document.getElementById('date_display');
+            const prevDayButton = document.getElementById('prevDay');
+            const todayButton = document.getElementById('todayBtn');
+            const nameInput = document.getElementById('name');
+            const viewWorkRecordsLink = document.getElementById('viewWorkRecordsLink');
+            const timesheetForm = document.getElementById('timesheet-form');
+            const submitButton = timesheetForm ? timesheetForm.querySelector('.submit-button') : null;
+            const submitOverlay = document.getElementById('submitOverlay');
+            const submitStatus = document.getElementById('submitStatus');
+            const noticeContainer = document.querySelector('.info-notice');
+            const desktopMediaQuery = window.matchMedia('(min-width: 1024px)');
+            const reducedMotionMediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+            const submitButtonDefaultText = submitButton ? submitButton.textContent : '送信';
+            let isSubmitting = false;
+
+            const fieldToNoticeMap = {
+                '#name': 'notice-name',
+                '#date_display': 'notice-date',
+                '#prevDay': 'notice-date',
+                '#todayBtn': 'notice-date',
+                '#start_time': 'notice-work-time',
+                '#end_time': 'notice-work-time',
+                '#total_time': 'notice-work-time',
+                '#work_time': 'notice-work-time',
+                '#break_start': 'notice-break-time',
+                '#break_end': 'notice-break-time',
+                '#break_time': 'notice-break-time',
+                'input[name="work_location"]': 'notice-work-location',
+                '#job_type': 'notice-job-type-dept',
+                '#requester_department': 'notice-job-type-dept',
+                '#requester': 'notice-job-type-dept',
+                '#job_description': 'notice-job-desc-remarks',
+                '#remarks': 'notice-job-desc-remarks',
+                '.submit-button': 'notice-before-submit'
+            };
+
+            const noticeSourceSelector = Object.keys(fieldToNoticeMap).join(', ');
+
+            function setSubmitState(active) {
+                if (submitButton) {
+                    submitButton.disabled = active;
+                    submitButton.textContent = active ? '送信中...' : submitButtonDefaultText;
+                    submitButton.setAttribute('aria-disabled', active ? 'true' : 'false');
+                }
+
+                if (submitOverlay) {
+                    submitOverlay.classList.toggle('is-active', active);
+                    submitOverlay.setAttribute('aria-hidden', active ? 'false' : 'true');
+                }
+
+                if (submitStatus) {
+                    submitStatus.classList.toggle('is-active', active);
+                    submitStatus.setAttribute('aria-hidden', active ? 'false' : 'true');
+                }
+
+                if (timesheetForm) {
+                    timesheetForm.setAttribute('aria-busy', active ? 'true' : 'false');
+                }
+            }
+
+            function syncNoticeDisplayMode() {
+                if (!noticeContainer) {
+                    return;
+                }
+
+                if (desktopMediaQuery.matches) {
+                    noticeContainer.setAttribute('open', '');
+                } else {
+                    noticeContainer.removeAttribute('open');
+                    noticeContainer.scrollTop = 0;
+                }
+            }
+
+            syncNoticeDisplayMode();
+            if (typeof desktopMediaQuery.addEventListener === 'function') {
+                desktopMediaQuery.addEventListener('change', syncNoticeDisplayMode);
+            } else if (typeof desktopMediaQuery.addListener === 'function') {
+                desktopMediaQuery.addListener(syncNoticeDisplayMode);
+            }
+
+            function clamp(value, min, max) {
+                return Math.min(Math.max(value, min), max);
+            }
+
+            function resolveNoticeSourceElement(targetNode) {
+                if (!(targetNode instanceof Element)) {
+                    return null;
+                }
+
+                const directTarget = targetNode.closest(noticeSourceSelector);
+                if (directTarget) {
+                    return directTarget;
+                }
+
+                const forLabel = targetNode.closest('label[for]');
+                if (forLabel) {
+                    const linkedId = forLabel.getAttribute('for');
+                    if (linkedId) {
+                        const linkedElement = document.getElementById(linkedId);
+                        if (linkedElement && linkedElement.matches(noticeSourceSelector)) {
+                            return linkedElement;
+                        }
+                    }
+                }
+
+                const workLocationLabel = targetNode.closest('label');
+                if (workLocationLabel) {
+                    const workLocationInput = workLocationLabel.querySelector('input[name="work_location"]');
+                    if (workLocationInput) {
+                        return workLocationInput;
+                    }
+                }
+
+                return null;
+            }
+
+            function getNoticeIdForSource(sourceElement) {
+                for (const [selector, noticeId] of Object.entries(fieldToNoticeMap)) {
+                    if (sourceElement.matches(selector)) {
+                        return noticeId;
+                    }
+                }
+                return null;
+            }
+
+            function syncNoticePosition(sourceElement) {
+                if (!desktopMediaQuery.matches || !noticeContainer || !sourceElement) {
+                    return;
+                }
+
+                const noticeId = getNoticeIdForSource(sourceElement);
+                if (!noticeId) {
+                    return;
+                }
+
+                const targetNoticeItem = document.getElementById(noticeId);
+                if (!targetNoticeItem) {
+                    return;
+                }
+
+                const sourceRect = sourceElement.getBoundingClientRect();
+                const containerRect = noticeContainer.getBoundingClientRect();
+                const targetRect = targetNoticeItem.getBoundingClientRect();
+                const targetHeight = targetNoticeItem.offsetHeight;
+
+                const desiredMin = 12;
+                const desiredMax = Math.max(desiredMin, noticeContainer.clientHeight - targetHeight - desiredMin);
+                const desiredY = clamp(sourceRect.top - containerRect.top, desiredMin, desiredMax);
+                const currentY = targetRect.top - containerRect.top;
+
+                const maxScrollTop = Math.max(0, noticeContainer.scrollHeight - noticeContainer.clientHeight);
+                const nextScrollTop = clamp(
+                    noticeContainer.scrollTop + (currentY - desiredY),
+                    0,
+                    maxScrollTop
+                );
+
+                noticeContainer.scrollTo({
+                    top: nextScrollTop,
+                    behavior: reducedMotionMediaQuery.matches ? 'auto' : 'smooth'
+                });
+            }
+
+            function handleNoticeSync(event) {
+                const sourceElement = resolveNoticeSourceElement(event.target);
+                if (!sourceElement) {
+                    return;
+                }
+                syncNoticePosition(sourceElement);
+            }
+
+            if (timesheetForm) {
+                timesheetForm.addEventListener('focusin', handleNoticeSync);
+                timesheetForm.addEventListener('click', handleNoticeSync);
+            }
+            
+            // URLからGETパラメータを取得する関数
+            function getURLParameter(name) {
+                const params = new URLSearchParams(window.location.search);
+                return params.get(name);
+            }
+
+            function isNameEditAllowed() {
+                return getURLParameter('allowNameEdit') === '1';
+            }
+
+            function buildWorkRecordSearchURL(baseURL) {
+                const targetURL = new URL(baseURL || 'declaration_of_non_class_work_search_and_view.html', window.location.href);
+                const currentName = String(nameInput && nameInput.value ? nameInput.value : '').trim();
+
+                if (currentName) {
+                    targetURL.searchParams.set('teacher', currentName);
+                }
+
+                if (isNameEditAllowed()) {
+                    targetURL.searchParams.set('allowNameEdit', '1');
+                }
+
+                return targetURL;
+            }
+
+            function updateWorkRecordSearchLink() {
+                if (!viewWorkRecordsLink) {
+                    return '';
+                }
+
+                const targetURL = buildWorkRecordSearchURL('declaration_of_non_class_work_search_and_view.html');
+                const targetPath = targetURL.pathname + targetURL.search;
+                viewWorkRecordsLink.href = targetPath;
+                return targetPath;
+            }
+
+            function navigateToWorkRecordSearch(event) {
+                const targetPath = updateWorkRecordSearchLink();
+
+                try {
+                    const parentWindow = window.parent;
+                    const canUseParentNavigation = parentWindow && parentWindow !== window && typeof parentWindow.loadPage === 'function';
+
+                    if (canUseParentNavigation) {
+                        if (event) {
+                            event.preventDefault();
+                        }
+                        parentWindow.loadPage('non-class-work-search');
+                        const parentFrame = parentWindow.document.getElementById('mainFrame');
+                        if (parentFrame) {
+                            parentFrame.src = targetPath || 'declaration_of_non_class_work_search_and_view.html';
+                        }
+                        return;
+                    }
+                } catch (error) {
+                    // 親ポータル遷移が使えない場合は単体遷移にフォールバックする
+                }
+
+                if (!event) {
+                    window.location.href = targetPath || 'declaration_of_non_class_work_search_and_view.html';
+                }
+            }
+
+            async function canCurrentUserEditName() {
+                if (!isNameEditAllowed()) {
+                    return false;
+                }
+
+                try {
+                    const response = await fetch('/kiweb/teacher-auth/api/me.php', {
+                        method: 'GET',
+                        credentials: 'include'
+                    });
+                    if (!response.ok) {
+                        return false;
+                    }
+
+                    const data = await response.json();
+                    const permissions = data && data.user && Array.isArray(data.user.permissions)
+                        ? data.user.permissions
+                        : [];
+                    return permissions.includes('manage_users');
+                } catch (error) {
+                    return false;
+                }
+            }
+
+            const supportedThemes = new Set(['parttime', 'fulltime', 'admin']);
+            const themeFromURL = (getURLParameter('theme') || '').toLowerCase();
+            const resolvedTheme = supportedThemes.has(themeFromURL) ? themeFromURL : 'parttime';
+            const allowNameEdit = await canCurrentUserEditName();
+            document.body.dataset.theme = resolvedTheme;
+            
+            // 氏名欄にGETパラメータから取得した値を入力
+            const nameFromURL = getURLParameter('name') || getURLParameter('teacher');
+            if (nameFromURL) {
+                nameInput.value = nameFromURL;
+            }
+            if (nameInput) {
+                nameInput.required = true;
+                nameInput.readOnly = !allowNameEdit;
+                if (allowNameEdit) {
+                    nameInput.removeAttribute('readonly');
+                } else {
+                    nameInput.setAttribute('readonly', 'readonly');
+                }
+            }
+            
+            // 所属をhidden inputに設定
+            const departmentFromURL = getURLParameter('department');
+            const departmentInput = document.getElementById('department');
+            if (departmentInput) {
+                departmentInput.value = departmentFromURL || '';
+            }
+
+            if (viewWorkRecordsLink) {
+                updateWorkRecordSearchLink();
+                viewWorkRecordsLink.addEventListener('click', navigateToWorkRecordSearch);
+            }
+
+            if (nameInput && viewWorkRecordsLink) {
+                nameInput.addEventListener('input', updateWorkRecordSearchLink);
+                nameInput.addEventListener('change', updateWorkRecordSearchLink);
+            }
+
+            if (timesheetForm) {
+                timesheetForm.addEventListener('submit', function(event) {
+                    if (isSubmitting) {
+                        event.preventDefault();
+                        return;
+                    }
+
+                    if (!String(nameInput && nameInput.value ? nameInput.value : '').trim()) {
+                        event.preventDefault();
+                        alert('氏名情報が取得できませんでした。ポータルから勤務記録フォームを開き直してください。');
+                        setSubmitState(false);
+                        return;
+                    }
+
+                    isSubmitting = true;
+                    setSubmitState(true);
+                });
+            }
+
+            // 日本語の曜日配列
+            const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+            
+            // 日付をフォーマットする関数 (yyyy年MM月dd日(aaa) 形式)
+            function formatDateJP(date) {
+                const year = date.getFullYear();
+                const month = String(date.getMonth() + 1).padStart(2, '0');
+                const day = String(date.getDate()).padStart(2, '0');
+                const weekday = weekdays[date.getDay()];
+                return `${year}年${month}月${day}日(${weekday})`;
+            }
+            
+            // 日付関連の関数
+            function setTodayDate() {
+                const today = new Date();
+                // hidden inputに日付をセット (yyyy-MM-dd形式)
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                dateInput.value = `${year}-${month}-${day}`;
+                
+                // 表示用の日付をセット (yyyy年MM月dd日(aaa)形式)
+                dateDisplay.textContent = formatDateJP(today);
+            }
+        
+            function setPreviousDay() {
+                const currentDate = new Date(dateInput.value);
+                currentDate.setDate(currentDate.getDate() - 1);
+                
+                // hidden inputに日付をセット (yyyy-MM-dd形式)
+                const year = currentDate.getFullYear();
+                const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+                const day = String(currentDate.getDate()).padStart(2, '0');
+                dateInput.value = `${year}-${month}-${day}`;
+                
+                // 表示用の日付をセット (yyyy年MM月dd日(aaa)形式)
+                dateDisplay.textContent = formatDateJP(currentDate);
+            }
+
+            // イベントリスナーの設定
+            prevDayButton.addEventListener('click', setPreviousDay);
+            todayButton.addEventListener('click', setTodayDate);
+
+            const timeInputIds = ['start_time', 'end_time', 'break_start', 'break_end'];
+            const timeInputs = timeInputIds.map(function(id) {
+                return document.getElementById(id);
+            }).filter(Boolean);
+
+            const timePickerOverlay = document.getElementById('timePickerOverlay');
+            const tpHourValue = document.getElementById('tpHourValue');
+            const tpMinValue = document.getElementById('tpMinValue');
+            const tpHourUp = document.getElementById('tpHourUp');
+            const tpHourDown = document.getElementById('tpHourDown');
+            const tpMinUp5 = document.getElementById('tpMinUp5');
+            const tpMinDown5 = document.getElementById('tpMinDown5');
+            const tpMinUp1 = document.getElementById('tpMinUp1');
+            const tpMinDown1 = document.getElementById('tpMinDown1');
+            const tpCancel = document.getElementById('tpCancel');
+            const tpNow = document.getElementById('tpNow');
+            const tpOk = document.getElementById('tpOk');
+
+            let activeTimeInput = null;
+            let pickerHour = 9;
+            let pickerMinute = 0;
+
+            function pad2(value) {
+                return String(value).padStart(2, '0');
+            }
+
+            function wrap(value, min, max) {
+                const range = max - min + 1;
+                return ((value - min) % range + range) % range + min;
+            }
+
+            function roundToNearestStep(value, step) {
+                const rounded = Math.round(value / step) * step;
+                return wrap(rounded, 0, 59);
+            }
+
+            function parseTimeString(value) {
+                const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(value || '');
+                if (!match) {
+                    return null;
+                }
+                return {
+                    hour: Number(match[1]),
+                    minute: Number(match[2])
+                };
+            }
+
+            function renderTimePicker() {
+                tpHourValue.textContent = pad2(pickerHour);
+                tpMinValue.textContent = pad2(pickerMinute);
+            }
+
+            function openTimePicker(targetInput) {
+                activeTimeInput = targetInput;
+
+                const parsed = parseTimeString(targetInput.value);
+                if (parsed) {
+                    pickerHour = parsed.hour;
+                    pickerMinute = parsed.minute;
+                } else {
+                    const now = new Date();
+                    pickerHour = now.getHours();
+                    pickerMinute = roundToNearestStep(now.getMinutes(), 5);
+                }
+
+                renderTimePicker();
+                timePickerOverlay.classList.add('is-open');
+                timePickerOverlay.setAttribute('aria-hidden', 'false');
+            }
+
+            function closeTimePicker() {
+                timePickerOverlay.classList.remove('is-open');
+                timePickerOverlay.setAttribute('aria-hidden', 'true');
+                activeTimeInput = null;
+            }
+
+            function applyTimeSelection() {
+                if (!activeTimeInput) {
+                    return;
+                }
+                const value = `${pad2(pickerHour)}:${pad2(pickerMinute)}`;
+                activeTimeInput.value = value;
+                activeTimeInput.dispatchEvent(new Event('change', { bubbles: true }));
+                closeTimePicker();
+            }
+
+            function applyCurrentTime() {
+                if (!activeTimeInput) {
+                    return;
+                }
+                const now = new Date();
+                pickerHour = now.getHours();
+                pickerMinute = now.getMinutes();
+                renderTimePicker();
+            }
+
+            timeInputs.forEach(function(input) {
+                input.addEventListener('click', function() {
+                    openTimePicker(input);
+                });
+                input.addEventListener('keydown', function(event) {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault();
+                        openTimePicker(input);
+                    }
+                });
+            });
+
+            tpHourUp.addEventListener('click', function() {
+                pickerHour = wrap(pickerHour + 1, 0, 23);
+                renderTimePicker();
+            });
+            tpHourDown.addEventListener('click', function() {
+                pickerHour = wrap(pickerHour - 1, 0, 23);
+                renderTimePicker();
+            });
+            tpMinUp5.addEventListener('click', function() {
+                pickerMinute = wrap(pickerMinute + 5, 0, 59);
+                renderTimePicker();
+            });
+            tpMinDown5.addEventListener('click', function() {
+                pickerMinute = wrap(pickerMinute - 5, 0, 59);
+                renderTimePicker();
+            });
+            tpMinUp1.addEventListener('click', function() {
+                pickerMinute = wrap(pickerMinute + 1, 0, 59);
+                renderTimePicker();
+            });
+            tpMinDown1.addEventListener('click', function() {
+                pickerMinute = wrap(pickerMinute - 1, 0, 59);
+                renderTimePicker();
+            });
+
+            tpCancel.addEventListener('click', closeTimePicker);
+            tpNow.addEventListener('click', applyCurrentTime);
+            tpOk.addEventListener('click', applyTimeSelection);
+            timePickerOverlay.addEventListener('click', function(event) {
+                if (event.target === timePickerOverlay) {
+                    closeTimePicker();
+                }
+            });
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape' && timePickerOverlay.classList.contains('is-open')) {
+                    closeTimePicker();
+                }
+            });
+            
+            // 初期化
+            setTodayDate();
+            calculateTimes();
+
+            // 時間計算関連の関数
+            function calculateTimes() {
+                const startTime = document.getElementById('start_time').value;
+                const endTime = document.getElementById('end_time').value;
+                const breakStart = document.getElementById('break_start').value;
+                const breakEnd = document.getElementById('break_end').value;
+
+
+                if (startTime && endTime) {
+                    const totalMinutes = calculateTimeDifference(startTime, endTime);
+                    displayTime('total_time', totalMinutes);
+                    document.getElementById('total_time_value').value = totalMinutes;
+                }
+        
+                if (breakStart && breakEnd) {
+                    const breakMinutes = calculateTimeDifference(breakStart, breakEnd);
+                    displayTime('break_time', breakMinutes);
+                    document.getElementById('break_time_value').value = breakMinutes;
+                }
+        
+                const totalMinutes = calculateTimeDifference(startTime, endTime);
+                const breakMinutes = breakStart && breakEnd ? calculateTimeDifference(breakStart, breakEnd) : 0;
+                const workMinutes = totalMinutes - breakMinutes;
+                displayTime('work_time', workMinutes > 0 ? workMinutes : 0);
+                document.getElementById('work_time_value').value = workMinutes > 0 ? workMinutes : 0;
+            }
+
+            window.calculateTimes = calculateTimes;
+
+            // 時間入力フィールドにイベントリスナーを追加
+            timeInputIds.forEach(function(id) {
+                const element = document.getElementById(id);
+                if (element) {
+                    element.addEventListener('change', calculateTimes);
+                }
+            });
+
+        });
+
+        function calculateTimeDifference(start, end) {
+            if (!start || !end) return 0;
+            const startDate = new Date("2000-01-01T" + start);
+            const endDate = new Date("2000-01-01T" + end);
+            if (endDate < startDate) endDate.setDate(endDate.getDate() + 1);
+            return Math.round((endDate - startDate) / 60000);
+        }
+
+        function displayTime(elementId, minutes) {
+            const hours = Math.floor(minutes / 60);
+            const remainingMinutes = minutes % 60;
+            const display = `${minutes}分（${hours}時間${remainingMinutes}分）`;
+            document.getElementById(elementId).textContent = display;
+        }  
+    </script>
+</body>
+</html>

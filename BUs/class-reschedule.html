@@ -1,0 +1,1455 @@
+﻿<!DOCTYPE html>
+<!--UpdateedAt 26-01-04T18:39-->
+
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>欠勤届・振替申請ver2.0｜京都医塾</title>
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Hiragino Sans','Hiragino Kaku Gothic ProN','メイリオ',Meiryo,sans-serif;background:#f5f5f5;padding:20px}
+    .container{max-width:1200px;margin:0 auto;background:#fff;padding:30px;border-radius:8px;box-shadow:0 2px 8px rgba(0,0,0,.1)}
+    h1{color:#333;margin-bottom:30px;font-size:24px;border-bottom:3px solid #4CAF50;padding-bottom:10px;text-align:center}
+    .search-section{margin-bottom:30px;padding:20px;background:#f9f9f9;border-radius:5px}
+
+    /* ★要望対応：メイン画面の「申請者」「講師名」をラベル＋入力をインライン表示 */
+    .search-section .form-group{
+      display:grid;
+      grid-template-columns: 5.5em 1fr;
+      gap:10px;
+      align-items:center;
+    }
+    .search-section .form-group label{
+      display:block;
+      margin:0;
+      white-space:nowrap;
+    }
+    .search-section .form-group input[type="text"],
+    .search-section .form-group .inline-input{
+      margin:0;
+      width:100%;
+    }
+    .form-group{margin-bottom:15px}
+    label{display:block;margin-bottom:5px;font-weight:bold;color:#555}
+    input[type="text"],input[type="date"],select,textarea{width:100%;padding:10px;border:1px solid #ddd;border-radius:4px;font-size:14px}
+    .inline-input{display:flex;gap:10px;align-items:center}
+    .inline-input input{flex:1;min-width:0}
+    .inline-input button{white-space:nowrap;width:auto}
+    .class-list{margin-top:20px}
+
+
+    /* ===== 統合カード ===== */
+    .combined-card{
+      border:1px solid #e0e0e0;border-radius:10px;background:#fff;overflow:hidden;margin-bottom:14px;
+      box-shadow:0 1px 4px rgba(0,0,0,.06);
+    }
+
+    .pane{
+      padding:14px 16px;background:#f4fbf4; /* beforeの淡いグリーン */
+    }
+    .pane.after{
+        background:#fffde7;            /* ★レモン系の薄黄色 */
+        border-top:1px dashed #ffe082; /* ★境界も黄色系に */
+    }
+
+    .pane-header{
+      display:flex;align-items:center;gap:10px;margin-bottom:10px
+    }
+    .pane-title{font-weight:700;color:#555}
+    /*.class-info{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}*/
+    .class-info{
+      display:grid;
+      grid-template-columns:repeat(5, minmax(0,1fr)); /* ★ ここだけ変更 */
+      gap:10px;
+    }
+    .info-item{display:flex;flex-direction:column}
+    .info-label{font-size:12px;color:#666;margin-bottom:3px}
+    .info-value{font-size:14px;color:#333;font-weight:600}
+
+    .date-shift-links{
+      display:block;
+      font-size:11px;
+      margin-top:2px;
+    }
+    .date-shift-links a{
+      color:#1565c0;
+      text-decoration:underline;
+      cursor:pointer;
+    }
+    .date-shift-links a:hover{
+      text-decoration:none;
+    }
+
+
+    /* 差分強調 */
+    .changed{color:#d32f2f;font-weight:700}         /* 変更後：赤太字 */
+    .before-changed{color:#1565c0;font-weight:700}  /* 変更前：青太字 */
+
+    /* カードクリック */
+    .combined-card .clickable{cursor:pointer}
+    .combined-card .clickable:hover{background:rgba(0,0,0,.02)}
+
+    /* ボタン */
+    .button-group{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+
+    button{padding:6px 12px;border:none;border-radius:6px;cursor:pointer;font-size:12px;transition:.2s}
+    .btn-primary{background:#4CAF50;color:#fff}.btn-primary:hover{background:#45a049}
+    .btn-secondary{background:#2196F3;color:#fff}.btn-secondary:hover{background:#0b7dda}
+    .btn-warning{background:#FF9800;color:#fff}.btn-warning:hover{background:#F57C00}
+    .btn-submit{
+        background:#FF5722;
+        color:#fff;
+        padding:12px 22px;
+        font-size:14px;     /* ★大きく */
+        font-weight:600;    /* ★太く */
+        letter-spacing:.02em;
+        margin-top:12px;
+        border-radius:12px;
+        box-shadow:0 6px 16px rgba(255,87,34,.28); /* ★目立つ */
+    }
+    .btn-submit:hover{ background:#E64A19; }
+
+    .empty-state{text-align:center;padding:40px;color:#999}
+    .loading{text-align:center;padding:20px;color:#666}
+
+    .btn-submit:disabled{
+      opacity:.5;
+      cursor:not-allowed;
+    }
+
+    /* ===== 編集モーダル：タイポグラフィ統一 ===== */
+    #changeModal .modal-content{
+      font-size:14px;
+      line-height:1.55;
+    }
+
+    #changeModal .modal-header h2{
+      font-size:18px;
+      font-weight:700;
+    }
+
+    #changeModal .close{
+      font-size:24px;
+    }
+
+    #changeModal #beforeInfo{
+      font-size:16px;
+      font-weight:600;
+    }
+
+    /* 見出しラベル（変更の類型／変更理由の類型など） */
+    #changeModal .form-group > label{
+      font-size:13px;
+      font-weight:700;
+      margin-bottom:6px;
+    }
+
+    /* ラジオの選択肢テキスト */
+    #changeModal .radio-option{
+      font-size:14px;
+    }
+
+    /* 入力系はモーダル基準に合わせる（既存14pxと揃う） */
+    #changeModal input[type="text"],
+    #changeModal input[type="date"],
+    #changeModal select{
+      font-size:14px;
+    }
+
+    /* ラジオだけ小さすぎ/大きすぎを抑える */
+    #changeModal input[type="radio"]{
+      width:16px;
+      height:16px;
+    }
+
+    /* 以前「小さく」指定されたフッターボタン：全体と馴染む最小値に */
+    .modal-footer .btn-primary,
+    .modal-footer .btn-secondary{
+      font-size:12px;
+    }
+
+
+    /* 編集モーダル内ボタンを小さく */
+    .modal-footer .btn-primary,
+    .modal-footer .btn-secondary{
+      padding:4px 10px;   /* ← 高さ・幅を小さく */
+      font-size:11px;     /* ← 文字サイズを小さく */
+      border-radius:4px;  /* ← 角も少し小さめ */
+    }
+
+
+    /* BEFORE側だけ横並びレイアウトにする */
+    .pane.before{
+      display:flex;
+      gap:16px;
+      align-items:flex-start;
+    }
+    .pane.before .pane-header{
+      margin-bottom:0;
+    }
+    .pane.before .class-info{
+      flex:1;
+    }
+
+
+
+    /* 矢印（カード内の区切り）をもっと目立たせる */
+    .connector{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      margin:10px 0;
+    }
+    .connector .arrow{
+      width:36px;
+      height:36px;
+      border-radius:50%;
+      background:linear-gradient(135deg,#FF9800,#FF5722);
+      color:#fff;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-weight:900;
+      font-size:18px;
+      box-shadow:0 0 0 3px rgba(255,152,0,.35);
+    }
+
+
+    /* after左上のバナー：全体は黒、変更類型の値だけ紫で強調 */
+    .reason-banner{
+      font-weight:700;
+      color:#000;
+      margin-bottom:8px;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    .reason-banner .label{font-weight:700;margin-right:4px}
+    .reason-banner .change-type{color:#7B1FA2;font-weight:700} /* ★ 変更類型のみ紫 */
+
+    /* ツールチップ */
+    .tooltip{position:relative;cursor:help}
+    .tooltip::after{
+      content: attr(data-tip);
+      position:absolute; left:0; bottom:calc(100% + 6px);
+      background:rgba(33,33,33,.95); color:#fff; padding:8px 10px; border-radius:6px;
+      font-size:12px; line-height:1.4; white-space:pre; opacity:0; transform:translateY(4px);
+      pointer-events:none; transition:opacity .15s ease, transform .15s ease; max-width:360px;
+      box-shadow:0 4px 12px rgba(0,0,0,.25);
+    }
+    .tooltip::before{
+      content:""; position:absolute; left:12px; bottom:100%;
+      border:6px solid transparent; border-top-color:rgba(33,33,33,.95);
+      transform:translateY(6px); opacity:0; transition:opacity .15s ease, transform .15s ease;
+    }
+    .tooltip:hover::after,.tooltip:hover::before{opacity:1; transform:translateY(0)}
+
+    @media (max-width: 768px){
+      .container{padding:15px}
+
+      /* カードは1列のまま（見出しは縦に並ぶ） */
+      .class-info{grid-template-columns:1fr}
+
+      /* ★ ここがポイント：項目名と値を横並びにする */
+      .info-item{
+        display:flex;
+        flex-direction:row;         /* ← column から row に */
+        align-items:center;
+        gap:8px;                    /* ラベルと値の間隔 */
+      }
+      .info-label{
+        margin:0;                   /* 余白リセット */
+        min-width: 6em;             /* ラベル幅（必要に応じて 5.5em～7em で調整） */
+        white-space:nowrap;         /* ラベルは折り返さない */
+        color:#666;                 /* 既存踏襲 */
+        font-size:12px;             /* 既存踏襲 */
+      }
+      .info-value{
+        flex:1;                     /* 値の側を広げて折り返し許容 */
+        min-width:0;                /* テキストの省略/折返しを有効に */
+        word-break:break-word;      /* 長い氏名・科目名対応 */
+      }
+
+      .button-group{flex-direction:column}
+      button{width:100%}
+      .reason-banner{white-space:normal}
+
+      .pane.before{
+        flex-direction:column;
+      }
+
+    }
+
+    /* ★要望対応：モーダル最下部の「キャンセル」「保存」を大きく */
+    #changeModal .modal-footer .btn-primary,
+    #changeModal .modal-footer .btn-secondary{
+      padding:12px 18px;
+      font-size:16px;
+      border-radius:10px;
+      min-width:120px;
+    }
+
+    /* ===== 欠勤（緊急/通常）を強調 ===== */
+    #changeTypeGroup .radio-option.absence-emergency{
+      border:3px solid rgba(211,27,27,.45) !important;
+      background:transparent !important;
+      color:rgba(150,10,10);
+      font-weight:650;
+      position:relative;
+    }
+    #changeTypeGroup .radio-option.absence-normal{
+      border:2px solid rgba(255,152,0,.45) !important;
+      background:transparent !important;
+      font-weight:600;
+      position:relative;
+    }
+    #changeTypeGroup .radio-option.absence-emergency::before,
+    #changeTypeGroup .radio-option.absence-normal::before{
+      content:"";
+      position:absolute;
+      left:0; top:0; bottom:0;
+      width:4px;
+      border-radius:4px 0 0 4px;
+    }
+    #changeTypeGroup .radio-option.absence-emergency::before{ background:rgba(211,47,47,.55); }
+    #changeTypeGroup .radio-option.absence-normal::before{ background:rgba(255,152,0,.55); }
+
+    /* ===== 追加：生徒への連絡（完了/未完了）トグル ===== */
+    .toggle-buttons{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .toggle-btn{
+      padding:8px 14px;
+      border:1px solid #ddd;
+      background:#fff;
+      border-radius:10px;
+      cursor:pointer;
+      font-size:13px;
+    }
+    .toggle-btn.active{
+      border-color:#4CAF50;
+      background:#4CAF50;
+      color:#fff;
+    }
+    .toggle-btn:focus{ outline:2px solid rgba(76,175,80,.25); outline-offset:2px; }
+
+  </style>
+  <link rel="icon" type="image/png" href="favicon.png" />
+</head>
+<body>
+<div class="container">
+  <h1>京都医塾　欠勤届・振替申請ver2.0</h1>
+
+    <p>「未定振替の日時決定」は、従来の<a href="https://sites.google.com/kyotoijuku.com/sennin-web/temp_change_aplc?authuser=0">「授業変更申請」</a>から行ってください</p>
+<!--</div>-->
+  <div class="search-section">
+<div class="form-group">
+  <label for="applicantName">申請者</label>
+  <div class="inline-input">
+    <input type="text" id="applicantName" placeholder="申請者名を入力してください"/>
+    <button type="button" class="btn-secondary" id="copyApplicantToTeacher">講師名欄に転記</button>
+  </div>
+</div>
+
+    <div class="form-group">
+      <label for="teacherName">講師名</label>
+      <input type="text" id="teacherName" placeholder="講師名を入力してください。氏名の一部でも有効です。複数名入力すると、OR検索になります。" list="teacherList"/>
+      <datalist id="teacherList"></datalist>
+    </div>
+    <div class="loading" id="loading" style="display:none;">データを読み込み中...</div>
+  </div>
+
+
+  <!-- 上部に移動 & 文言変更済みの行をこれに差し替え -->
+  <button class="btn-submit" id="submitBtn" style="display:none;" disabled>
+    確認へ
+  </button>
+
+
+  <div class="class-list" id="classList">
+    <div class="empty-state">講師名を入力すると授業一覧が表示されます</div>
+  </div>
+
+
+
+<!-- 変更指定モーダル -->
+<div id="changeModal" class="modal" style="display:none;position:fixed;z-index:1000;inset:0;overflow:auto;background:rgba(0,0,0,.5)">
+  <div class="modal-content" style="background:#fff;margin:5% auto;padding:30px;border:1px solid #888;border-radius:8px;width:90%;max-width:640px;max-height:80vh;overflow-y:auto">
+    <div class="modal-header" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;padding-bottom:12px;border-bottom:2px solid #4CAF50">
+      <h2 style="color:#333">変更の指定</h2>
+      <span class="close" style="color:#aaa;font-weight:bold;cursor:pointer;line-height:1">&times;</span>
+    </div>
+
+    <div id="beforeInfo" class="before-brief" style="display:none;background:#f7f9ff;border:1px solid #d6e4ff;border-radius:6px;padding:10px 12px;margin-bottom:14px;color:#224"></div>
+
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label>変更の類型</label>
+        <div id="changeTypeGroup" class="radio-group compact" style="display:flex;flex-direction:column;gap:8px">
+          <label class="radio-option" style="display:flex;align-items:center;padding:8px;border:1px solid #ddd;border-radius:4px;cursor:pointer"><input type="radio" name="changeType" value="未定振替" data-fields="none" style="margin-right:10px">未定振替（日時未定・本来講師予定）</label>
+          <label class="radio-option" style="display:flex;align-items:center;padding:8px;border:1px solid #ddd;border-radius:4px;cursor:pointer"><input type="radio" name="changeType" value="振替" data-fields="datetime" style="margin-right:10px">振替（振替日時が決定・本来講師）</label>
+          <label class="radio-option" style="display:flex;align-items:center;padding:8px;border:1px solid #ddd;border-radius:4px;cursor:pointer"><input type="radio" name="changeType" value="代講" data-fields="teacher" style="margin-right:10px">代講（日時そのまま・別講師）</label>
+          <label class="radio-option" style="display:flex;align-items:center;padding:8px;border:1px solid #ddd;border-radius:4px;cursor:pointer"><input type="radio" name="changeType" value="合同実施" data-fields="teacher" style="margin-right:10px">他クラスと合同で実施（代講）</label>
+          <label class="radio-option" style="display:flex;align-items:center;padding:8px;border:1px solid #ddd;border-radius:4px;cursor:pointer"><input type="radio" name="changeType" value="振替＋代講" data-fields="all" style="margin-right:10px">振替＋代講（日時決定・別講師）</label>
+          <!--<label class="radio-option" style="display:flex;align-items:center;padding:8px;border:1px solid #ddd;border-radius:4px;cursor:pointer"><input type="radio" name="changeType" value="未定振替の日時決定" data-fields="datetime" style="margin-right:10px">未定振替の日時決定</label>-->
+          <label class="radio-option" style="display:flex;align-items:center;padding:8px;border:1px solid #ddd;border-radius:4px;cursor:pointer"><input type="radio" name="changeType" value="追加" data-fields="all" style="margin-right:10px">追加（授業料発生）</label>
+
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>変更理由の類型</label>
+        <div class="radio-group row-3" style="display:grid;grid-template-columns:repeat(3, 1fr);gap:10px">
+          <label class="radio-option" style="display:flex;align-items:center;padding:8px;border:1px solid #ddd;border-radius:4px;cursor:pointer"><input type="radio" name="reasonType" value="講師理由" style="margin-right:10px">講師理由</label>
+          <label class="radio-option" style="display:flex;align-items:center;padding:8px;border:1px solid #ddd;border-radius:4px;cursor:pointer"><input type="radio" name="reasonType" value="生徒理由" style="margin-right:10px">生徒理由</label>
+          <label class="radio-option" style="display:flex;align-items:center;padding:8px;border:1px solid #ddd;border-radius:4px;cursor:pointer"><input type="radio" name="reasonType" value="その他の理由" style="margin-right:10px">その他の理由</label>
+          <label class="radio-option" style="display:flex;align-items:center;padding:8px;border:1px solid #ddd;border-radius:4px;cursor:pointer"><input type="radio" name="reasonType" value="受験サポート" style="margin-right:10px">受験サポート</label>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="reasonDetailInput">変更理由の内容</label>
+        <input type="text" id="reasonDetailInput" placeholder="変更理由を入力してください"/>
+      </div>
+
+      <!-- ★追加：生徒への連絡（完了/未完了） -->
+      <div class="form-group">
+        <label>生徒への連絡</label>
+        <div class="toggle-buttons" id="studentContactButtons">
+          <button type="button" class="toggle-btn" data-value="完了">完了</button>
+          <button type="button" class="toggle-btn" data-value="未完了">未完了</button>
+        </div>
+        <input type="hidden" id="studentContactStatus" value="">
+        <div class="hint-text" id="studentContactHint" style="margin-top:6px; font-size:12px; color:#666; display:none;">
+          「未完了」の場合は、下に連絡未済の生徒名を入力してください。
+        </div>
+      </div>
+
+      <!-- ★追加：連絡未済の生徒の氏名 -->
+      <div class="form-group" id="uncontactedStudentsGroup">
+        <label for="uncontactedStudentsInput">連絡未済の生徒の氏名（自由記述）</label>
+        <textarea id="uncontactedStudentsInput" rows="2" placeholder="例：山田太郎、佐藤花子（複数可）"></textarea>
+      </div>
+
+
+      <!-- 講師名 -->
+      <div id="teacherField" class="conditional-fields" style="display:none;margin-top:12px;padding:12px;background:#f9f9f9;border-radius:4px;border:1px solid #ddd">
+        <div class="form-group">
+          <label for="newTeacher">講師名（インクリメントサーチ）</label>
+          <input type="text" id="newTeacher" placeholder="講師名を入力" list="teacherList"/>
+        </div>
+      </div>
+
+      <!-- 日時 -->
+      <div id="datetimeField" class="conditional-fields" style="display:none;margin-top:12px;padding:12px;background:#f9f9f9;border-radius:4px;border:1px solid #ddd">
+        <div class="form-group"><label for="newDate">日付</label><input type="date" id="newDate"/></div>
+        <div class="form-group">
+          <label for="newTimeSlot">授業コマ</label>
+          <select id="newTimeSlot">
+            <option value="">選択してください</option>
+            <option value="09:00-10:30">09:00-10:30</option>
+            <option value="10:40-12:10">10:40-12:10</option>
+            <option value="13:00-14:30">13:00-14:30</option>
+            <option value="14:40-16:10">14:40-16:10</option>
+            <option value="16:20-17:50">16:20-17:50</option>
+            <option value="16:50-18:20">16:50-18:20</option>
+            <option value="18:30-20:00">18:30-20:00</option>
+            <option value="20:10-21:40">20:10-21:40</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- すべて -->
+      <div id="allFields" class="conditional-fields" style="display:none;margin-top:12px;padding:12px;background:#f9f9f9;border-radius:4px;border:1px solid #ddd">
+        <div class="form-group"><label for="newTeacherAll">講師名（インクリメントサーチ）</label><input type="text" id="newTeacherAll" placeholder="講師名を入力" list="teacherList"/></div>
+        <div class="form-group"><label for="newDateAll">日付</label><input type="date" id="newDateAll"/></div>
+        <div class="form-group">
+          <label for="newTimeSlotAll">授業コマ</label>
+          <select id="newTimeSlotAll">
+            <option value="">選択してください</option>
+            <option value="09:00-10:30">09:00-10:30</option>
+            <option value="10:40-12:10">10:40-12:10</option>
+            <option value="13:00-14:30">13:00-14:30</option>
+            <option value="14:40-16:10">14:40-16:10</option>
+            <option value="16:20-17:50">16:20-17:50(高卒)</option>
+            <option value="16:50-18:20">16:50-18:20(現役)</option>
+            <option value="18:30-20:00">18:30-20:00</option>
+            <option value="20:10-21:40">20:10-21:40</option>
+
+            <option value="09:00-10:00">09:00-10:00(60分)</option>
+            <option value="10:10-11:10">10:10-11:10(60分)</option>
+            <option value="11:20-12:20">11:20-12:20(60分)</option>
+            <option value="13:20-14:20">13:20-14:20(60分)</option>
+            <option value="14:30-15:30">14:30-15:30(60分)</option>
+            <option value="15:40-16:40">15:40-16:40(60分)</option>
+            <option value="17:20-18:20">17:20-18:20(60分)</option>
+            <option value="18:30-19:30">18:30-19:30(60分)</option>
+            <option value="19:40-20:40">19:40-20:40(60分)</option>
+            <option value="20:50-21:50">20:50-21:50(60分)</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!--<div class="modal-footer" style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px">-->
+    <div class="modal-footer" style="display:flex;justify-content:flex-end;gap:6px;margin-top:12px">
+
+      <button class="btn-secondary" id="cancelModal">キャンセル</button>
+      <button class="btn-primary" id="saveChange">保存</button>
+    </div>
+  </div>
+</div>
+
+<script>
+
+
+/* ===== 業務データ取得URL ===== */
+const DATA_URL = 'https://script.google.com/macros/s/AKfycbybH6gXsvA8BcuxHxaiuFrTP7M2ANLd_f1RvT8Qp-xMOiXHy5IyviqYKfUKI786c-1g/exec?action=getCachedJson';
+
+/* ===== 申請送信用URL (doPost の Webアプリ URL) ===== */
+// ★ ここは実際に稼働中の「欠勤届・振替申請」の Webアプリ URL に差し替えてください
+const FORM_POST_URL = 'https://script.google.com/macros/s/AKfycbxP93qZWtaZldBTeUKRy9foMyJb_xEYXRXl1_gm5RZT-f9GlIUyzbM1_nIhrHvMh7uVNw/exec';
+
+// 送信成功後に「最初の画面へ戻ってクリア」を実行するか（ネットワークエラー回避のため一旦OFF）
+const ENABLE_RESET_AFTER_SUBMIT = false;
+
+/* ===== 状態 ===== */
+let allClasses = [];
+let changes = {}; // key -> changeData
+
+/* 送信ボタンの状態更新 */
+function updateSubmitButtonState(){
+  const submitBtn = document.getElementById('submitBtn');
+  if(!submitBtn) return;
+
+  const count = Object.keys(changes || {}).length;
+  const teacher = (document.getElementById('teacherName')?.value || '').trim();
+
+  // ★要望対応：「after（変更内容）が1件も無い状態」で「確認へ」を表示しない
+  if(count === 0 || teacher === ''){
+    submitBtn.style.display = 'none';
+    submitBtn.disabled = true;
+    submitBtn.textContent = '';
+    return;
+  }
+
+  submitBtn.style.display = 'block';
+  submitBtn.disabled = false;
+  submitBtn.textContent = `以下、${count}件の変更を送信する`;
+}
+
+/* 送信成功後：最初の画面に戻ってクリア（※現在はフラグOFFで呼ばれません） */
+function resetToInitialScreen(){
+  // 入力をクリア
+  const applicantEl = document.getElementById('applicantName');
+  if(applicantEl) applicantEl.value = '';
+
+  const teacherEl = document.getElementById('teacherName');
+  if(teacherEl) teacherEl.value = '';
+
+  // 変更指定もクリア
+  changes = {};
+  updateSubmitButtonState();
+
+  // 一覧を初期状態へ戻す（ネットワーク処理はしない）
+  const list = document.getElementById('classList');
+  if(list) list.innerHTML = '<div class="empty-state">講師名を入力すると授業一覧が表示されます</div>';
+}
+
+let currentEditingKey = null;
+
+
+/* ===== Utils（曜日表示） ===== */
+const pad2 = n => String(n).padStart(2,'0');
+const youbi = ['日','月','火','水','木','金','土'];
+
+const parseDateTime = str=>{
+  const [d,t] = (str||'').trim().split(' ');
+  if(!d||!t) return new Date(str||'');
+  let [h,m] = t.split(':');
+  h = pad2(Number(h)); m = pad2(Number(m||'0'));
+  return new Date(`${d}T${h}:${m}`);
+};
+const formatDateTime = date=>{
+  const y = date.getFullYear();
+  const mo = pad2(date.getMonth()+1);
+  const d = pad2(date.getDate());
+  const h = pad2(date.getHours());
+  const mi = pad2(date.getMinutes());
+  return `${y}-${mo}-${d} ${h}:${mi}`;
+};
+const formatWithWeekday = str=>{
+  if(!str) return '';
+  const dt = parseDateTime(str);
+  if (isNaN(dt)) return str;
+  const wd = youbi[dt.getDay()];
+  const ymd = `${dt.getFullYear()}-${pad2(dt.getMonth()+1)}-${pad2(dt.getDate())}`;
+  const hm = `${pad2(dt.getHours())}:${pad2(dt.getMinutes())}`;
+  return `${ymd}(${wd}) ${hm}`;
+};
+const displayDT = s => s ? (s==='日時未定' ? '日時未定' : formatWithWeekday(s)) : '-';
+
+
+const displayDateOnly = str => {
+  if (!str) return '-';
+  if (str === '日時未定') return '日時未定';
+  const dt = parseDateTime(str);
+  if (isNaN(dt)) return str;
+  const wd = youbi[dt.getDay()];
+  return `${dt.getFullYear()}-${pad2(dt.getMonth()+1)}-${pad2(dt.getDate())}(${wd})`;
+};
+
+const displayTimeOnly = str => {
+  if (!str || str === '日時未定') return '';
+  const dt = parseDateTime(str);
+  if (isNaN(dt)) return '';
+  return `${pad2(dt.getHours())}:${pad2(dt.getMinutes())}`;
+};
+
+const displayTimeRange = (startStr, endStr) => {
+  if (!startStr || startStr === '日時未定') return '-';
+  const start = displayTimeOnly(startStr);
+  const end   = endStr ? displayTimeOnly(endStr) : '';
+  return end ? `${start} - ${end}` : `${start} -`;
+};
+
+// 日付比較用キー(YYYY-MM-DD)
+const toYmdKey = str => {
+  if (!str || str === '日時未定') return str || '';
+  const dt = parseDateTime(str);
+  if (isNaN(dt)) return '';
+  return `${dt.getFullYear()}-${pad2(dt.getMonth()+1)}-${pad2(dt.getDate())}`;
+};
+
+
+const normalizeDateTimeString = s => formatDateTime(parseDateTime(s));
+const slotToStart = slot => slot ? slot.split('-')[0] : '';
+const slotToEnd   = slot => slot ? slot.split('-')[1] : '';
+
+function ensureNormalized(c){
+  if (c._normalized) return c;
+
+  // 生の文字列があればそこから正規化
+  const startStr = c.startRaw ?? c.startDateTime;
+  const endStr   = c.endRaw   ?? c.endDateTime;
+
+  c.startDateTime = startStr ? normalizeDateTimeString(startStr) : '';
+  c.endDateTime   = endStr   ? normalizeDateTimeString(endStr)   : '';
+  c._normalized = true;
+  return c;
+}
+
+const keyForClass = c => `${c.businessNo || 'NO-BIZ'}__${c.startDateTime}__${c.className}`;
+
+
+function buildAfterSnapshot(original, change){
+  let teacher = original.teacherName;
+  let start   = original.startDateTime;
+  let end     = original.endDateTime;
+  if(change.changeType==='代講' || change.changeType==='合同実施'){
+    teacher = change.newTeacher;
+  }else if(change.changeType==='振替' || change.changeType==='未定振替の日時決定'){
+    const s = slotToStart(change.newTimeSlot);
+    const e = slotToEnd(change.newTimeSlot);
+    start = `${change.newDate} ${s}`;
+    end   = `${change.newDate} ${e}`;
+  }else if(change.changeType==='未定振替'){
+    start = '日時未定';
+    end   = '';
+  }else if(change.changeType==='振替＋代講' || change.changeType==='追加'){
+    const s = slotToStart(change.newTimeSlot);
+    const e = slotToEnd(change.newTimeSlot);
+    teacher = change.newTeacher;
+    start = `${change.newDate} ${s}`;
+    end   = `${change.newDate} ${e}`;
+  }
+
+  const origDateKey  = toYmdKey(original.startDateTime);
+  const afterDateKey = toYmdKey(start);
+
+  const timeChanged =
+    start !== original.startDateTime ||
+    (end || '') !== (original.endDateTime || '');
+
+  return {
+    afterTeacher: teacher,
+    afterStart: start,
+    afterEnd: end,
+    diff: {
+      teacher: teacher !== original.teacherName,
+      date:    origDateKey !== afterDateKey,
+      time:    timeChanged
+    }
+  };
+}
+
+
+/**
+ * GAS doPost(e) が期待しているパラメータ形式に
+ * フロント側のレコードを変換する
+ * @param {object} rec  ... allClasses[i] と changes[key] をマージした1件分
+ * @return {object}     ... e.parameter と同じキー構成のオブジェクト
+ */
+
+/* 授業名から科目を抽出して送信用に整形 */
+function extractSubjectFromClassName(className){
+  const m = (className || '').match(/(英語|国語|数学|化学|物理|生物|理科|小論文|面接)/);
+  return m ? m[1] : '';
+}
+
+function buildPayloadForGAS(rec, applicantName){
+  // 元の授業日時 → 本来の日付 / 本来の時間帯
+  let originalDate = '';
+  let originalTime = '';
+
+  if (rec.startDateTime && rec.startDateTime !== '日時未定') {
+    const [datePart, timePart] = rec.startDateTime.split(' ');
+    originalDate = datePart || '';
+
+    if (rec.endDateTime) {
+      const startTime = (timePart || '').slice(0,5); // "HH:MM"
+      const endTime   = (rec.endDateTime.split(' ')[1] || '').slice(0,5);
+      if (startTime && endTime) {
+        originalTime = `${startTime}-${endTime}`;
+      }
+    }
+  }
+
+  // 振替先（日時決定系のみ）
+  let rescheduledDate = '';
+  let rescheduledTime = '';
+
+  if (
+    rec.changeType === '振替' ||
+    rec.changeType === '振替＋代講' ||
+    rec.changeType === '未定振替の日時決定' ||
+    rec.changeType === '追加'
+  ) {
+    rescheduledDate = rec.newDate || '';
+    rescheduledTime = rec.newTimeSlot || '';
+  }
+
+  // 代講担当講師
+  const substituteLecturer =
+    (rec.changeType === '代講' || rec.changeType === '振替＋代講'|| rec.changeType === '合同実施')
+      ? (rec.newTeacher || '')
+      : '';
+
+  return {
+    // 申請者（メイン画面の入力）
+    applicant_name:        (applicantName || '').trim(),
+
+    // 担当講師氏名
+    lecturer_name:        (rec.teacherName || '').trim(),
+
+    // 予定業務No
+    business_no:          rec.businessNo || '',
+
+    // 授業実施校舎（取得済み・表示はしない）
+    lesson_school:        rec.school || '',
+
+    // 授業形態（ここでは「授業形態詳細」をそのまま使う想定）
+    class_type:           rec.lessonDetail || '',
+
+    // 所属科・指導科目（現行の一覧データに無いので空文字）
+    department:           '',
+
+    // 本来の日付 / 時間帯
+    original_date:        originalDate,
+    original_time:        originalTime,
+
+    // 生徒の学年（一覧に無いので空）
+    student_grade:        '',
+
+    // ★要望対応：GASに student_name の代わりに class_name を送る
+    class_name:           rec.className || '',
+
+    // ★要望対応：授業名から科目を抽出して送る
+    subject:              extractSubjectFromClassName(rec.className || ''),
+
+    // 変更理由
+    change_reason_type:   rec.reasonType || '',
+    change_reason_detail: rec.reasonDetail || '',
+
+    // 変更の類型
+    change_type:          rec.changeType || '',
+
+    // 代講をする講師氏名
+    substitute_lecturer:  substituteLecturer,
+
+    // 振替先 日付・時間帯（未定振替の場合は空のまま）
+    rescheduled_date:     rescheduledDate,
+    rescheduled_time:     rescheduledTime,
+
+    // 追加授業の許可状況（UI未実装のため空）
+    permission:           '',
+
+    // ★追加：生徒への連絡／連絡未済の生徒
+    student_contact:      (rec.student_contact || ''),
+    uncontacted_students: (rec.uncontacted_students || ''),
+
+    // ★ 新フロントからの送信であることを示すフラグ
+    from_front_v2:        '1'
+  };
+}
+
+
+/* ツールチップ付き値のHTML（曜日付き表示） */
+function valueWithTooltip(newVal, oldVal, changed){
+  const newDisp = (newVal === '日時未定') ? '日時未定' : (displayDT(newVal) || '-');
+  if(!changed){
+    return `<span class="info-value">${newDisp}</span>`;
+  }
+  const oldDisp = (oldVal === '日時未定') ? '日時未定' : (displayDT(oldVal) || '-');
+  const tip = `変更前：${oldDisp}\n→ 変更後：${newDisp}`;
+  return `<span class="info-value changed tooltip" data-tip="${tip}">${newDisp}</span>`;
+}
+
+
+function dateWithTooltip(newStart, oldStart, changed){
+  const newDisp = displayDateOnly(newStart);
+  if (!changed){
+    return `<span class="info-value">${newDisp}</span>`;
+  }
+  const oldDisp = displayDateOnly(oldStart);
+  const tip = `変更前：${oldDisp}\n→ 変更後：${newDisp}`;
+  return `<span class="info-value changed tooltip" data-tip="${tip}">${newDisp}</span>`;
+}
+
+function timeRangeWithTooltip(newStart, newEnd, oldStart, oldEnd, changed){
+  const newDisp = displayTimeRange(newStart, newEnd);
+  if (!changed){
+    return `<span class="info-value">${newDisp}</span>`;
+  }
+  const oldDisp = displayTimeRange(oldStart, oldEnd);
+  const tip = `変更前：${oldDisp}\n→ 変更後：${newDisp}`;
+  return `<span class="info-value changed tooltip" data-tip="${tip}">${newDisp}</span>`;
+}
+
+
+
+/* ===== 初期ロード ===== */
+function loadData(){
+  const loading = document.getElementById('loading');
+  loading.style.display = 'block';
+
+  fetch(DATA_URL, {
+    method: 'GET',
+    cache: 'no-store'
+  })
+    .then(response => {
+      if (!response.ok) {
+        throw new Error('HTTP error ' + response.status);
+      }
+      return response.json();
+    })
+    .then(json => {
+      if (!Array.isArray(json)) {
+        throw new Error('unexpected json structure');
+      }
+
+      // 先頭行がヘッダ ["授業名","担当講師", ...] の場合は除外
+      let rows = json;
+      if (Array.isArray(json[0]) && json[0][0] === '授業名') {
+        rows = json.slice(1);
+      }
+
+      // ["授業名","担当講師","開始日時","終了日時","予定業務No",
+      //  "コマ符号","生徒名","STATUS","授業形態詳細","授業実施校舎"]
+      allClasses = rows.map((row, idx) => {
+        const [
+          className,
+          teacherName,
+          startStr,
+          endStr,
+          businessNo,
+          komaSymbol,
+          studentName,
+          status,
+          lessonDetail,
+          school
+        ] = row;
+
+        return {
+          rowIndex:      idx,                       // ★ 元配列の行番号
+          className:     className      || '',
+          teacherName:   teacherName    || '',
+          startRaw:      (startStr || '').trim(),  // ★ 生の日時文字列
+          endRaw:        (endStr   || '').trim(),  // ★ 生の日時文字列
+          startDateTime: '',                       // ★ 後で正規化して入れる
+          endDateTime:   '',
+          _normalized:   false,                    // ★ 正規化済みフラグ
+          businessNo:    businessNo     || '',
+          komaSymbol:    komaSymbol     || '',
+          studentName:   studentName    || '',
+          status:        status         || '',
+          lessonDetail:  lessonDetail   || '',
+          school:        school         || ''
+        };
+      });
+
+
+      // 講師名の datalist を構築
+      const names = [...new Set(allClasses.map(c => c.teacherName).filter(Boolean))].sort();
+      const dl = document.getElementById('teacherList');
+      dl.innerHTML = names.map(n => `<option value="${n}"></option>`).join('');
+
+      loading.style.display = 'none';
+    })
+    .catch(err => {
+      console.error('業務データ取得エラー:', err);
+      loading.textContent = 'データの取得に失敗しました。時間をおいて再度お試しください。';
+    });
+}
+
+
+// 講師名フィルタ（単一・複数 OR 対応）
+function applyTeacherFilter(){
+  const t = document.getElementById('teacherName').value.trim();
+  const list = document.getElementById('classList');
+  const submitBtn = document.getElementById('submitBtn');
+
+  if(t===''){
+    list.innerHTML = '<div class="empty-state">講師名を入力すると授業一覧が表示されます</div>';
+    submitBtn.style.display = 'none';
+    return;
+  }
+
+  // カンマ・空白・全角スペース・読点区切りで OR 検索
+  const keywords = t.split(/[、,，\s　]+/).filter(Boolean);
+
+  const filtered = allClasses.filter(c =>
+    keywords.some(kw => c.teacherName.includes(kw))
+  );
+
+  // ★ 講師名で絞り込んだ分だけ日時を正規化
+  filtered.forEach(ensureNormalized);
+
+  displayClasses(filtered);
+}
+
+// 入力でフィルタリング
+document.getElementById('teacherName').addEventListener('input', e=>{
+  applyTeacherFilter();
+});
+
+
+// 申請者 → 講師名に転記
+document.getElementById('copyApplicantToTeacher')?.addEventListener('click', ()=>{
+  const applicant = (document.getElementById('applicantName')?.value || '').trim();
+  const teacherInput = document.getElementById('teacherName');
+  if(!teacherInput) return;
+  teacherInput.value = applicant;
+  applyTeacherFilter();
+});
+
+
+/* ===== 一覧描画（1カード統合） ===== */
+
+function displayClasses(classes){
+  const classList = document.getElementById('classList');
+  const submitBtn = document.getElementById('submitBtn');
+
+  if(classes.length===0){
+    classList.innerHTML = '<div class="empty-state">該当する授業が見つかりません</div>';
+    submitBtn.style.display='none';
+    return;
+  }
+
+  classList.innerHTML = '';
+
+  // ★ 授業が1件以上あっても、変更が無い間はボタンを出さない（updateSubmitButtonStateが表示制御）
+  updateSubmitButtonState();
+
+  classes.forEach(classData=>{
+    const originalIndex = classData.rowIndex;   // ★ findIndex をやめて元の行番号を利用
+    const key = keyForClass(allClasses[originalIndex]);
+    const hasChange = !!changes[key];
+    const ch = hasChange ? changes[key] : null;
+    const snap = hasChange ? buildAfterSnapshot(allClasses[originalIndex], changes[key]) : null;
+
+
+    const beforeTeacherClass = (hasChange && snap.diff.teacher) ? 'before-changed' : '';
+    const beforeDateClass    = (hasChange && snap.diff.date)    ? 'before-changed' : '';
+    const beforeTimeClass    = (hasChange && snap.diff.time)    ? 'before-changed' : '';
+
+
+    const card = document.createElement('div');
+    card.className = 'combined-card';
+    card.innerHTML = `
+      <!-- BEFORE -->
+      <div class="pane before clickable" data-key="${key}" data-role="before">
+        <!-- 右側：授業情報 -->
+        <div class="class-info">
+          <div class="info-item">
+            <span class="info-label">日付</span>
+            <span class="info-value ${beforeDateClass}">
+              ${displayDateOnly(classData.startDateTime)}
+              ${hasChange ? '' : `
+              <span class="date-shift-links">
+                <a href="#" data-action="rewind" data-index="${originalIndex}">1週間戻す</a>
+                 ／
+                <a href="#" data-action="advance" data-index="${originalIndex}">1週間進める</a>
+              </span>
+              `}
+            </span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">時間帯</span>
+            <span class="info-value ${beforeTimeClass}">
+              ${displayTimeRange(classData.startDateTime, classData.endDateTime)}
+            </span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">授業名</span>
+            <span class="info-value">
+              ${classData.lessonDetail ? '[' + classData.lessonDetail + '] ' : ''}${classData.className}
+            </span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">講師名</span>
+            <span class="info-value ${beforeTeacherClass}">
+              ${classData.teacherName}
+            </span>
+          </div>
+
+          <div class="info-item">
+            <span class="info-label">予定業務No</span>
+            <span class="info-value">
+              ${classData.businessNo}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <!-- AFTER -->
+      ${hasChange ? `
+        <div class="pane after clickable" data-key="${key}" data-role="after">
+          <div class="reason-banner">
+              <span class="label">変更類型:</span><span class="change-type">${ch.changeType}</span> ｜
+              <span class="label">変更理由類型:</span>${ch.reasonType} ｜
+              <span class="label">変更理由内容:</span>${ch.reasonDetail || '-'}
+          </div>
+          <div class="class-info">
+            <div class="info-item">
+              <span class="info-label">日付</span>${
+                dateWithTooltip(
+                  snap.afterStart,
+                  allClasses[originalIndex].startDateTime,
+                  snap.diff.date
+                )
+              }
+            </div>
+            <div class="info-item">
+              <span class="info-label">時間帯</span>${
+                timeRangeWithTooltip(
+                  snap.afterStart,
+                  snap.afterEnd,
+                  allClasses[originalIndex].startDateTime,
+                  allClasses[originalIndex].endDateTime,
+                  snap.diff.time
+                )
+              }
+            </div>
+            <div class="info-item">
+              <span class="info-label">授業名</span>
+              <span class="info-value">
+                ${allClasses[originalIndex].lessonDetail ? '[' + allClasses[originalIndex].lessonDetail + '] ' : ''}${allClasses[originalIndex].className}
+              </span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">講師名</span>${
+                snap.diff.teacher
+                  ? `<span class="info-value changed tooltip" data-tip="変更前：${allClasses[originalIndex].teacherName}\n→ 変更後：${snap.afterTeacher}">${snap.afterTeacher}</span>`
+                  : `<span class="info-value">${snap.afterTeacher}</span>`
+              }
+            </div>
+            <div class="info-item">
+              <span class="info-label">予定業務No</span>
+              <span class="info-value">&nbsp;</span>
+            </div>
+          </div>
+        </div>` : ''}
+    `;
+
+    classList.appendChild(card);
+  });
+  updateSubmitButtonState();
+}
+
+/* ===== 週移動（予定業務Noクリア＋changesキー追従） ===== */
+function shiftWeek(index, deltaDays){
+  const oldKey = keyForClass(allClasses[index]);
+  const s = parseDateTime(allClasses[index].startDateTime);
+  const e = parseDateTime(allClasses[index].endDateTime);
+  s.setDate(s.getDate()+deltaDays);
+  e.setDate(e.getDate()+deltaDays);
+  allClasses[index].startDateTime = formatDateTime(s);
+  allClasses[index].endDateTime   = formatDateTime(e);
+  allClasses[index].businessNo    = ''; // 予定業務No クリア
+
+  // changes マップのキーを移し替え
+  const newKey = keyForClass(allClasses[index]);
+  if(changes[oldKey]){
+    changes[newKey] = changes[oldKey];
+    delete changes[oldKey];
+  }
+
+  applyTeacherFilter();
+}
+function rewindWeek(index){ shiftWeek(index, -7); }
+function advanceWeek(index){ shiftWeek(index, +7); }
+
+/* ===== モーダル ===== */
+const modal = document.getElementById('changeModal');
+const beforeInfo = document.getElementById('beforeInfo');
+const closeBtn = document.querySelector('.close');
+const cancelBtn = document.getElementById('cancelModal');
+const saveBtn = document.getElementById('saveChange');
+
+function setupChangeTypeListeners(){
+  const group = document.getElementById('changeTypeGroup');
+  if(!group) return;
+
+  // 動的に追加されるラジオ（緊急欠勤/通常欠勤）にも対応するため委譲
+  group.addEventListener('change', (e)=>{
+    const target = e.target;
+    if(!target || target.name !== 'changeType') return;
+
+    document.querySelectorAll('.conditional-fields').forEach(f=>f.style.display='none');
+    const fields = target.dataset.fields;
+    if(fields==='teacher')  document.getElementById('teacherField').style.display='block';
+    if(fields==='datetime') document.getElementById('datetimeField').style.display='block';
+    if(fields==='all')      document.getElementById('allFields').style.display='block';
+  });
+}
+
+function computeAutoAbsenceLabel(startDateTimeStr){
+  const now = new Date();
+  const ymd = toYmdKey(startDateTimeStr); // YYYY-MM-DD
+  if(!ymd || ymd === '日時未定') return '緊急欠勤';
+
+  // ★追加：当日の予定は常に「緊急欠勤」
+  const todayKey = `${now.getFullYear()}-${pad2(now.getMonth()+1)}-${pad2(now.getDate())}`;
+  if(ymd === todayKey) return '緊急欠勤';
+
+  const target = new Date(ymd + 'T00:00:00');
+  const today = new Date(now);
+  today.setHours(0, 0, 0, 0);
+
+  // 20時前なら「当日・翌日」、20時以後なら「翌日・翌々日」を緊急扱い（既存ロジック踏襲）
+  const startDay = now.getHours() < 20 ? 0 : 1;
+  const allowedDays = [startDay, startDay + 1].map(offset => {
+    const date = new Date(today);
+    date.setDate(date.getDate() + offset);
+    return date.getTime();
+  });
+
+  const isWithinRange = allowedDays.includes(target.getTime());
+  return isWithinRange ? '緊急欠勤' : '通常欠勤';
+}
+
+function upsertAutoAbsenceChangeType(label){
+  const group = document.getElementById('changeTypeGroup');
+  if(!group) return;
+
+  // 既存の自動挿入分があれば削除
+  const old = group.querySelector('label[data-auto-absence="1"]');
+  if(old) old.remove();
+
+  const el = document.createElement('label');
+  el.className = 'radio-option';
+  el.dataset.autoAbsence = '1';
+  el.style.cssText = 'display:flex;align-items:center;padding:8px;border:1px solid #ddd;border-radius:4px;cursor:pointer';
+
+  // ★追加：強調クラス付与
+  if(label === '緊急欠勤'){
+    el.classList.add('absence-emergency');
+  }else if(label === '通常欠勤'){
+    el.classList.add('absence-normal');
+  }
+
+  el.innerHTML = `<input type="radio" name="changeType" value="${label}" data-fields="none" style="margin-right:10px">${label}`;
+  group.insertBefore(el, group.firstChild);
+}
+
+// ===== 追加：生徒への連絡（完了/未完了）トグル =====
+function setStudentContactStatus(val){
+  const hidden = document.getElementById('studentContactStatus');
+  const btnWrap = document.getElementById('studentContactButtons');
+  const hint = document.getElementById('studentContactHint');
+  const group = document.getElementById('uncontactedStudentsGroup');
+  const uncontactedEl = document.getElementById('uncontactedStudentsInput');
+  if(!hidden || !btnWrap) return;
+
+  hidden.value = val || '';
+  btnWrap.querySelectorAll('.toggle-btn').forEach(b=>{
+    b.classList.toggle('active', b.dataset.value === val);
+  });
+
+  // 未完了のときだけヒント表示
+  if(hint){
+    hint.style.display = (val === '未完了') ? 'block' : 'none';
+  }
+
+  // 完了なら「連絡未済の生徒名」欄は非表示
+  if(group){
+    group.style.display = (val === '未完了') ? 'block' : 'none';
+  }
+
+  // 完了に切り替えたら入力はクリア（誤送信防止）
+  if(val !== '未完了' && uncontactedEl){
+    uncontactedEl.value = '';
+  }
+}
+
+function setupStudentContactListeners(){
+  const btnWrap = document.getElementById('studentContactButtons');
+  if(!btnWrap) return;
+
+  btnWrap.addEventListener('click', (e)=>{
+    const btn = e.target.closest('.toggle-btn');
+    if(!btn) return;
+    setStudentContactStatus(btn.dataset.value);
+  });
+}
+
+function openChangeModal(key){
+  currentEditingKey = key;
+  modal.style.display = 'block';
+
+  // 変更前情報の表示
+  const idx = allClasses.findIndex(c => keyForClass(c)===key);
+  const cls = allClasses[idx];
+  const autoAbsenceLabel = computeAutoAbsenceLabel(cls.startDateTime);
+  upsertAutoAbsenceChangeType(autoAbsenceLabel);
+  beforeInfo.style.display = 'block';
+  beforeInfo.innerHTML = `
+    <div><b style="color:#0f2e6d">変更前</b>：${cls.className}</div>
+    <div>講師名：${cls.teacherName}</div>
+    <div>日付：${displayDateOnly(cls.startDateTime)}　時間帯：${displayTimeRange(cls.startDateTime, cls.endDateTime)}</div>
+  `;
+
+  const change = changes[key];
+  if(change){
+    document.querySelectorAll('input[name="reasonType"]').forEach(r=>r.checked=(r.value===change.reasonType));
+    document.getElementById('reasonDetailInput').value = change.reasonDetail || '';
+    const ct = document.querySelector(`input[name="changeType"][value="${change.changeType}"]`);
+    if(ct){ ct.checked = true; ct.dispatchEvent(new Event('change')); }
+
+    document.getElementById('newTeacher').value     = change.newTeacher || '';
+    document.getElementById('newTeacherAll').value  = change.newTeacher || '';
+    document.getElementById('newDate').value        = change.newDate || '';
+    document.getElementById('newDateAll').value     = change.newDate || '';
+    document.getElementById('newTimeSlot').value    = change.newTimeSlot || '';
+    document.getElementById('newTimeSlotAll').value = change.newTimeSlot || '';
+
+    // ★追加：生徒連絡系の復元
+    setStudentContactStatus(change.student_contact || '');
+    document.getElementById('uncontactedStudentsInput').value = change.uncontacted_students || '';
+
+  }else{
+    document.querySelectorAll('input[type="radio"]').forEach(r=>r.checked=false);
+    document.getElementById('reasonDetailInput').value = '';
+    ['newTeacher','newDate','newTimeSlot','newTeacherAll','newDateAll','newTimeSlotAll']
+      .forEach(id=>document.getElementById(id).value='');
+    document.querySelectorAll('.conditional-fields').forEach(f=>f.style.display='none');
+
+    // ★追加：生徒連絡系の初期化
+    setStudentContactStatus('未完了');
+    document.getElementById('uncontactedStudentsInput').value = '';
+
+    // ★初期値：緊急欠勤/通常欠勤を自動選択
+    const autoRadio = document.querySelector(`#changeTypeGroup input[name="changeType"][value="${autoAbsenceLabel}"]`);
+    if(autoRadio){ autoRadio.checked = true; autoRadio.dispatchEvent(new Event('change', { bubbles:true })); }
+  }
+}
+
+closeBtn.onclick = ()=> modal.style.display='none';
+cancelBtn.onclick = ()=> modal.style.display='none';
+window.onclick = e=>{ if(e.target===modal) modal.style.display='none'; };
+
+saveBtn.onclick = ()=>{
+  const reasonTypeEl = document.querySelector('input[name="reasonType"]:checked');
+  const reasonDetail = (document.getElementById('reasonDetailInput').value || '').trim();
+  const changeTypeEl = document.querySelector('input[name="changeType"]:checked');
+  if(!reasonTypeEl || !changeTypeEl){ alert('すべての項目を入力してください'); return; }
+
+  const fields = changeTypeEl.dataset.fields;
+
+  // ★要望対応：
+  // - 変更理由類型が「受験サポート」のときは、変更理由内容を必須にしない
+  // - それ以外は、従来どおり「未定振替（fields=none）」のみ任意
+  const isReasonDetailRequired =
+    (reasonTypeEl.value !== '受験サポート') &&
+    !(fields === 'none' && changeTypeEl.value === '未定振替');
+
+  if(isReasonDetailRequired && reasonDetail===''){
+    alert('変更理由の内容を入力してください');
+    return;
+  }
+
+  const change = { reasonType:reasonTypeEl.value, reasonDetail, changeType:changeTypeEl.value };
+
+  // ★追加：生徒連絡の状態を取得
+  const studentContact = (document.getElementById('studentContactStatus')?.value || '').trim();
+  const uncontactedStudents = (document.getElementById('uncontactedStudentsInput')?.value || '').trim();
+
+  if(!studentContact){
+    alert('「生徒への連絡」を選択してください（完了 / 未完了）。');
+    return;
+  }
+  if(studentContact === '未完了' && uncontactedStudents === ''){
+    alert('「未完了」の場合は、連絡未済の生徒の氏名を入力してください。');
+    return;
+  }
+
+  change.student_contact = studentContact;
+  change.uncontacted_students = uncontactedStudents;
+
+  if(fields==='teacher'){
+    const nt = (document.getElementById('newTeacher').value || '').trim();
+    if(!nt){ alert('講師名を入力してください'); return; }
+    change.newTeacher = nt;
+  }else if(fields==='datetime'){
+    const nd = document.getElementById('newDate').value;
+    const ns = document.getElementById('newTimeSlot').value;
+    if(!nd || !ns){ alert('日付と授業コマを選択してください'); return; }
+    change.newDate = nd; change.newTimeSlot = ns;
+  }else if(fields==='all'){
+    const nt = (document.getElementById('newTeacherAll').value || '').trim();
+    const nd = document.getElementById('newDateAll').value;
+    const ns = document.getElementById('newTimeSlotAll').value;
+    if(!nt || !nd || !ns){ alert('講師名、日付、授業コマをすべて入力してください'); return; }
+    change.newTeacher = nt; change.newDate = nd; change.newTimeSlot = ns;
+  }
+
+  changes[currentEditingKey] = change;
+  modal.style.display = 'none';
+
+  applyTeacherFilter();
+
+};
+
+/* ===== 申請送信 ===== */
+document.getElementById('submitBtn').addEventListener('click', async ()=>{
+  const keys = Object.keys(changes);
+  if (keys.length === 0) {
+    alert('変更を指定してください');
+    return;
+  }
+
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.disabled = true;
+  const originalLabel = submitBtn.textContent;
+  submitBtn.textContent = '送信中...';
+
+  // allClasses + changes をマージ
+  const mergedRecords = keys.map(key => {
+    const i = allClasses.findIndex(c => keyForClass(c) === key);
+    return { ...allClasses[i], ...changes[key] };
+  });
+
+  // GAS doPost 用のペイロード配列
+  const applicantName = (document.getElementById('applicantName')?.value || '').trim();
+  const payloads = mergedRecords.map(r => buildPayloadForGAS(r, applicantName));
+  const total = payloads.length;
+  let successCount = 0;
+
+  try {
+    for (let idx = 0; idx < payloads.length; idx++) {
+      // ★要望対応：進捗表示（軽量：ボタン文言だけ更新）
+      submitBtn.textContent = `${idx + 1}件目送信中... (${idx + 1}/${total})`;
+
+      const payload = payloads[idx];
+      const body = new URLSearchParams(payload);
+
+      // ★ CORS を気にせず「投げるだけ」
+      await fetch(FORM_POST_URL, {
+        method: 'POST',
+        mode: 'no-cors',   // ← ここがポイント
+        body               // ← headers は付けない
+      });
+
+      // no-cors ではレスポンス確認ができないので、
+      // ここまで来たら 1件「送信開始できた」とみなす
+      successCount++;
+    }
+
+    // 送信処理（リクエスト送信の開始）自体は完了
+    alert(`申請を ${successCount} 件送信しました。`);
+    // 全件送れている前提で changes をクリア
+    changes = {};
+    updateSubmitButtonState();
+
+    // 送信成功後の「最初の画面へ戻ってクリア」は一旦オフ（必要ならフラグを true に）
+    if (ENABLE_RESET_AFTER_SUBMIT) resetToInitialScreen();
+
+  } catch (err) {
+    console.error('送信中のエラー:', err);
+    alert('送信中にエラーが発生しました。ネットワーク環境をご確認ください。');
+  }
+
+  submitBtn.disabled = false;
+  updateSubmitButtonState();
+});
+
+
+
+document.getElementById('classList').addEventListener('click', (e)=>{
+  const target = e.target;
+
+  // ボタン・リンク類
+  const actionEl = target.closest('button[data-action], a[data-action]');
+  if(actionEl){
+    e.stopPropagation();
+    e.preventDefault();
+    const action = actionEl.dataset.action;
+    if(action === 'open'){    openChangeModal(actionEl.dataset.key); }
+    if(action === 'rewind'){  rewindWeek(Number(actionEl.dataset.index)); }
+    if(action === 'advance'){ advanceWeek(Number(actionEl.dataset.index)); }
+    return;
+  }
+
+  // カードのbefore/afterクリックで編集モーダル
+  const pane = target.closest('.pane.clickable');
+  if(pane && pane.dataset.key){
+    openChangeModal(pane.dataset.key);
+  }
+});
+
+
+function setApplicantNameFromQuery(){
+  const params = new URLSearchParams(window.location.search);
+  const raw = params.get('applicantName');
+
+  if(!raw) return;
+
+  // + を空白として渡してくるケース対策
+  const name = String(raw).replace(/\+/g, ' ').trim();
+  if(!name) return;
+
+  const el = document.getElementById('applicantName');
+  // 手入力が既にあるなら上書きしない（上書きしたいならこの if を外す）
+  if(el && !el.value.trim()){
+    el.value = name;
+  }
+}
+
+
+
+/* ===== 起動 ===== */
+(function init(){
+  setApplicantNameFromQuery();  // ★追加
+  loadData();
+  setupChangeTypeListeners();
+  setupStudentContactListeners(); // ★追加
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+# Protect sensitive files/directories inside teacher-auth
+RewriteEngine On
+RewriteRule ^\.env$ - [F,L]
+RewriteRule ^(src|vendor|database)/ - [F,L]

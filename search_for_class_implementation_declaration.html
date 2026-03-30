@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>授業実施申告の検索</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f0f4f8;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background-color: white;
+            padding: 2rem;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
+        }
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+        form {
+            display: flex;
+            flex-direction: column;
+        }
+        label {
+            margin-bottom: 0.5rem;
+            color: #34495e;
+        }
+        input[type="text"], input[type="month"] {
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border: 1px solid #bdc3c7;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        input[type="submit"] {
+            background-color: #3498db;
+            color: white;
+            border: none;
+            padding: 0.75rem;
+            border-radius: 4px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        input[type="submit"]:hover {
+            background-color: #2980b9;
+        }
+        .kiweb-loading {
+            display: none;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 14px;
+            color: var(--md-sys-color-primary, #3498db);
+            font-weight: 600;
+        }
+        .kiweb-loading.is-active {
+            display: flex;
+        }
+        .kiweb-loading-spinner {
+            width: 38px;
+            height: 38px;
+            border-radius: 50%;
+            border: 3px solid rgba(0, 0, 0, 0.12);
+            border-top-color: var(--md-sys-color-primary, #3498db);
+            animation: kiweb-spinner-rotate 1333ms linear infinite;
+            flex: 0 0 38px;
+        }
+        .kiweb-loading-text {
+            font-size: 0.95rem;
+            line-height: 1.4;
+        }
+        @keyframes kiweb-spinner-rotate {
+            to {
+                transform: rotate(360deg);
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .kiweb-loading-spinner {
+                animation: none;
+            }
+        }
+        @media (max-width: 480px) {
+            .container {
+                padding: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>授業実施申告の検索</h1>
+        <p><B>検索結果は、slack DMで届きます。<br>デリバードアイコンの「KI_DM_Sender」です。<br>送信後、少し長めに黒い画面が続きますが、正常です。</B></p>
+        <form action="https://script.google.com/macros/s/AKfycbzozR4uy7VzH7IT0OcBeCebV9htAVOZPJhokWzq88BancZEgDlj4guIbzkxhzblHC1N/exec" method="get">
+            <label for="name">講師氏名</label>
+            <input type="text" id="name" name="name" required placeholder="例: 山田太郎">
+            
+            <label for="yearMonth">対象年月</label>
+            <input type="month" id="yearMonth" name="yearMonth" required>
+            
+            <input type="submit" value="送信">
+        </form>
+        <div id="loading" class="kiweb-loading" role="status" aria-live="polite">
+            <span class="kiweb-loading-spinner" aria-hidden="true"></span>
+            <span class="kiweb-loading-text">Loading...</span>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const form = document.querySelector('form');
+            const loading = document.getElementById('loading');
+            if (!form || !loading) return;
+            form.addEventListener('submit', function () {
+                loading.classList.add('is-active');
+            });
+        });
+    </script>
+</body>
+</html>

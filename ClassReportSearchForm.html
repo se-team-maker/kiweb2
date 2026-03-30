@@ -1,0 +1,765 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>授業情報リクエストフォーム</title>
+  <style>
+    :root {
+      --web-button-color: #AADDAA;
+      --web-button-hover-color: #66DD66;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      font-size: 16px;
+      background-color: #fdfdfd;
+      color: #333;
+    }
+    h1,
+    #guideContainer,
+    #searchClassForm,
+    #authStatus,
+    #loading {
+      width: 100%;
+      max-width: 600px;
+      margin-left: auto;
+      margin-right: auto;
+      box-sizing: border-box;
+    }
+    .guide {
+      background-color: #f8f8f8;
+      border: 1px solid #ddd;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 4px;
+    }
+    .guide ul {
+        margin: 0;
+        padding-left: 20px;
+    }
+    .guide li {
+        margin-bottom: 10px;
+    }
+    form {
+      background-color: #f0f0f0;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    }
+    label {
+      display: block;
+      margin-bottom: 5px;
+    }
+    input,
+    select {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    .date-range {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      /* 入力欄と区切り線の間隔 */
+      margin-bottom: 15px;
+    }
+    .date-range input[type="date"] {
+      flex: 1;
+      /* 入力欄を均等に広げる */
+    }
+    .date-range span {
+      font-size: 16px;
+      color: #555;
+    }
+    .button-group {
+      display: flex;
+      gap: 10px;
+      /* ボタン間の余白 */
+    }
+    button {
+      background-color: var(--web-button-color);
+      color: white;
+      cursor: pointer;
+      padding: 10px 20px;
+      border: none;
+      border-radius: 4px;
+      font-size: 16px;
+      flex: 1;
+      transition: all 0.3s ease;
+    }
+    button:hover {
+      background-color: var(--web-button-hover-color);
+    }
+    button:disabled {
+      cursor: not-allowed;
+      opacity: 0.6;
+      background-color: #9dbb9d;
+    }
+    .highlight {
+      font-weight: bold;
+      font-size: 20px;
+      /* 強調部分の文字サイズを大きく */
+      color: #555555;
+      /* 強調部分をオレンジ色に */
+      transition: color 0.3s ease;
+      /* ホバー時の色変化も滑らかに */
+    }
+    button:hover .highlight {
+      color: #222222;
+      /* ホバー時にゴールド色へ */
+    }
+    .resultBlock {
+      width: 100%;
+      margin-top: 20px;
+      padding: 4px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+    .readonly-field {
+      background-color: #ececec;
+      color: #555;
+    }
+    /* 科目・授業実施年月は編集可能のためグレーアウトしない */
+    #subject,
+    #yearSelect,
+    #monthSelect {
+      background-color: #fff !important;
+      color: #333;
+    }
+    /* 授業実施年月：iOSでinput type="month"の幅が制御できないためselect×2に変更 */
+    .year-month-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 15px;
+    }
+    .year-month-row select {
+      flex: 1;
+      min-width: 0;
+      margin-bottom: 0;
+    }
+    .year-month-sep {
+      flex-shrink: 0;
+      font-size: 16px;
+      color: #555;
+    }
+    /* フォーム幅は科目に合わせつつ、狭くなりすぎないようにする */
+    #searchClassForm {
+      width: 100%;
+      max-width: 600px;
+    }
+    #searchClassForm input,
+    #searchClassForm select {
+      width: 100%;
+      box-sizing: border-box;
+    }
+    .auth-status {
+      display: none;
+      margin-top: 12px;
+      padding: 10px 12px;
+      border: 1px solid #f3c1c1;
+      border-radius: 4px;
+      background-color: #fff3f3;
+      color: #c62828;
+      font-weight: 700;
+    }
+    .auth-status.is-visible {
+      display: block;
+    }
+    .browser-result-title {
+      width: 99.4%;
+      margin: 0 auto 10px;
+      font-size: 1.1rem;
+      box-sizing: border-box;
+    }
+    .browser-meta {
+      width: 99.4%;
+      margin: 0 auto 10px;
+      padding-left: 18px;
+      box-sizing: border-box;
+    }
+    .browser-meta li {
+      margin-bottom: 4px;
+    }
+    .browser-status {
+      width: 99.4%;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 10px auto;
+      font-weight: 700;
+      color: #1a73e8;
+      box-sizing: border-box;
+    }
+    .browser-status-spinner {
+      width: 24px;
+      height: 24px;
+      flex: 0 0 24px;
+      animation: kiweb-spinner-rotator 1.4s linear infinite;
+    }
+    .browser-status-spinner-path {
+      stroke-dasharray: 187;
+      stroke-dashoffset: 0;
+      transform-origin: center;
+      stroke: var(--web-button-color);
+      animation: kiweb-spinner-dash 1.4s ease-in-out infinite;
+    }
+    .browser-status.is-done .browser-status-spinner,
+    .browser-status.is-error .browser-status-spinner {
+      display: none;
+    }
+    .browser-status.is-error {
+      color: #d32f2f;
+    }
+    .browser-result-frame {
+      display: block;
+      width: 99.4%;
+      margin: 0 auto;
+      box-sizing: border-box;
+      height: 70vh;
+      border: 1px solid #d0d0d0;
+      border-radius: 4px;
+      background-color: #fff;
+    }
+    .kiweb-loading {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 12px;
+      color: var(--md-sys-color-primary, #1a73e8);
+      font-weight: 600;
+    }
+    .kiweb-loading.is-active {
+      display: flex;
+    }
+    .kiweb-loading-spinner {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      animation: kiweb-spinner-rotator 1.4s linear infinite;
+    }
+    .kiweb-loading-spinner-path {
+      stroke-dasharray: 187;
+      stroke-dashoffset: 0;
+      transform-origin: center;
+      stroke: var(--web-button-color);
+      animation: kiweb-spinner-dash 1.4s ease-in-out infinite;
+    }
+    .kiweb-loading-text {
+      font-size: 0.95rem;
+      line-height: 1.4;
+    }
+    .kiweb-loading.is-error {
+      color: #d32f2f;
+    }
+    .kiweb-loading.is-error .kiweb-loading-spinner {
+      display: none;
+    }
+    @keyframes kiweb-spinner-rotator {
+      0% {
+        transform: rotate(0deg);
+      }
+      100% {
+        transform: rotate(270deg);
+      }
+    }
+    @keyframes kiweb-spinner-dash {
+      0% {
+        stroke-dashoffset: 187;
+      }
+      50% {
+        stroke-dashoffset: 46.75;
+        transform: rotate(135deg);
+      }
+      100% {
+        stroke-dashoffset: 187;
+        transform: rotate(450deg);
+      }
+    }
+      @media (prefers-reduced-motion: reduce) {
+      .kiweb-loading-spinner {
+        animation: none;
+      }
+      .kiweb-loading-spinner-path {
+        animation: none;
+      }
+      .browser-status-spinner,
+      .browser-status-spinner-path {
+        animation: none;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <h1>授業報告書　検索フォーム</h1>
+
+  <div id="guideContainer" class="guide">
+    <details>
+      <summary>説明</summary>
+      <ul style="font-weight: bold;">
+        <li>Web表示はスマホだと表示できない場合があります。その場合はSlack送信を利用してください。</li>
+        <li>Slack送信の場合は、「講師名」が送信先になるため、必ず記入してください。漢字フルネームで正しく記入してください。</li>
+      </ul>
+    </details>
+  </div>
+
+  <form id="searchClassForm">
+    <label for="teacherName">講師名 <span style="color: red;">【Slack送信の場合必須】</label>
+    <input type="text" id="teacherName" name="teacherName">
+
+    <label for="subject">科目 <span style="color: red;">【必須】</label>
+    <select id="subject" name="subject" required>
+      <option value="">選択してください</option>
+      <option value="英語">英語</option>
+      <option value="数学">数学</option>
+      <option value="化学">化学</option>
+      <option value="物理">物理</option>
+      <option value="生物">生物</option>
+      <option value="国語">国語</option>
+      <option value="社会">社会</option>
+    </select>
+
+    <label>授業実施年月 <span style="color: red;">【必須】</span></label>
+    <div class="year-month-row">
+      <select id="yearSelect" required aria-label="年"></select>
+      <span class="year-month-sep">年</span>
+      <select id="monthSelect" required aria-label="月">
+        <option value="01">1月</option>
+        <option value="02">2月</option>
+        <option value="03">3月</option>
+        <option value="04">4月</option>
+        <option value="05">5月</option>
+        <option value="06">6月</option>
+        <option value="07">7月</option>
+        <option value="08">8月</option>
+        <option value="09">9月</option>
+        <option value="10">10月</option>
+        <option value="11">11月</option>
+        <option value="12">12月</option>
+      </select>
+      <span class="year-month-sep">月</span>
+    </div>
+
+    <label for="studentrName">生徒名（個別授業の場合）</label>
+    <input type="text" id="studentName" name="studentName">
+
+    <label for="className">授業名（集団授業の場合）</label>
+    <input type="text" id="className" name="className">
+
+    <div class="button-group">
+      <button type="submit" id="browser">
+        検索結果を <span class="highlight">web表示</span>
+      </button>
+      <button type="submit" id="slackDM">
+        検索結果を <span class="highlight">Slack送信</span>
+      </button>
+    </div>
+  </form>
+  <div id="authStatus" class="auth-status" role="alert" aria-live="assertive"></div>
+
+  <div id="loading" class="kiweb-loading" role="status" aria-live="polite">
+    <svg class="kiweb-loading-spinner" viewBox="0 0 66 66" aria-hidden="true">
+      <circle class="kiweb-loading-spinner-path" fill="none" stroke-width="6" stroke-linecap="round" cx="33" cy="33" r="30"></circle>
+    </svg>
+    <span class="kiweb-loading-text">データを読み込み中...</span>
+  </div>
+
+  <div id="resultBlock" class="resultBlock" style="display: none;"></div>
+
+    <script>
+    (function () {
+      const GAS_URL = "https://script.google.com/macros/s/AKfycbwYI6KlgF90HBv6_rFZGUV-ZLq-aNqa3FDQtorybGv9WJLQOzvhRMyTal7Iw483khxz/exec";
+      const BROWSER_API_URL = "/kiweb/teacher-auth/api/class-report-search.php";
+      const ME_API_URL = "/kiweb/teacher-auth/api/me.php";
+
+      const form = document.getElementById("searchClassForm");
+      const teacherNameInput = document.getElementById("teacherName");
+      const subjectInput = document.getElementById("subject");
+      const yearSelect = document.getElementById("yearSelect");
+      const monthSelect = document.getElementById("monthSelect");
+      const studentNameInput = document.getElementById("studentName");
+      const classNameInput = document.getElementById("className");
+      const browserButton = document.getElementById("browser");
+      const slackButton = document.getElementById("slackDM");
+      const resultDiv = document.getElementById("resultBlock");
+      const authStatus = document.getElementById("authStatus");
+      const loading = document.getElementById("loading");
+      const urlParams = new URLSearchParams(window.location.search);
+      const allowNameEdit = urlParams.get("allowNameEdit") === "1";
+
+      function initYearMonthSelects() {
+        var now = new Date();
+        var currentYear = now.getFullYear();
+        if (yearSelect) {
+          yearSelect.innerHTML = "";
+          for (var y = currentYear - 2; y <= currentYear + 2; y++) {
+            var opt = document.createElement("option");
+            opt.value = String(y);
+            opt.textContent = y + "年";
+            if (y === currentYear) {
+              opt.selected = true;
+            }
+            yearSelect.appendChild(opt);
+          }
+        }
+        if (monthSelect) {
+          monthSelect.value = String(now.getMonth() + 1).padStart(2, "0");
+        }
+      }
+
+      function getYearMonthValue() {
+        const y = yearSelect && yearSelect.value ? yearSelect.value : "";
+        const m = monthSelect && monthSelect.value ? monthSelect.value : "";
+        if (!y || !m) {
+          return "";
+        }
+        return y + "-" + m;
+      }
+
+      function setLoading(active, message = "データを読み込み中...", isError = false) {
+        if (!loading) {
+          return;
+        }
+        const text = loading.querySelector(".kiweb-loading-text");
+        if (text) {
+          text.textContent = message;
+        }
+        loading.classList.toggle("is-active", active);
+        loading.classList.toggle("is-error", !!isError);
+      }
+
+      function setSearchButtonsEnabled(enabled) {
+        browserButton.disabled = !enabled;
+        slackButton.disabled = !enabled;
+      }
+
+      function showAuthError(message) {
+        authStatus.textContent = message;
+        authStatus.classList.add("is-visible");
+      }
+
+      function clearAuthError() {
+        authStatus.textContent = "";
+        authStatus.classList.remove("is-visible");
+      }
+
+      function getInitialTeacherNameFromQuery() {
+        return String(urlParams.get("teacher") || urlParams.get("name") || "").trim();
+      }
+
+      function setTeacherNameEditability(editable) {
+        teacherNameInput.readOnly = !editable;
+        if (editable) {
+          teacherNameInput.removeAttribute("readonly");
+          teacherNameInput.removeAttribute("aria-readonly");
+          teacherNameInput.classList.remove("readonly-field");
+          return;
+        }
+
+        teacherNameInput.setAttribute("readonly", "readonly");
+        teacherNameInput.setAttribute("aria-readonly", "true");
+        teacherNameInput.classList.add("readonly-field");
+      }
+
+      async function fetchCurrentUser() {
+        const response = await fetch(ME_API_URL, {
+          method: "GET",
+          credentials: "include"
+        });
+        if (!response.ok) {
+          throw new Error("me.php failed: " + response.status);
+        }
+        const data = await response.json();
+        if (!data || data.success !== true || !data.user) {
+          throw new Error("user is empty");
+        }
+        return data.user;
+      }
+
+      async function initializeCurrentTeacherName() {
+        setSearchButtonsEnabled(false);
+        clearAuthError();
+        teacherNameInput.value = "";
+        setTeacherNameEditability(false);
+
+        try {
+          const user = await fetchCurrentUser();
+          const userName = getInitialTeacherNameFromQuery() || String(user.name || "").trim();
+          const permissions = Array.isArray(user.permissions) ? user.permissions : [];
+          const canEditTeacherName = allowNameEdit && permissions.includes("manage_users");
+          if (!userName) {
+            throw new Error("user name is empty");
+          }
+          teacherNameInput.value = userName;
+          setTeacherNameEditability(canEditTeacherName);
+          setSearchButtonsEnabled(true);
+        } catch (error) {
+          showAuthError("ログイン情報を取得できません。再ログイン後にもう一度お試しください。");
+          setSearchButtonsEnabled(false);
+        }
+      }
+
+      function escapeHtml(value) {
+        return String(value === undefined || value === null ? "" : value)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/\"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function buildBrowserResultDocument(rows) {
+        const rowHtml = rows.map(function (row, index) {
+          return "<tr>" +
+            "<td>" + (index + 1) + "</td>" +
+            "<td>" + escapeHtml(row.date) + "</td>" +
+            "<td>" + escapeHtml(row.timeSlot) + "</td>" +
+            "<td>" + escapeHtml(row.branch) + "</td>" +
+            "<td>" + escapeHtml(row.teacherName) + "</td>" +
+            "<td>" + escapeHtml(row.studentName) + "</td>" +
+            "<td>" + escapeHtml(row.className) + "</td>" +
+            "<td>" + escapeHtml(row.subject) + "</td>" +
+            "<td>" + escapeHtml(row.textbook) + "</td>" +
+            "<td>" + escapeHtml(row.chapter) + "</td>" +
+            "<td>" + escapeHtml(row.homework) + "</td>" +
+            "<td>" + escapeHtml(row.testContent) + "</td>" +
+            "<td>" + escapeHtml(row.testScore) + "</td>" +
+            "</tr>";
+        }).join("");
+
+        const tableBody = rows.length > 0
+          ? rowHtml
+          : "<tr><td colspan=\"13\">該当データはありません。</td></tr>";
+
+        return "<!doctype html>" +
+          "<html lang=\"ja\">" +
+          "<head>" +
+          "<meta charset=\"UTF-8\">" +
+          "<meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">" +
+          "<style>" +
+          "body{font-family:Arial,sans-serif;margin:0;padding:12px;color:#222;}" +
+          ".count{margin:0 0 10px;font-weight:700;color:#1a73e8;}" +
+          ".table-wrap{overflow:auto;border:1px solid #ddd;border-radius:6px;}" +
+          "table{border-collapse:collapse;width:max-content;min-width:100%;font-size:13px;}" +
+          "th,td{border-bottom:1px solid #eee;padding:8px;white-space:nowrap;text-align:left;vertical-align:top;}" +
+          "th{position:sticky;top:0;background:#f7f7f7;z-index:1;}" +
+          "tr:nth-child(even){background:#fcfcfc;}" +
+          "</style>" +
+          "</head>" +
+          "<body>" +
+          "<p class=\"count\">検索件数: " + rows.length + "件</p>" +
+          "<div class=\"table-wrap\">" +
+          "<table>" +
+          "<thead><tr>" +
+          "<th>No</th><th>日付</th><th>時限</th><th>校舎</th><th>講師名</th><th>生徒名</th><th>授業名</th><th>科目</th><th>教材</th><th>単元</th><th>宿題</th><th>テスト範囲</th><th>点数</th>" +
+          "</tr></thead>" +
+          "<tbody>" + tableBody + "</tbody>" +
+          "</table>" +
+          "</div>" +
+          "</body></html>";
+      }
+
+      function buildBrowserErrorDocument(message) {
+        return "<!doctype html>" +
+          "<html lang=\"ja\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">" +
+          "<style>body{font-family:Arial,sans-serif;margin:0;padding:12px;color:#b00020;}p{margin:0;line-height:1.6;}</style>" +
+          "</head><body><p>検索結果の取得に失敗しました。</p><p>" + escapeHtml(message || "Unknown error") + "</p></body></html>";
+      }
+
+      async function renderBrowserResultInIframe(url, meta) {
+        resultDiv.style.display = "block";
+        resultDiv.innerHTML = "";
+
+        const title = document.createElement("h2");
+        title.className = "browser-result-title";
+        title.textContent = "ポータル内に検索結果を表示します";
+
+        const metaList = document.createElement("ul");
+        metaList.className = "browser-meta";
+        [
+          ["講師名", meta.teacherName],
+          ["科目", meta.subject],
+          ["授業実施年月", meta.yearMonth],
+          ["生徒名", meta.studentName],
+          ["授業名", meta.className]
+        ].forEach(function (entry) {
+          const item = document.createElement("li");
+          const label = document.createElement("strong");
+          label.textContent = entry[0] + ": ";
+          item.appendChild(label);
+          item.appendChild(document.createTextNode(entry[1] || ""));
+          metaList.appendChild(item);
+        });
+
+        const status = document.createElement("p");
+        status.className = "browser-status";
+        const statusSpinner = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        statusSpinner.setAttribute("class", "browser-status-spinner");
+        statusSpinner.setAttribute("viewBox", "0 0 66 66");
+        statusSpinner.setAttribute("aria-hidden", "true");
+
+        const statusSpinnerPath = document.createElementNS("http://www.w3.org/2000/svg", "circle");
+        statusSpinnerPath.setAttribute("class", "browser-status-spinner-path");
+        statusSpinnerPath.setAttribute("fill", "none");
+        statusSpinnerPath.setAttribute("stroke-width", "6");
+        statusSpinnerPath.setAttribute("stroke-linecap", "round");
+        statusSpinnerPath.setAttribute("cx", "33");
+        statusSpinnerPath.setAttribute("cy", "33");
+        statusSpinnerPath.setAttribute("r", "30");
+        statusSpinner.appendChild(statusSpinnerPath);
+
+        const statusText = document.createElement("span");
+        statusText.textContent = "検索結果を読み込み中です...";
+        status.appendChild(statusSpinner);
+        status.appendChild(statusText);
+
+        const frame = document.createElement("iframe");
+        frame.className = "browser-result-frame";
+        frame.title = "授業報告書検索結果";
+        frame.loading = "lazy";
+
+        resultDiv.appendChild(title);
+        resultDiv.appendChild(metaList);
+        resultDiv.appendChild(status);
+        resultDiv.appendChild(frame);
+        try {
+          const response = await fetch(url, {
+            method: "GET",
+            credentials: "include"
+          });
+
+          let data = null;
+          try {
+            data = await response.json();
+          } catch (jsonError) {
+            throw new Error("Invalid JSON response");
+          }
+
+          if (!response.ok) {
+            throw new Error((data && (data.error || data.message)) || ("HTTP " + response.status));
+          }
+
+          if (!data || data.result !== "success") {
+            throw new Error((data && (data.message || data.error)) || "Search API error");
+          }
+
+          const rows = Array.isArray(data.rows) ? data.rows : [];
+          frame.srcdoc = buildBrowserResultDocument(rows);
+
+          status.classList.remove("is-error");
+          status.classList.add("is-done");
+          statusText.textContent = "検索結果を表示しました。(" + rows.length + "件)";
+        } catch (error) {
+          frame.srcdoc = buildBrowserErrorDocument(error && error.message ? error.message : "Unknown error");
+          status.classList.remove("is-done");
+          status.classList.add("is-error");
+          statusText.textContent = "検索結果の表示に失敗しました。";
+        } finally {
+          setLoading(false);
+          resultDiv.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+
+      form.addEventListener("submit", async function (event) {
+        event.preventDefault();
+        const submitter = event.submitter;
+        const submitterId = submitter && submitter.id ? submitter.id : "";
+
+        const teacherName = teacherNameInput.value || "";
+        const subject = subjectInput.value || "";
+        const yearMonth = getYearMonthValue();
+        const studentName = studentNameInput.value || "";
+        const className = classNameInput.value || "";
+
+        const baseParams = {
+          teacherName: teacherName,
+          subject: subject,
+          yearMonth: yearMonth,
+          studentName: studentName,
+          className: className
+        };
+
+        setLoading(true, submitterId === "browser" ? "検索結果を読み込み中..." : "送信中...");
+
+        if (submitterId === "browser") {
+          const params = new URLSearchParams(Object.assign({}, baseParams, { action: "browser" }));
+          const requestUrl = BROWSER_API_URL + "?" + params.toString();
+
+          await renderBrowserResultInIframe(requestUrl, {
+            teacherName: teacherName,
+            subject: subject,
+            yearMonth: yearMonth,
+            studentName: studentName,
+            className: className
+          });
+          return;
+        }
+
+        if (submitterId === "slackDM") {
+          const params = new URLSearchParams(Object.assign({}, baseParams, { action: submitterId }));
+          const requestUrl = GAS_URL + "?" + params.toString();
+
+          resultDiv.style.display = "block";
+          resultDiv.innerHTML = "<h1>送信中...</h1>";
+          resultDiv.scrollIntoView({ behavior: "smooth", block: "end" });
+
+          fetch(requestUrl)
+            .then(function (response) {
+              return response.json();
+            })
+            .then(function (data) {
+              if (data.result === "success") {
+                resultDiv.innerHTML = `
+                  <h1>Slack送信成功</h1>
+                  <p><strong>講師名:</strong> ${teacherName}</p>
+                  <p><strong>科目:</strong> ${subject}</p>
+                  <p><strong>授業実施年月:</strong> ${yearMonth}</p>
+                  <p><strong>生徒名:</strong> ${studentName}</p>
+                  <p><strong>授業名:</strong> ${className}</p>
+                `;
+              } else {
+                resultDiv.innerHTML = `
+                  <h1>Slack送信に失敗しました</h1>
+                  <p>エラー詳細: ${data.message || "不明なエラー"}</p>
+                `;
+              }
+
+              resultDiv.scrollIntoView({ behavior: "smooth", block: "end" });
+            })
+            .catch(function (error) {
+              resultDiv.style.display = "block";
+              resultDiv.innerHTML = `
+                <h1>Slack送信中にエラーが発生しました</h1>
+                <p>エラー詳細: ${error.message}</p>
+              `;
+              resultDiv.scrollIntoView({ behavior: "smooth", block: "end" });
+            })
+            .finally(function () {
+              setLoading(false);
+            });
+          return;
+        }
+
+        setLoading(false);
+        resultDiv.style.display = "block";
+        resultDiv.innerHTML = `<h1>未知のSUBMITTER_IDです: ${submitterId}</h1>`;
+        resultDiv.scrollIntoView({ behavior: "smooth", block: "end" });
+      });
+
+      initYearMonthSelects();
+      initializeCurrentTeacherName();
+    })();
+  </script>
+
+</body>
+
+</html>
