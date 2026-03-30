@@ -9,10 +9,12 @@
 
 | Path | 役割 |
 | --- | --- |
+| `index.html` | ルート。`/kiweb/login/public/login.php` へリダイレクト |
 | `login/` | 既存ログイン機能 |
 | `teacher-auth/` | 講師ログイン、ロール制御、管理画面、各種 API |
 | `room-booking/` | 会議室予約機能 |
 | `teacher-sync/` | `teacher-auth` のユーザー情報を外部へ同期する read-only API |
+| `apis/` | JustDB 連携ブリッジ（`justdb_teacher_bridge.php` など） |
 | `gas/` | Google Apps Script と連携用ファイル |
 | `kiweb2*.html` | 講師ポータル画面 |
 | `class-*.html`, `work-record.html` | 各種申請・入力画面 |
@@ -44,6 +46,7 @@ composer install --working-dir teacher-auth
 - `teacher-auth/vendor/` は Git 管理していないので、clone 後は `composer install --working-dir teacher-auth` が必要です。
 - `login/vendor/` は現状 repo に含まれています。
 - `room-booking/api/config.local.php` と各 `.env` はローカル専用です。
+- `index.html` のリダイレクト先は `/kiweb/...` の絶対パスです。PHP や DB とつなげて試すときは、Web サーバー上で `/kiweb` 配下として配信してください（`file://` 直開きではログインへ飛びません）。
 
 ## 普段の Git 手順
 
@@ -94,3 +97,7 @@ git branch -d fix/something
 - いま一部の GAS ファイルはローカル専用のため Git 管理外です。
 - `teacher-auth/public/portal-guard.php` と `kiweb2*.html` が講師ポータル導線の中心です。
 - Nginx 側の調整が必要な場合は `nginx-kiweb.conf` を参照してください。
+
+---
+
+最終確認: 2026-03-30（リポジトリ構成・`.gitignore` と突き合わせ）
