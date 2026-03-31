@@ -1060,6 +1060,30 @@
         window.location.replace(loginUrl);
       }
 
+      function getLoggedInUserName(user) {
+        if (!user || typeof user.name !== 'string') {
+          return '';
+        }
+        return user.name.trim();
+      }
+
+      function applyLoggedInUserName(user) {
+        const name = getLoggedInUserName(user);
+        if (!name) return;
+
+        const applicantEl = document.getElementById('applicantName');
+        if (applicantEl) {
+          applicantEl.value = name;
+        }
+
+        const teacherEl = document.getElementById('teacherName');
+        if (teacherEl) {
+          teacherEl.value = name;
+          pendingInitialTeacherFilter = true;
+          scheduleInitialTeacherFilterIfReady();
+        }
+      }
+
       async function ensureAuthenticated() {
         // Guard direct URL access before cached or live schedule data is rendered.
         const response = await fetch(ME_API_URL, {
@@ -1082,10 +1106,10 @@
         // Treat an unexpected "not authenticated" shape as a login miss.
         if (!json || json.success !== true || !json.user) {
           redirectToLogin();
-          return false;
+          return null;
         }
 
-        return true;
+        return json.user;
       }
 
       function escapeHtml(value) {
@@ -2455,43 +2479,15 @@
       bindClassListClick('pendingClassList');
 
 
-      function setApplicantNameFromQuery() {
-        const params = new URLSearchParams(window.location.search);
-
-        // applicantName または teacher パラメータを取得
-        const raw = params.get('applicantName') || params.get('teacher');
-
-        if (!raw) return;
-
-        // + を空白として渡してくるケース対策
-        const name = String(raw).replace(/\+/g, ' ').trim();
-        if (!name) return;
-
-        // 申請者名に設定
-        const applicantEl = document.getElementById('applicantName');
-        if (applicantEl && !applicantEl.value.trim()) {
-          applicantEl.value = name;
-        }
-
-        // 講師名にも設定して自動検索を実行
-        const teacherEl = document.getElementById('teacherName');
-        if (teacherEl && !teacherEl.value.trim()) {
-          teacherEl.value = name;
-          pendingInitialTeacherFilter = true;
-          scheduleInitialTeacherFilterIfReady();
-        }
-      }
-
-
-
       /* ===== 起動 ===== */
       (async function init() {
-        setApplicantNameFromQuery();  // ★追加
         showLoading();
 
         try {
-          const isAuthenticated = await ensureAuthenticated();
-          if (!isAuthenticated) return;
+          const currentUser = await ensureAuthenticated();
+          if (!currentUser) return;
+
+          applyLoggedInUserName(currentUser);
 
           loadData();
         } catch (err) {
