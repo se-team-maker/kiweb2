@@ -18,6 +18,7 @@ $success = Session::getFlash('success');
 // token_id をURLパラメータから取得
 $tokenId = $_GET['id'] ?? '';
 $remember = (($_GET['remember'] ?? '') === '1') ? '1' : '0';
+$returnTo = normalizeInternalRedirect($_GET['return_to'] ?? null) ?? '';
 
 // トークン情報を取得（メールアドレス表示用）
 $tokenInfo = null;
@@ -407,6 +408,7 @@ if ($tokenId) {
             <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
             <input type="hidden" name="token_id" id="token_id" value="<?= htmlspecialchars($tokenId) ?>">
             <input type="hidden" name="remember" id="remember" value="<?= $remember ?>">
+            <input type="hidden" name="return_to" id="return_to" value="<?= htmlspecialchars($returnTo, ENT_QUOTES, 'UTF-8') ?>">
             <input type="hidden" name="code" id="code-hidden">
 
             <div class="code-input-container">
@@ -471,6 +473,7 @@ if ($tokenId) {
         const resendLink = document.getElementById('resend-link');
         let tokenId = document.getElementById('token_id').value;
         const rememberValue = document.getElementById('remember').value;
+        const returnToValue = document.getElementById('return_to').value;
         const SHARED_TAB_SESSION_KEY = 'kiweb_shared_tab_session';
         const SHARED_TAB_TOKEN_KEY = 'kiweb_shared_tab_token';
         const SHARED_TAB_NAME_PREFIX = 'kiweb-shared-tab:';
@@ -667,7 +670,8 @@ if ($tokenId) {
                         tokenId = data.token_id;
                         document.getElementById('token_id').value = data.token_id;
                         const rememberQuery = rememberValue === '1' ? '&remember=1' : '';
-                        history.replaceState(null, '', 'verify-email.php?id=' + data.token_id + rememberQuery);
+                        const returnToQuery = returnToValue ? '&return_to=' + encodeURIComponent(returnToValue) : '';
+                        history.replaceState(null, '', 'verify-email.php?id=' + data.token_id + rememberQuery + returnToQuery);
                     }
                     this.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6L9 17l-5-5"></path></svg>送信しました！';
                     setTimeout(() => {

@@ -19,6 +19,7 @@ if ($nameParam !== '') {
 $csrfToken = Session::generateCsrfToken();
 $error = Session::getFlash('error');
 $success = Session::getFlash('success');
+$returnTo = normalizeInternalRedirect($_GET['return_to'] ?? null) ?? '';
 
 ?>
 <!DOCTYPE html>
@@ -85,6 +86,7 @@ $success = Session::getFlash('success');
             <div id="auth-content">
                 <form id="password-form" class="auth-form active" action="/kiweb/teacher-auth/api/login.php" method="POST" novalidate>
                     <input type="hidden" name="csrf_token" value="<?= $csrfToken ?>">
+                    <input type="hidden" name="return_to" value="<?= htmlspecialchars($returnTo, ENT_QUOTES, 'UTF-8') ?>">
 
                     <div class="md-text-field">
                         <input type="email" id="email" name="email" autocomplete="username" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false">

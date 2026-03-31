@@ -27,6 +27,8 @@ if (!Session::validateCsrfToken($token)) {
 $email = trim($_POST['email'] ?? '');
 $password = $_POST['password'] ?? '';
 $remember = Session::resolveRememberPreference($_POST['remember'] ?? null);
+$requestedRedirect = normalizeInternalRedirect($_POST['return_to'] ?? null);
+$postLoginRedirect = $requestedRedirect ?? '/kiweb/kiweb2.html';
 
 // 入力検証
 if (empty($email) || empty($password)) {
@@ -79,12 +81,17 @@ if (is_array($user) && isset($user['error']) && $user['error'] === 'email_not_ve
         'reason' => 'email_not_verified'
     ]);
 
+    $redirectUrl = '/kiweb/teacher-auth/public/verify-email.php?id=' . $tokenData['token_id']
+        . ($remember ? '&remember=1' : '');
+    if ($requestedRedirect !== null) {
+        $redirectUrl .= '&return_to=' . rawurlencode($requestedRedirect);
+    }
+
     jsonResponse([
         'success' => false,
         'error' => 'メール確認が完了していません。確認コードを再送しました。',
         'error_code' => 'EMAIL_NOT_VERIFIED',
-        'redirect' => '/kiweb/teacher-auth/public/verify-email.php?id=' . $tokenData['token_id']
-            . ($remember ? '&remember=1' : '')
+        'redirect' => $redirectUrl
     ]);
 }
 
@@ -117,5 +124,5 @@ AuditLog::log(AuditLog::LOGIN_SUCCESS, $user['id'], [
 
 jsonResponse([
     'success' => true,
-    'redirect' => '/kiweb/kiweb2.html'
+    'redirect' => $postLoginRedirect
 ]);

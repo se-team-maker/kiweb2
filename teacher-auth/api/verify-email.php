@@ -22,6 +22,7 @@ validateCsrf();
 $tokenId = trim($_POST['token_id'] ?? '');
 $code = trim($_POST['code'] ?? '');
 $remember = Session::resolveRememberPreference($_POST['remember'] ?? null);
+$postLoginRedirect = resolveInternalRedirect($_POST['return_to'] ?? null);
 
 // 入力検証
 if (empty($tokenId) || empty($code)) {
@@ -113,5 +114,5 @@ AuditLog::log(AuditLog::EMAIL_VERIFY_SUCCESS, $userId, [
 jsonResponse([
     'success' => true,
     'message' => 'メールアドレスの確認が完了しました',
-    'redirect' => '/kiweb/kiweb2.html'
+    'redirect' => $postLoginRedirect
 ]);

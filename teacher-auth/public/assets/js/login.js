@@ -225,8 +225,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    const syncSharedTabMarker = (form, redirectUrl) => {
-        if (!form || form.id !== 'password-form' || !redirectUrl || !redirectUrl.includes('/kiweb/kiweb2.html')) {
+    const syncSharedTabMarker = (form) => {
+        // Password login is the moment a real authenticated session is created.
+        if (!form || form.id !== 'password-form') {
             return;
         }
 
@@ -374,7 +375,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const data = await response.json();
 
                 if (data.redirect) {
-                    syncSharedTabMarker(form, data.redirect);
+                    if (data.success) {
+                        syncSharedTabMarker(form);
+                    }
                     redirectTo(data.redirect);
                     return;
                 }
