@@ -1218,7 +1218,6 @@
         url += (url.includes('?') ? '&' : '?') + 'theme=admin';
       }
       iframe.src = url;
-
       if (updateHash) {
         history.replaceState(null, '', '#' + key);
       }
