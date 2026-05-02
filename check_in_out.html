@@ -367,6 +367,7 @@ const mainEl = document.getElementById('mainContent');
 async function checkPermissions() {
   let hasManageUsers = false;
   let meName = '';
+  let roles = [];
   try {
     const res = await fetch('/kiweb/teacher-auth/api/me.php', {
       method: 'GET',
@@ -376,6 +377,7 @@ async function checkPermissions() {
       const data = await res.json();
       if (data && data.success && data.user) {
         meName = (data.user.name || data.user.email || '').trim();
+        roles = Array.isArray(data.user.roles) ? data.user.roles : [];
         if (data.user.permissions && data.user.permissions.includes('manage_users')) {
           hasManageUsers = true;
         }
@@ -384,7 +386,7 @@ async function checkPermissions() {
   } catch (e) {
     // ignore
   }
-  return { hasManageUsers, meName };
+  return { hasManageUsers, meName, roles };
 }
 
 // ── データ取得 ──
@@ -565,21 +567,23 @@ function render() {
 // ── 初期化 ──
 async function init() {
   // 権限確認
-  const { hasManageUsers, meName } = await checkPermissions();
+  const { hasManageUsers, meName, roles } = await checkPermissions();
 
   // 初期名: teacher > name > me.php取得名
   const initialName = teacherParam || meName;
   nameInput.value = initialName;
 
   // 編集可否の制御
-  const canEdit = allowNameEdit && hasManageUsers;
-  if (canEdit) {
-    nameInput.removeAttribute('readonly');
-    searchBtn.style.display = '';
-  } else {
-    nameInput.setAttribute('readonly', '');
-    searchBtn.style.display = 'none';
-  }
+  const canEdit = 
+    (themeParam === 'fulltime' && roles.includes('full_time_teacher')) ||
+    (allowNameEdit && hasManageUsers);
+    if (canEdit) {
+      nameInput.removeAttribute('readonly');
+      searchBtn.style.display = '';
+    } else {
+      nameInput.setAttribute('readonly', '');
+      searchBtn.style.display = 'none';
+    }
 
   // 表示ボタン
   searchBtn.addEventListener('click', () => {

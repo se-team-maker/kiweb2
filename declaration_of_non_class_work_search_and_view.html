@@ -332,7 +332,10 @@
 
 
             async function canCurrentUserEditName() {
-                if (!allowNameEdit) {
+                const themeParam = String(urlParams.get('theme') || '').trim().toLowerCase();
+                const isFullTimeMode = themeParam === 'fulltime';
+
+                if (!isFullTimeMode && !allowNameEdit) {
                     return false;
                 }
 
@@ -341,15 +344,41 @@
                         method: 'GET',
                         credentials: 'include'
                     });
+
                     if (!response.ok) {
                         return false;
                     }
 
                     const data = await response.json();
-                    const permissions = data && data.user && Array.isArray(data.user.permissions)
-                        ? data.user.permissions
+                    const user = data && data.user ? data.user : {};
+                    const roles = Array.isArray(user.roles)
+                        ? user.roles.map(role => String(role || '').trim())
                         : [];
-                    return permissions.includes('manage_users');
+                    const permissions = Array.isArray(user.permissions)
+                        ? user.permissions
+                        : [];
+
+                    const isFullTimeTeacher =
+                        isFullTimeMode &&
+                        roles.includes('full_time_teacher');
+
+                    const isAdminEditable =
+                        allowNameEdit &&
+                        permissions.includes('manage_users');
+
+                    const canEditName = isFullTimeTeacher || isAdminEditable;
+
+                    console.log('[non-class-work edit debug]', {
+                        themeParam,
+                        allowNameEdit,
+                        roles,
+                        permissions,
+                        isFullTimeTeacher,
+                        isAdminEditable,
+                        canEditName
+                    });
+
+                    return canEditName;
                 } catch (error) {
                     return false;
                 }

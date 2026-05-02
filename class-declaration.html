@@ -20,6 +20,21 @@
             --md-sys-color-outline-variant: #E3C4C7;
         }
 
+        html.thema-fulltime{
+            --md-sys-color-primary: #0F3668;
+            --md-sys-color-primary-hover: #0B2A53;
+            --md-sys-color-on-primary: #ffffff;
+            --md-sys-color-on-surface: #141D2C;
+            --md-sys-color-surface: #F8FAFF;
+            --md-sys-color-background: #F3F7FF;
+            --md-sys-color-surface-container: #E9F0FF;
+            --md-sys-color-outline-variant: #C0C8D7;
+        }
+
+        html.thema-fulltime tr.today {
+            background-color: #EAF1FF;
+        }
+
         body {
             font-family: 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'メイリオ', Meiryo, sans-serif;
             margin: 0;
@@ -1038,13 +1053,54 @@
             const endDateTime = endDate.toISOString().replace(/-|:|\.\d\d\d/g, "");
             return `https://www.google.com/calendar/render?action=TEMPLATE&text=${eventTitle}&dates=${startDateTime}/${endDateTime}`;
         }
+        function getPortalTheme(){
+            const urlParams = new URLSearchParams(window.location.search);
+            return String(urlParams.get('portalTheme') || '').trim().toLowerCase();
+        }
+        function isFullTimeMode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get('theme') === 'fulltime';
+        }
         function isNameEditAllowed() {
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get('allowNameEdit') === '1';
         }
+        function getUserRoles_(user){
+            return Array.isArray(user && user.roles) ? user.roles : [];
+        }
+        function isFullTimeUser_(user) {
+            const roles = getUserRoles_(user);
+            const roleText = [
+                ...(roles || []),
+                user && user.role,
+                user && user.role_name,
+                user && user.position,
+                user && user.position_name,
+                user && user.job_title,
+                user && user.employment_type,
+                user && user.account_type
+            ]
+                .filter(Boolean)
+                .map(value => String(value))
+                .join(' ');
+
+           return roles.includes('full_time_teacher')
+                || roles.includes('full_time_staff')
+                || roles.includes('full_time_employee')
+                || /専任|専任講師|専任社員|正社員|社員|full[_-]?time|sennin/i.test(roleText);
+        }
+
+        function applyPortalTheme() {
+            if (isFullTimeMode()) {
+                document.documentElement.classList.add('theme-fulltime');
+            }
+        }
 
         async function canCurrentUserEditTeacherName() {
-            if (!isNameEditAllowed()) {
+            const fullTimeMode = isFullTimeMode();
+            const adminEditMode = isNameEditAllowed();
+
+            if (!fullTimeMode && !adminEditMode) {
                 return false;
             }
 
@@ -1058,10 +1114,14 @@
                 }
 
                 const data = await response.json();
-                const permissions = data && data.user && Array.isArray(data.user.permissions)
-                    ? data.user.permissions
-                    : [];
-                return permissions.includes('manage_users');
+                const user = data && data.user ? data.user : {};
+                const roles = Array.isArray(user.roles) ? user.roles : [];
+                const permissions = Array.isArray(user.permissions) ? user.permissions : [];
+
+                return (
+                    (fullTimeMode && roles.includes('full_time_teacher')) ||
+                    (adminEditMode && permissions.includes('manage_users'))
+                );
             } catch (error) {
                 return false;
             }
@@ -1071,7 +1131,9 @@
             input.readOnly = !editable;
             if (editable) {
                 input.removeAttribute('readonly');
-                input.placeholder = "講師名はポータルから自動設定されます（管理者は編集可）";
+                input.placeholder = isFullTimeMode()
+                    ? "講師名を入力・変更できます"
+                    : "講師名はポータルから自動設定されます（管理者は編集可）";
             } else {
                 input.setAttribute('readonly', 'readonly');
                 input.placeholder = "講師名はポータルから自動設定されます（編集不可）";

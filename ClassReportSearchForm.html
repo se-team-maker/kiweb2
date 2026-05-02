@@ -495,9 +495,18 @@
           const user = await fetchCurrentUser();
           const userName = getInitialTeacherNameFromQuery() || String(user.name || "").trim();
           const permissions = Array.isArray(user.permissions) ? user.permissions : [];
-          const canEditTeacherName = allowNameEdit && permissions.includes("manage_users");
+          const roles = Array.isArray(user.roles) ? user.roles : [];
+          const themeParam = String(urlParams.get("theme") || "").trim().toLowerCase();
+          const normalizedRoles = roles.map(role => String(role || "").trim());
+          const isFullTimeTeacher =
+            themeParam === "fulltime" &&
+            normalizedRoles.includes("full_time_teacher");
+          const isAdminEditable =
+            allowNameEdit && permissions.includes("manage_users");
+          const canEditTeacherName = isFullTimeTeacher || isAdminEditable;
+
           if (!userName) {
-            throw new Error("user name is empty");
+             throw new Error("ユーザー名が空です");
           }
           teacherNameInput.value = userName;
           setTeacherNameEditability(canEditTeacherName);
