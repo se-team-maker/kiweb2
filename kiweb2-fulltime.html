@@ -842,6 +842,12 @@
                     <span>勤務記録の閲覧</span>
                   </a>
                 </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="pdf-viewer">
+                    <span class="nav-icon material-symbols-outlined">description</span>
+                    <span>資料一覧</span>
+                  </a>
+                </li>
               </ul>
             </li>
             <li class="nav-item admin-only" style="display: none;">
@@ -919,6 +925,12 @@
               <span>勤務記録の閲覧</span>
             </button>
           </li>
+          <li>
+            <button class="mobile-expand-link" type="button" data-page="pdf-viewer">
+              <span class="material-symbols-outlined" aria-hidden="true">description</span>
+              <span>資料一覧</span>
+            </button>
+          </li>
           <li class="admin-only" data-display="list-item" style="display: none;">
             <a class="mobile-expand-link" href="/kiweb/teacher-auth/public/admin.php">
               <span class="material-symbols-outlined" aria-hidden="true">settings</span>
@@ -940,11 +952,14 @@
   <script>
     // ★ 同一フォルダにある3ページを iframe で切り替え
     const PAGES = {
-      lessons: { file: 'class-declaration.html?v=20260317-submitted-refresh' }, // 授業予定・実施申告
-      work: { file: 'work-record.html?v=20260306-submit-card-center' },   // 勤務記録
-      absence: { file: 'class-reschedule.html' },   // 欠勤・振替
-      'class-report-search': { file: 'ClassReportSearchForm.html?v=20260317-class-report-search-bridge-v3' }, // 授業報告書の検索・閲覧
-      'non-class-work-search': { file: 'declaration_of_non_class_work_search_and_view.html' } // 勤務記録の閲覧
+      lessons: { file: '/kiweb/class-declaration.html?v=20260502-kazasu-badge-date' }, // 授業予定・実施申告
+      absence: { file: '/kiweb/class-reschedule_v260401.html', appendTeacher: false, appendTheme: false }, // 欠勤・振替申請（社員版）
+      'room-booking': { file: '/kiweb/room-booking/room-booking.php', appendTeacher: false, appendTheme: false }, // 会議室予約システム
+      check_in_out: { file: '/kiweb/check_in_out.html' }, // 出退勤記録・履歴の閲覧
+      'class-report-search': { file: '/kiweb/ClassReportSearchForm.html?v=20260317-class-report-search-bridge-v3' }, // 授業報告書の検索・閲覧
+      'non-class-work-search': { file: '/kiweb/declaration_of_non_class_work_search_and_view.html' }, // 勤務記録の検索・閲覧
+      signage: { file: 'https://system.kyotoijuku.com/signage/sk.html', appendTeacher: false, appendTheme: false }, // 教室割サイネージ（暫定）
+      'pdf-viewer': { file: '/kiweb/teacher-auth/public/pdf-list.php', appendTeacher: false, appendTheme: false }, // PDFビューア（共通）
     };
 
     const iframe = document.getElementById('mainFrame');
