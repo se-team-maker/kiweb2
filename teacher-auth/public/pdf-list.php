@@ -4,9 +4,15 @@ declare(strict_types=1);
 require_once __DIR__ . '/bootstrap.php';
 
 use App\Auth\Session;
+use App\Config\Database;
 use App\Model\User;
 
-function requirePdfViewerUser(): User
+function h(mixed $value): string
+{
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+}
+
+function requirePdfUser(): array
 {
     if (!Session::isLoggedIn()) {
         http_response_code(401);
@@ -22,73 +28,158 @@ function requirePdfViewerUser(): User
         exit('Unauthorized');
     }
 
-    return $user;
+    return [$user, (string) $userId];
 }
 
-function privatePdfDir(): string
+function normalizeRoleNames(mixed $rawRoles): array
 {
-    return dirname(__DIR__) . DIRECTORY_SEPARATOR . 'private-pdfs';
-}
-
-function isSafePdfFileName(string $fileName): bool
-{
-    return preg_match('/\A[A-Za-z0-9][A-Za-z0-9._-]*\.pdf\z/i', $fileName) === 1
-        && strpos($fileName, '..') === false;
-}
-
-function pdfDisplayName(string $fileName): string
-{
-    $name = pathinfo($fileName, PATHINFO_FILENAME);
-    return str_replace(['_', '-'], ' ', $name);
-}
-
-function formatBytes(int $bytes): string
-{
-    if ($bytes >= 1048576) {
-        return number_format($bytes / 1048576, 1) . ' MB';
+    if (!is_array($rawRoles)) {
+        return [];
     }
-    if ($bytes >= 1024) {
-        return number_format($bytes / 1024, 1) . ' KB';
+
+    $roles = [];
+    foreach ($rawRoles as $role) {
+        if (is_string($role)) {
+            $roles[] = $role;
+            continue;
+        }
+        if (is_array($role)) {
+            foreach (['name', 'role_name', 'code', 'slug', 'key'] as $key) {
+                if (!empty($role[$key]) && is_string($role[$key])) {
+                    $roles[] = $role[$key];
+                    break;
+                }
+            }
+        }
     }
-    return $bytes . ' B';
+
+    return array_values(array_unique(array_filter(array_map('strval', $roles))));
 }
 
-requirePdfViewerUser();
+function getUserRoleNames(User $user, PDO $db, string $userId): array
+{
+    foreach (['getRoles', 'getRoleNames'] as $method) {
+        if (method_exists($user, $method)) {
+            $roles = normalizeRoleNames($user->{$method}());
+            if ($roles !== []) {
+                return $roles;
+            }
+        }
+    }
+
+    $queries = [
+        'SELECT r.name FROM roles r INNER JOIN user_roles ur ON ur.role_id = r.id WHERE ur.user_id = ?',
+        'SELECT r.role_name FROM roles r INNER JOIN user_roles ur ON ur.role_id = r.id WHERE ur.user_id = ?',
+        'SELECT r.code FROM roles r INNER JOIN user_roles ur ON ur.role_id = r.id WHERE ur.user_id = ?',
+        'SELECT r.slug FROM roles r INNER JOIN user_roles ur ON ur.role_id = r.id WHERE ur.user_id = ?',
+        'SELECT ur.role FROM user_roles ur WHERE ur.user_id = ?',
+    ];
+
+    foreach ($queries as $sql) {
+        try {
+            $stmt = $db->prepare($sql);
+            $stmt->execute([$userId]);
+            $roles = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            if ($roles) {
+                return array_values(array_unique(array_map('strval', $roles)));
+            }
+        } catch (Throwable $e) {
+            // 既存DBのカラム名差異に備えて次の候補を試す
+        }
+    }
+
+    return [];
+}
+
+function userHasPermission(User $user, string $permission): bool
+{
+    if (method_exists($user, 'hasPermission')) {
+        return (bool) $user->hasPermission($permission);
+    }
+    return false;
+}
+
+function getAllowedTargetScopes(User $user, PDO $db, string $userId): array
+{
+    $roles = array_map('strtolower', getUserRoleNames($user, $db, $userId));
+
+    $isManager = userHasPermission($user, 'manage_users')
+        || userHasPermission($user, 'manage_pdf_documents')
+        || in_array('admin', $roles, true)
+        || in_array('administrator', $roles, true);
+
+    if ($isManager) {
+        return ['all', 'parttime', 'fulltime'];
+    }
+
+    $scopes = ['all'];
+
+    foreach ($roles as $role) {
+        if (str_contains($role, 'part_time') || str_contains($role, 'parttime')) {
+            $scopes[] = 'parttime';
+        }
+        if (str_contains($role, 'full_time') || str_contains($role, 'fulltime')) {
+            $scopes[] = 'fulltime';
+        }
+    }
+
+    return array_values(array_unique($scopes));
+}
+
+function getScopeLabel(string $scope): string
+{
+    return match ($scope) {
+        'all' => '全員',
+        'parttime' => '非常勤',
+        'fulltime' => '専任・社員',
+        default => $scope,
+    };
+}
+
+function getVisibleDocuments(PDO $db, string $userId, array $allowedScopes): array
+{
+    if ($allowedScopes === []) {
+        return [];
+    }
+
+    $placeholders = implode(',', array_fill(0, count($allowedScopes), '?'));
+    $sql = "
+        SELECT
+            d.id,
+            d.title,
+            d.original_name,
+            d.target_scope,
+            d.requires_ack,
+            d.uploaded_at,
+            a.acknowledged_at
+        FROM pdf_documents d
+        LEFT JOIN pdf_acknowledgements a
+            ON a.document_id = d.id
+            AND a.user_id = ?
+        WHERE d.is_active = 1
+          AND d.target_scope IN ({$placeholders})
+        ORDER BY d.uploaded_at DESC, d.id DESC
+    ";
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute(array_merge([$userId], $allowedScopes));
+    return $stmt->fetchAll(PDO::FETCH_ASSOC) ?: [];
+}
+
+[$user, $userId] = requirePdfUser();
+$db = Database::getConnection();
+$allowedScopes = getAllowedTargetScopes($user, $db, $userId);
+$pdfs = getVisibleDocuments($db, $userId, $allowedScopes);
+
 if (session_status() === PHP_SESSION_ACTIVE) {
     session_write_close();
 }
-
-$pdfDir = privatePdfDir();
-$pdfs = [];
-
-if (is_dir($pdfDir)) {
-    foreach (scandir($pdfDir) ?: [] as $entry) {
-        if ($entry === '.' || $entry === '..') {
-            continue;
-        }
-        if (!isSafePdfFileName($entry)) {
-            continue;
-        }
-        $path = $pdfDir . DIRECTORY_SEPARATOR . $entry;
-        if (!is_file($path)) {
-            continue;
-        }
-        $pdfs[] = [
-            'file' => $entry,
-            'title' => pdfDisplayName($entry),
-            'size' => formatBytes((int) filesize($path)),
-            'updatedAt' => filemtime($path) ?: 0,
-        ];
-    }
-}
-
-usort($pdfs, static fn(array $a, array $b): int => $b['updatedAt'] <=> $a['updatedAt']);
 ?>
 <!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title>PDF資料一覧</title>
+  <title>資料一覧</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     :root {
@@ -99,11 +190,14 @@ usort($pdfs, static fn(array $a, array $b): int => $b['updatedAt'] <=> $a['updat
       --text: #141d2c;
       --muted: #667085;
       --border: #c7d0df;
+      --ok: #067647;
+      --ok-bg: #dcfae6;
+      --warn: #b54708;
+      --warn-bg: #fef0c7;
+      --neutral-bg: #eef2f7;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     html,
     body {
@@ -185,11 +279,33 @@ usort($pdfs, static fn(array $a, array $b): int => $b['updatedAt'] <=> $a['updat
       letter-spacing: 0.02em;
     }
 
+    .title-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
     .title {
       font-weight: 700;
       font-size: 1rem;
       overflow-wrap: anywhere;
     }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 24px;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge-ok { color: var(--ok); background: var(--ok-bg); }
+    .badge-warn { color: var(--warn); background: var(--warn-bg); }
+    .badge-neutral { color: var(--muted); background: var(--neutral-bg); }
 
     .meta {
       margin-top: 4px;
@@ -212,25 +328,11 @@ usort($pdfs, static fn(array $a, array $b): int => $b['updatedAt'] <=> $a['updat
     }
 
     @media (max-width: 640px) {
-      .page {
-        padding: 16px;
-      }
-
-      .header {
-        display: block;
-      }
-
-      .count {
-        margin-top: 8px;
-      }
-
-      .pdf-link {
-        grid-template-columns: 40px 1fr;
-      }
-
-      .open {
-        grid-column: 2;
-      }
+      .page { padding: 16px; }
+      .header { display: block; }
+      .count { margin-top: 8px; }
+      .pdf-link { grid-template-columns: 40px 1fr; }
+      .open { grid-column: 2; }
     }
   </style>
 </head>
@@ -238,31 +340,45 @@ usort($pdfs, static fn(array $a, array $b): int => $b['updatedAt'] <=> $a['updat
   <main class="page">
     <div class="header">
       <div>
-        <h1>PDF資料一覧</h1>
-        <p class="description">表示したいPDFを選択してください。</p>
+        <h1>資料一覧</h1>
+        <p class="description">配信対象になっている資料のみ表示しています。</p>
       </div>
       <div class="count"><?= count($pdfs) ?> 件</div>
     </div>
 
     <?php if ($pdfs === []): ?>
       <div class="empty">
-        表示できるPDFがありません。<br>
-        <code>teacher-auth/private-pdfs/</code> に半角英数字のPDFファイルを配置してください。
+        現在、表示できる資料はありません。<br>
+        資料が登録済みの場合は、公開状態・配信対象・ログインユーザーの役職を確認してください。
       </div>
     <?php else: ?>
       <div class="list">
         <?php foreach ($pdfs as $pdf): ?>
           <?php
-          $file = $pdf['file'];
-          $href = 'pdf-viewer.php?file=' . rawurlencode($file);
-          $updated = $pdf['updatedAt'] > 0 ? date('Y/m/d H:i', $pdf['updatedAt']) : '-';
+          $href = 'pdf-viewer.php?id=' . rawurlencode((string) $pdf['id']);
+          $uploaded = $pdf['uploaded_at'] ? date('Y/m/d H:i', strtotime((string) $pdf['uploaded_at'])) : '-';
+          $requiresAck = (int) $pdf['requires_ack'] === 1;
+          $acknowledgedAt = (string) ($pdf['acknowledged_at'] ?? '');
+          $statusClass = 'badge-neutral';
+          $statusText = '確認不要';
+          if ($requiresAck && $acknowledgedAt !== '') {
+              $statusClass = 'badge-ok';
+              $statusText = '確認済み';
+          } elseif ($requiresAck) {
+              $statusClass = 'badge-warn';
+              $statusText = '未確認';
+          }
           ?>
-          <a class="pdf-link" href="<?= htmlspecialchars($href, ENT_QUOTES, 'UTF-8') ?>">
+          <a class="pdf-link" href="<?= h($href) ?>">
             <span class="icon">PDF</span>
             <span>
-              <span class="title"><?= htmlspecialchars($pdf['title'], ENT_QUOTES, 'UTF-8') ?></span>
+              <span class="title-row">
+                <span class="title"><?= h($pdf['title']) ?></span>
+                <span class="badge <?= h($statusClass) ?>"><?= h($statusText) ?></span>
+              </span>
               <span class="meta">
-                <?= htmlspecialchars($file, ENT_QUOTES, 'UTF-8') ?> / <?= htmlspecialchars($pdf['size'], ENT_QUOTES, 'UTF-8') ?> / 更新: <?= htmlspecialchars($updated, ENT_QUOTES, 'UTF-8') ?>
+                対象: <?= h(getScopeLabel((string) $pdf['target_scope'])) ?> / 登録: <?= h($uploaded) ?>
+                <?php if (!empty($pdf['original_name'])): ?> / <?= h($pdf['original_name']) ?><?php endif; ?>
               </span>
             </span>
             <span class="open">開く</span>

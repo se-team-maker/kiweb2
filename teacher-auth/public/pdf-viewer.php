@@ -4,9 +4,15 @@ declare(strict_types=1);
 require_once __DIR__ . '/bootstrap.php';
 
 use App\Auth\Session;
+use App\Config\Database;
 use App\Model\User;
 
-function requirePdfViewerUser(): User
+function h(mixed $value): string
+{
+    return htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
+}
+
+function requirePdfUser(): array
 {
     if (!Session::isLoggedIn()) {
         http_response_code(401);
@@ -22,72 +28,195 @@ function requirePdfViewerUser(): User
         exit('Unauthorized');
     }
 
-    return $user;
+    return [$user, (string) $userId];
 }
 
-function privatePdfDir(): string
+function normalizeRoleNames(mixed $rawRoles): array
 {
-    return dirname(__DIR__) . DIRECTORY_SEPARATOR . 'private-pdfs';
+    if (!is_array($rawRoles)) {
+        return [];
+    }
+
+    $roles = [];
+    foreach ($rawRoles as $role) {
+        if (is_string($role)) {
+            $roles[] = $role;
+            continue;
+        }
+        if (is_array($role)) {
+            foreach (['name', 'role_name', 'code', 'slug', 'key'] as $key) {
+                if (!empty($role[$key]) && is_string($role[$key])) {
+                    $roles[] = $role[$key];
+                    break;
+                }
+            }
+        }
+    }
+
+    return array_values(array_unique(array_filter(array_map('strval', $roles))));
 }
 
-function isSafePdfFileName(string $fileName): bool
+function getUserRoleNames(User $user, PDO $db, string $userId): array
 {
-    return preg_match('/\A[A-Za-z0-9][A-Za-z0-9._-]*\.pdf\z/i', $fileName) === 1
-        && strpos($fileName, '..') === false;
+    foreach (['getRoles', 'getRoleNames'] as $method) {
+        if (method_exists($user, $method)) {
+            $roles = normalizeRoleNames($user->{$method}());
+            if ($roles !== []) {
+                return $roles;
+            }
+        }
+    }
+
+    $queries = [
+        'SELECT r.name FROM roles r INNER JOIN user_roles ur ON ur.role_id = r.id WHERE ur.user_id = ?',
+        'SELECT r.role_name FROM roles r INNER JOIN user_roles ur ON ur.role_id = r.id WHERE ur.user_id = ?',
+        'SELECT r.code FROM roles r INNER JOIN user_roles ur ON ur.role_id = r.id WHERE ur.user_id = ?',
+        'SELECT r.slug FROM roles r INNER JOIN user_roles ur ON ur.role_id = r.id WHERE ur.user_id = ?',
+        'SELECT ur.role FROM user_roles ur WHERE ur.user_id = ?',
+    ];
+
+    foreach ($queries as $sql) {
+        try {
+            $stmt = $db->prepare($sql);
+            $stmt->execute([$userId]);
+            $roles = $stmt->fetchAll(PDO::FETCH_COLUMN);
+            if ($roles) {
+                return array_values(array_unique(array_map('strval', $roles)));
+            }
+        } catch (Throwable $e) {
+            // 既存DBのカラム名差異に備えて次の候補を試す
+        }
+    }
+
+    return [];
 }
 
-function resolvePrivatePdfPath(string $fileName): ?string
+function userHasPermission(User $user, string $permission): bool
 {
-    if (!isSafePdfFileName($fileName)) {
+    if (method_exists($user, 'hasPermission')) {
+        return (bool) $user->hasPermission($permission);
+    }
+    return false;
+}
+
+function getAllowedTargetScopes(User $user, PDO $db, string $userId): array
+{
+    $roles = array_map('strtolower', getUserRoleNames($user, $db, $userId));
+
+    $isManager = userHasPermission($user, 'manage_users')
+        || userHasPermission($user, 'manage_pdf_documents')
+        || in_array('admin', $roles, true)
+        || in_array('administrator', $roles, true);
+
+    if ($isManager) {
+        return ['all', 'parttime', 'fulltime'];
+    }
+
+    $scopes = ['all'];
+
+    foreach ($roles as $role) {
+        if (str_contains($role, 'part_time') || str_contains($role, 'parttime')) {
+            $scopes[] = 'parttime';
+        }
+        if (str_contains($role, 'full_time') || str_contains($role, 'fulltime')) {
+            $scopes[] = 'fulltime';
+        }
+    }
+
+    return array_values(array_unique($scopes));
+}
+
+function getVisibleDocument(PDO $db, int $documentId, string $userId, array $allowedScopes): ?array
+{
+    if ($allowedScopes === []) {
         return null;
     }
 
-    $baseDir = realpath(privatePdfDir());
-    if ($baseDir === false) {
-        return null;
+    $placeholders = implode(',', array_fill(0, count($allowedScopes), '?'));
+    $sql = "
+        SELECT
+            d.id,
+            d.title,
+            d.file_name,
+            d.original_name,
+            d.target_scope,
+            d.requires_ack,
+            d.is_active,
+            d.uploaded_at,
+            a.acknowledged_at
+        FROM pdf_documents d
+        LEFT JOIN pdf_acknowledgements a
+            ON a.document_id = d.id
+            AND a.user_id = ?
+        WHERE d.id = ?
+          AND d.is_active = 1
+          AND d.target_scope IN ({$placeholders})
+        LIMIT 1
+    ";
+
+    $stmt = $db->prepare($sql);
+    $stmt->execute(array_merge([$userId, $documentId], $allowedScopes));
+    $document = $stmt->fetch(PDO::FETCH_ASSOC);
+
+    return $document ?: null;
+}
+
+[$user, $userId] = requirePdfUser();
+
+$signage = isset($_GET['signage']) ? strtolower((string) $_GET['signage']) : '';
+
+$signageTitles = [
+    'sk' => '教室割サイネージ（SK）',
+    'em' => '教室割サイネージ（EM）',
+];
+
+$isSignageMode = $signage !== '';
+
+if ($isSignageMode) {
+    if (!isset($signageTitles[$signage])) {
+        http_response_code(404);
+        exit('PDF not found');
     }
 
-    $path = realpath($baseDir . DIRECTORY_SEPARATOR . $fileName);
-    if ($path === false || !is_file($path)) {
-        return null;
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();
     }
 
-    $basePrefix = rtrim($baseDir, DIRECTORY_SEPARATOR) . DIRECTORY_SEPARATOR;
-    if (strpos($path, $basePrefix) !== 0) {
-        return null;
+    $documentId = 0;
+    $title = $signageTitles[$signage];
+    $requiresAck = false;
+    $acknowledged = false;
+    $pdfUrl = 'pdf-file.php?signage=' . rawurlencode($signage) . '&v=' . time();
+} else {
+    $db = Database::getConnection();
+
+    $documentId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);
+    if (!$documentId || $documentId < 1) {
+        http_response_code(404);
+        exit('PDF not found');
     }
 
-    return $path;
-}
+    $allowedScopes = getAllowedTargetScopes($user, $db, $userId);
+    $document = getVisibleDocument($db, $documentId, $userId, $allowedScopes);
+    if ($document === null) {
+        http_response_code(404);
+        exit('PDF not found');
+    }
 
-function pdfDisplayName(string $fileName): string
-{
-    $name = pathinfo($fileName, PATHINFO_FILENAME);
-    return str_replace(['_', '-'], ' ', $name);
-}
+    if (session_status() === PHP_SESSION_ACTIVE) {
+        session_write_close();
+    }
 
-requirePdfViewerUser();
-
-$fileName = (string) ($_GET['file'] ?? '');
-$filePath = resolvePrivatePdfPath($fileName);
-
-if ($filePath === null) {
-    http_response_code(404);
-    exit('PDF not found');
-}
-
-if (session_status() === PHP_SESSION_ACTIVE) {
-    session_write_close();
-}
-
-$title = pdfDisplayName($fileName);
-$pdfUrl = 'pdf-file.php?file=' . rawurlencode($fileName);
-?>
+    $title = (string) $document['title'];
+    $requiresAck = (int) $document['requires_ack'] === 1;
+    $acknowledged = $requiresAck && !empty($document['acknowledged_at']);
+    $pdfUrl = 'pdf-file.php?id=' . rawurlencode((string) $documentId);
+}?>
 <!doctype html>
 <html lang="ja">
 <head>
   <meta charset="utf-8">
-  <title><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></title>
+  <title><?= h($title) ?></title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
     :root {
@@ -98,11 +227,13 @@ $pdfUrl = 'pdf-file.php?file=' . rawurlencode($fileName);
       --text: #141d2c;
       --muted: #667085;
       --border: #c7d0df;
+      --ok: #067647;
+      --ok-bg: #dcfae6;
+      --warn: #b54708;
+      --warn-bg: #fef0c7;
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     html,
     body {
@@ -156,10 +287,39 @@ $pdfUrl = 'pdf-file.php?file=' . rawurlencode($fileName);
       white-space: nowrap;
     }
 
+    .signage-tab {
+      text-decoration: none;
+      font-weight: 700;
+    }
+
+    .signage-tab.active {
+      border-color: var(--primary);
+      background: var(--primary);
+      color: #fff;
+    }
+
     .button:hover:not(:disabled),
     .button:focus-visible:not(:disabled) {
       border-color: var(--primary);
       outline: none;
+    }
+
+    .button:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    .ack-button {
+      border-color: var(--warn);
+      color: var(--warn);
+      background: var(--warn-bg);
+      font-weight: 700;
+    }
+
+    .ack-button.done {
+      border-color: var(--ok);
+      color: var(--ok);
+      background: var(--ok-bg);
     }
 
     .zoom-input {
@@ -176,11 +336,6 @@ $pdfUrl = 'pdf-file.php?file=' . rawurlencode($fileName);
       font-size: 14px;
       color: #334155;
       margin-left: -4px;
-    }    
-
-    .button:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
     }
 
     .page-info {
@@ -198,11 +353,11 @@ $pdfUrl = 'pdf-file.php?file=' . rawurlencode($fileName);
       overflow: auto;
       background: var(--stage);
       padding: 12px;
-      cursor : grab;
+      cursor: grab;
       user-select: none;
     }
-    
-    stage.dragging {
+
+    .stage.dragging {
       cursor: grabbing;
     }
 
@@ -236,47 +391,35 @@ $pdfUrl = 'pdf-file.php?file=' . rawurlencode($fileName);
       border-color: #f1b7b0;
     }
 
-    .mobile-label {
-      display: none;
-    }
+    .mobile-label { display: none; }
 
     @media (max-width: 720px) {
-      .viewer {
-        grid-template-rows: 44px 1fr;
-      }
-
+      .viewer { grid-template-rows: auto 1fr; }
       .toolbar {
         gap: 4px;
         padding: 5px 6px;
+        flex-wrap: wrap;
       }
-
-      .title {
-        display: none;
-      }
-
+      .title { display: none; }
       .button {
         padding: 6px 8px;
         font-size: 13px;
       }
-
-      .wide-label {
-        display: none;
-      }
-
-      .mobile-label {
-        display: inline;
-      }
-
-      .stage {
-        padding: 8px;
-      }
+      .wide-label { display: none; }
+      .mobile-label { display: inline; }
+      .stage { padding: 8px; }
     }
   </style>
 </head>
 <body>
   <div class="viewer">
     <div class="toolbar">
-      <div class="title"><?= htmlspecialchars($title, ENT_QUOTES, 'UTF-8') ?></div>
+      <div class="title"><?= h($title) ?></div>
+
+      <?php if ($isSignageMode): ?>
+        <a class="button signage-tab<?= $signage === 'sk' ? ' active' : '' ?>" href="pdf-viewer.php?signage=sk">SK</a>
+        <a class="button signage-tab<?= $signage === 'em' ? ' active' : '' ?>" href="pdf-viewer.php?signage=em">EM</a>
+      <?php endif; ?>
 
       <button class="button" type="button" id="prevBtn">前へ</button>
       <div class="page-info"><span id="pageNum">-</span> / <span id="pageCount">-</span></div>
@@ -298,6 +441,11 @@ $pdfUrl = 'pdf-file.php?file=' . rawurlencode($fileName);
       <button class="button" type="button" id="applyZoomBtn">適用</button>
       <button class="button" type="button" id="fitWidthBtn"><span class="wide-label">幅に合わせる</span><span class="mobile-label">幅</span></button>
       <button class="button" type="button" id="fitPageBtn"><span class="wide-label">全体表示</span><span class="mobile-label">全体</span></button>
+      <?php if ($requiresAck): ?>
+        <button class="button ack-button<?= $acknowledged ? ' done' : '' ?>" type="button" id="ackBtn" <?= $acknowledged ? 'disabled' : '' ?>>
+          <?= $acknowledged ? '確認済み' : '確かに見ました' ?>
+        </button>
+      <?php endif; ?>
     </div>
 
     <div class="stage" id="stage">
@@ -314,7 +462,9 @@ $pdfUrl = 'pdf-file.php?file=' . rawurlencode($fileName);
     pdfjsLib.GlobalWorkerOptions.workerSrc =
       'https://cdn.jsdelivr.net/npm/pdfjs-dist/build/pdf.worker.mjs';
 
+    const DOCUMENT_ID = <?= json_encode($documentId, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
     const PDF_URL = <?= json_encode($pdfUrl, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) ?>;
+    const ACK_REQUIRED = <?= $requiresAck ? 'true' : 'false' ?>;
 
     const stage = document.getElementById('stage');
     const canvas = document.getElementById('pdfCanvas');
@@ -332,7 +482,7 @@ $pdfUrl = 'pdf-file.php?file=' . rawurlencode($fileName);
     const applyZoomBtn = document.getElementById('applyZoomBtn');
     const fitWidthBtn = document.getElementById('fitWidthBtn');
     const fitPageBtn = document.getElementById('fitPageBtn');
-
+    const ackBtn = document.getElementById('ackBtn');
 
     let isDraggingStage = false;
     let dragStartX = 0;
@@ -465,6 +615,59 @@ $pdfUrl = 'pdf-file.php?file=' . rawurlencode($fileName);
       renderPage();
     }
 
+    async function acknowledgeDocument() {
+      if (!ACK_REQUIRED || !ackBtn || ackBtn.disabled) return;
+
+      const originalText = ackBtn.textContent;
+      ackBtn.disabled = true;
+      ackBtn.textContent = '記録中…';
+
+      try {
+        const body = new URLSearchParams();
+        body.set('id', String(DOCUMENT_ID));
+
+        const response = await fetch('pdf-ack.php', {
+          method: 'POST',
+          credentials: 'include',
+          headers: {
+            'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8'
+          },
+          body
+        });
+
+        const responseText = await response.text();
+
+        let data = null;
+        try {
+          data = JSON.parse(responseText);
+        } catch (e) {
+          throw new Error(
+            'pdf-ack.phpがJSONを返していません。status=' +
+            response.status +
+            ' / response=' +
+            responseText.slice(0, 300)
+          );
+        }
+
+        if (!response.ok || !data || !data.success) {
+          throw new Error(
+            data && data.message
+              ? data.message
+              : 'ack failed / status=' + response.status
+          );
+        }
+
+        ackBtn.textContent = '確認済み';
+        ackBtn.classList.add('done');
+        ackBtn.disabled = true;
+      } catch (error) {
+        console.error(error);
+        ackBtn.disabled = false;
+        ackBtn.textContent = originalText || '確かに見ました';
+        showMessage('確認記録の保存に失敗しました：' + error.message, true);
+      }
+    }
+
     prevBtn.addEventListener('click', () => {
       if (!pdfDoc || pageNum <= 1) return;
       pageNum -= 1;
@@ -490,7 +693,6 @@ $pdfUrl = 'pdf-file.php?file=' . rawurlencode($fileName);
     });
 
     fitWidthBtn.addEventListener('click', fitWidth);
-
     applyZoomBtn.addEventListener('click', applyZoomInput);
 
     zoomInput.addEventListener('keydown', (event) => {
@@ -501,6 +703,9 @@ $pdfUrl = 'pdf-file.php?file=' . rawurlencode($fileName);
 
     fitPageBtn.addEventListener('click', fitPage);
 
+    if (ackBtn) {
+      ackBtn.addEventListener('click', acknowledgeDocument);
+    }
 
     stage.addEventListener('mousedown', (event) => {
       if (event.button !== 0) return;
@@ -533,10 +738,10 @@ $pdfUrl = 'pdf-file.php?file=' . rawurlencode($fileName);
       stage.classList.remove('dragging');
     });
 
-        window.addEventListener('resize', () => {
-          clearTimeout(window.__pdfViewerResizeTimer);
-          window.__pdfViewerResizeTimer = setTimeout(fitWidth, 250);
-        });
+    window.addEventListener('resize', () => {
+      clearTimeout(window.__pdfViewerResizeTimer);
+      window.__pdfViewerResizeTimer = setTimeout(fitWidth, 250);
+    });
 
     async function init() {
       try {
