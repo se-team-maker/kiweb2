@@ -37,7 +37,38 @@ class AccessLog
     }
 
     /**
-     * 管理画面向けアクセスログ一覧
+     * 管理者画面についてのアクセスログ
+     * teacher-authの管理者画面アクセスログは、通常のアクセスログとは別テーブルで記録する
+     * AcessLog同様に記録失敗は呼び出し元動作に影響させない
+     */
+    public static function logAdmin(string $userId, string $pagePath, string $requestMethod = 'GET'): void
+    {
+        try {
+            $db = Database::getConnection();
+            $stmt = $db->prepare('
+                INSERT INTO admin_access_logs (user_id, page_path, request_method, ip_address, user_agent, referer)
+                VALUES (?, ?, ?, ?, ?, ?)
+            ');
+            $stmt->execute([
+                $userId,
+                self::normalizePagePath($pagePath),
+                self::normalizeRequestMethod($requestMethod),
+                RateLimiter::getClientIp(),
+                self::truncate($_SERVER['HTTP_USER_AGENT'] ?? null, 65535),
+                self::truncate($_SERVER['HTTP_REFERER'] ?? null, 500),
+            ]);
+        } catch (\Throwable $e) {
+            error_log('AccessLog::log failed: ' . $e->getMessage());
+        }
+    }
+
+
+
+
+
+
+    /**
+     * 管理画面向けアクセスログ一覧取得
      *
      * @return array{items: array<int, array<string, mixed>>, total: int, page: int, per_page: int, pages: int}
      */
