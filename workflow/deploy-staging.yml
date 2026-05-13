@@ -1,0 +1,37 @@
+name: Deploy to staging by FTP
+
+on:
+  push:
+    branches:
+      - staging
+
+jobs:
+  deploy-staging:
+    name: Deploy staging
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v6
+
+      - name: Deploy to system-dev by FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ secrets.DEV_FTP_SERVER }}
+          username: ${{ secrets.DEV_FTP_USERNAME }}
+          password: ${{ secrets.DEV_FTP_PASSWORD }}
+          protocol: ftps
+          port: ${{ secrets.DEV_FTP_PORT }}
+          local-dir: ./
+          server-dir: ${{ secrets.DEV_FTP_SERVER_DIR }}
+          dry-run: true
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.github/**
+            **/.env
+            **/teacher-auth/.env
+            **/teacher-auth/vendor/**
+            **/teacher-auth/private-pdfs/**
+            **/private-pdfs/**
