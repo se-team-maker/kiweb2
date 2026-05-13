@@ -879,7 +879,25 @@
                     <span>勤務記録の閲覧</span>
                   </a>
                 </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="signage">
+                    <span class="nav-icon material-symbols-outlined">dashboard</span>
+                    <span>サイネージ</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="pdf-viewer">
+                    <span class="nav-icon material-symbols-outlined">picture_as_pdf</span>
+                    <span>資料一覧</span>
+                  </a>
+                </li>
               </ul>
+            </li>
+            <li class="nav-item admin-only" data-display="list-item" style="display: none;">
+              <a href="/kiweb/teacher-auth/public/pdf-admin.php" class="nav-link">
+                <span class="nav-icon material-symbols-outlined">picture_as_pdf</span>
+                <span>資料配信管理</span>
+              </a>
             </li>
             <li class="nav-item admin-only" style="display: none;">
               <a href="/kiweb/teacher-auth/public/admin.php" class="nav-link">
@@ -978,14 +996,24 @@
               <span>勤務記録の閲覧</span>
             </button>
           </li>
+          <li>
+            <button class="mobile-expand-link" type="button" data-page="pdf-viewer">
+              <span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
+              <span>資料一覧</span>
+            </button>
+          </li>
+          <li class="admin-only" data-display="list-item" style="display: none;">
+            <a class="mobile-expand-link" href="/kiweb/teacher-auth/public/pdf-admin.php">
+              <span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
+              <span>資料配信管理</span>
+            </a>
+          </li>
           <li class="admin-only" data-display="list-item" style="display: none;">
             <a class="mobile-expand-link" href="/kiweb/teacher-auth/public/admin.php">
               <span class="material-symbols-outlined" aria-hidden="true">settings</span>
               <span>管理</span>
             </a>
           </li>
-        </ul>
-      </li>
     </ul>
   </nav>
 
@@ -1006,7 +1034,9 @@
       room_allocation: { file: 'room_allocation.html' },   // 教室割
       'teacher-no': { file: 'teacher-no-view.html' }, // 職員No（講師No）
       'class-report-search': { file: 'ClassReportSearchForm.html?v=20260317-class-report-search-bridge-v3' }, // 授業報告書の検索・閲覧
-      'non-class-work-search': { file: 'declaration_of_non_class_work_search_and_view.html' } // 勤務記録の閲覧
+      'non-class-work-search': { file: 'declaration_of_non_class_work_search_and_view.html' }, // 勤務記録の閲覧
+      signage: { file: '/kiweb/teacher-auth/public/pdf-viewer.php?signage=sk',appendTeacher: false,appendTheme: false} , // サイネージ（共通）
+      'pdf-viewer': { file: '/kiweb/teacher-auth/public/pdf-list.php', appendTeacher: false, appendTheme: false } // PDFビューア（共通）
     };
 
     const iframe = document.getElementById('mainFrame');
@@ -1365,8 +1395,9 @@
 
       // 同一フォルダ指定の相対パス + 講師名パラメータ
       const teacherName = getLoginName();
-      let url = PAGES[key].file;
-      if (teacherName && key !== 'teacher-no') {
+      const pageConfig = PAGES[key];
+      let url = pageConfig.file;
+      if (teacherName && key !== 'teacher-no' && pageConfig.appendTeacher !== false) {
         url += (url.includes('?') ? '&' : '?') + 'teacher=' + encodeURIComponent(teacherName);
       }
       if (key === 'work') {

@@ -12,7 +12,8 @@ const API = {
     permissions: '/kiweb/teacher-auth/api/admin/permissions.php',
     scopes: '/kiweb/teacher-auth/api/admin/scopes.php',
     scopeTypes: '/kiweb/teacher-auth/api/admin/scope-types.php',
-    accessLogs: '/kiweb/teacher-auth/api/admin/access-logs.php'
+    accessLogs: '/kiweb/teacher-auth/api/admin/access-logs.php',
+    adminViewLog: '/kiweb/teacher-auth/api/admin/admin-access-log.php'
 };
 
 // 状態管理
@@ -267,6 +268,7 @@ function switchSection(section) {
     }
 
     currentSection = section;
+    logAdminView(`admin:${section}`);
     closeMobileDetail();
 
     // ナビゲーションの更新
@@ -368,6 +370,25 @@ async function fetchAPI(url, options = {}) {
         return JSON.parse(rawText);
     } catch (e) {
         throw new Error('APIレスポンスのJSON解析に失敗しました');
+    }
+}
+
+// 管理者のページ閲覧ログを記録
+async function logAdminView(pagePath) {
+    if (!pagePath) return;
+
+    try {
+        await fetch(API.adminViewLog, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                page_path: pagePath
+            })
+        });
+    } catch (error) {
+        console.warn('admin view log failed:', error);
     }
 }
 
@@ -523,6 +544,7 @@ async function selectUser(userId) {
             </div>
         `;
         openMobileDetail();
+        logAdminView(`admin:user-detail:${userId}`);
     } catch (error) {
         showAlert('ユーザー情報の取得に失敗しました', 'error');
     }
@@ -955,6 +977,7 @@ async function selectRole(roleId) {
             </div>
         `;
         openMobileDetail();
+        logAdminView(`admin:role-detail:${roleId}`);
     } catch (error) {
         showAlert('役職情報の取得に失敗しました', 'error');
     }
@@ -1268,6 +1291,7 @@ async function selectScope(scopeId) {
         </div>
     `;
     openMobileDetail();
+    logAdminView(`admin:scope-detail:${scopeId}`);
 }
 
 function openScopeModal(scopeId = null) {
