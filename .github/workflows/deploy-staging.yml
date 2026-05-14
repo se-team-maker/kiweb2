@@ -18,22 +18,22 @@ jobs:
 
       - name: Check required secrets
         run: |
-          if [ -z "${{ secrets.DEV_FTP_SERVER }}" ]; then echo "DEV_FTP_SERVER is EMPTY"; exit 1; else echo "DEV_FTP_SERVER is SET"; fi
-          if [ -z "${{ secrets.DEV_FTP_USERNAME }}" ]; then echo "DEV_FTP_USERNAME is EMPTY"; exit 1; else echo "DEV_FTP_USERNAME is SET"; fi
-          if [ -z "${{ secrets.DEV_FTP_PASSWORD }}" ]; then echo "DEV_FTP_PASSWORD is EMPTY"; exit 1; else echo "DEV_FTP_PASSWORD is SET"; fi
-          if [ -z "${{ secrets.DEV_FTP_PORT }}" ]; then echo "DEV_FTP_PORT is EMPTY"; exit 1; else echo "DEV_FTP_PORT is SET"; fi
-          if [ -z "${{ secrets.DEV_FTP_SERVER_DIR }}" ]; then echo "DEV_FTP_SERVER_DIR is EMPTY"; exit 1; else echo "DEV_FTP_SERVER_DIR is SET"; fi
+          if [ -z "${{ secrets.KIWEB_DEV_FTP_SERVER }}" ]; then echo "KIWEB_DEV_FTP_SERVER is EMPTY"; exit 1; else echo "KIWEB_DEV_FTP_SERVER is SET"; fi
+          if [ -z "${{ secrets.KIWEB_DEV_FTP_USERNAME }}" ]; then echo "KIWEB_DEV_FTP_USERNAME is EMPTY"; exit 1; else echo "KIWEB_DEV_FTP_USERNAME is SET"; fi
+          if [ -z "${{ secrets.KIWEB_DEV_FTP_PASSWORD }}" ]; then echo "KIWEB_DEV_FTP_PASSWORD is EMPTY"; exit 1; else echo "KIWEB_DEV_FTP_PASSWORD is SET"; fi
+          if [ -z "${{ secrets.KIWEB_DEV_FTP_PORT }}" ]; then echo "KIWEB_DEV_FTP_PORT is EMPTY"; exit 1; else echo "KIWEB_DEV_FTP_PORT is SET"; fi
+          if [ -z "${{ secrets.KIWEB_DEV_FTP_SERVER_DIR }}" ]; then echo "KIWEB_DEV_FTP_SERVER_DIR is EMPTY"; exit 1; else echo "KIWEB_DEV_FTP_SERVER_DIR is SET"; fi
 
       - name: Deploy to system-dev by FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
-          server: ${{ secrets.DEV_FTP_SERVER }}
-          username: ${{ secrets.DEV_FTP_USERNAME }}
-          password: ${{ secrets.DEV_FTP_PASSWORD }}
+          server: ${{ secrets.KIWEB_DEV_FTP_SERVER }}
+          username: ${{ secrets.KIWEB_DEV_FTP_USERNAME }}
+          password: ${{ secrets.KIWEB_DEV_FTP_PASSWORD }}
           protocol: ftps
-          port: ${{ secrets.DEV_FTP_PORT }}
+          port: ${{ secrets.KIWEB_DEV_FTP_PORT }}
           local-dir: ./
-          server-dir: ${{ secrets.DEV_FTP_SERVER_DIR }}
+          server-dir: ${{ secrets.KIWEB_DEV_FTP_SERVER_DIR }}
           dry-run: true
           exclude: |
             **/.git*
