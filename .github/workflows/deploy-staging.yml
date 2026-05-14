@@ -34,7 +34,7 @@ jobs:
           port: ${{ secrets.KIWEB_DEV_FTP_PORT }}
           local-dir: ./
           server-dir: ${{ secrets.KIWEB_DEV_FTP_SERVER_DIR }}
-          dry-run: true
+          dry-run: false
           exclude: |
             **/.git*
             **/.git*/**
