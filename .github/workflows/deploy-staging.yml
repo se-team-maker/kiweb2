@@ -16,6 +16,14 @@ jobs:
       - name: Checkout latest code
         uses: actions/checkout@v6
 
+      - name: Check required secrets
+        run: |
+          if [ -z "${{ secrets.DEV_FTP_SERVER }}" ]; then echo "DEV_FTP_SERVER is EMPTY"; exit 1; else echo "DEV_FTP_SERVER is SET"; fi
+          if [ -z "${{ secrets.DEV_FTP_USERNAME }}" ]; then echo "DEV_FTP_USERNAME is EMPTY"; exit 1; else echo "DEV_FTP_USERNAME is SET"; fi
+          if [ -z "${{ secrets.DEV_FTP_PASSWORD }}" ]; then echo "DEV_FTP_PASSWORD is EMPTY"; exit 1; else echo "DEV_FTP_PASSWORD is SET"; fi
+          if [ -z "${{ secrets.DEV_FTP_PORT }}" ]; then echo "DEV_FTP_PORT is EMPTY"; exit 1; else echo "DEV_FTP_PORT is SET"; fi
+          if [ -z "${{ secrets.DEV_FTP_SERVER_DIR }}" ]; then echo "DEV_FTP_SERVER_DIR is EMPTY"; exit 1; else echo "DEV_FTP_SERVER_DIR is SET"; fi
+
       - name: Deploy to system-dev by FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
