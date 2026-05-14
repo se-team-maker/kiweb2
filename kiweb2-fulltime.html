@@ -865,7 +865,19 @@
                     <span>教室割サイネージ</span>
                   </a>
                 </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="pdf-viewer">
+                    <span class="nav-icon material-symbols-outlined">description</span>
+                    <span>資料一覧</span>
+                  </a>
+                </li>
               </ul>
+            </li>
+            <li class="nav-item admin-only" data-display="list-item" style="display: none;">
+              <a href="/kiweb/teacher-auth/public/pdf-admin.php" class="nav-link">
+                <span class="nav-icon material-symbols-outlined">picture_as_pdf</span>
+                <span>資料配信管理</span>
+              </a>
             </li>
             <li class="nav-item admin-only" style="display: none;">
               <a href="/kiweb/teacher-auth/public/admin.php" class="nav-link">
@@ -964,6 +976,18 @@
               <span>教室割サイネージ</span>
             </button>
           </li>
+          <li>
+            <button class="mobile-expand-link" type="button" data-page="pdf-viewer">
+              <span class="material-symbols-outlined" aria-hidden="true">description</span>
+              <span>資料一覧</span>
+            </button>
+          </li>
+          <li class="admin-only" data-display="list-item" style="display: none;">
+            <a class="mobile-expand-link" href="/kiweb/teacher-auth/public/pdf-admin.php">
+              <span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
+              <span>資料配信管理</span>
+            </a>
+          </li>
           <li class="admin-only" data-display="list-item" style="display: none;">
             <a class="mobile-expand-link" href="/kiweb/teacher-auth/public/admin.php">
               <span class="material-symbols-outlined" aria-hidden="true">settings</span>
@@ -986,12 +1010,13 @@
     // ★ ki-web2 専任用：メニューから iframe でページを切り替え
     const PAGES = {
       lessons: { file: '/kiweb/class-declaration.html?v=20260502-kazasu-badge-date' }, // 授業予定・実施申告
-      absence: { file: '/kiweb/class-reschedule_v260401.html?embed=1', appendTeacher: false, appendTheme: false }, // 欠勤・振替申請（社員版）
+      absence: { file: '/kiweb/class-reschedule.html', appendTeacher: false, appendTheme: false }, // 欠勤・振替申請（社員版）
       'room-booking': { file: '/kiweb/room-booking/room-booking.php', appendTeacher: false, appendTheme: false }, // 会議室予約システム
       check_in_out: { file: '/kiweb/check_in_out.html' }, // 出退勤記録・履歴の閲覧
       'class-report-search': { file: '/kiweb/ClassReportSearchForm.html?v=20260317-class-report-search-bridge-v3' }, // 授業報告書の検索・閲覧
       'non-class-work-search': { file: '/kiweb/declaration_of_non_class_work_search_and_view.html' }, // 勤務記録の検索・閲覧
-      signage: { file: 'https://system.kyotoijuku.com/signage/sk.html', appendTeacher: false, appendTheme: false } // 教室割サイネージ（暫定）
+      signage: { file: '/kiweb/teacher-auth/public/pdf-viewer.php?signage=sk',appendTeacher: false,appendTheme: false}, // 教室割サイネージ（共通）
+      'pdf-viewer': { file: '/kiweb/teacher-auth/public/pdf-list.php', appendTeacher: false, appendTheme: false }, // PDFビューア（共通）
     };
 
     const iframe = document.getElementById('mainFrame');

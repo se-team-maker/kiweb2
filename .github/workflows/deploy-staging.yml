@@ -1,0 +1,42 @@
+name: Deploy to staging by FTP
+
+on:
+  push:
+    branches:
+      - staging
+      
+  workflow_dispatch:
+
+jobs:
+  deploy-staging:
+    name: Deploy staging
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout latest code
+        uses: actions/checkout@v6
+
+      - name: Deploy to system-dev by FTPS
+        uses: SamKirkland/FTP-Deploy-Action@v4.4.0
+        with:
+          server: ${{ secrets.KIWEB_DEV_FTP_SERVER }}
+          username: ${{ secrets.KIWEB_DEV_FTP_USERNAME }}
+          password: ${{ secrets.KIWEB_DEV_FTP_PASSWORD }}
+          protocol: ftps
+          port: ${{ secrets.KIWEB_DEV_FTP_PORT }}
+          security : loose
+          timeout : 120000
+          local-dir: ./
+          server-dir: ${{ secrets.KIWEB_DEV_FTP_SERVER_DIR }}
+          dry-run: false
+          log-level : standard
+          exclude: |
+            **/.git*
+            **/.git*/**
+            **/node_modules/**
+            **/.github/**
+            **/.env
+            **/teacher-auth/.env
+            **/teacher-auth/vendor/**
+            **/teacher-auth/private-pdfs/**
+            **/private-pdfs/**
