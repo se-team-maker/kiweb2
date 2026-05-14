@@ -103,3 +103,5 @@ git branch -d fix/something
 ---
 
 最終確認: 2026-03-30（リポジトリ構成・`.gitignore` と突き合わせ）
+---
+自動反映テスト
