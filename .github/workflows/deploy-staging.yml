@@ -16,14 +16,6 @@ jobs:
       - name: Checkout latest code
         uses: actions/checkout@v6
 
-      - name: Check required secrets
-        run: |
-          if [ -z "${{ secrets.KIWEB_DEV_FTP_SERVER }}" ]; then echo "KIWEB_DEV_FTP_SERVER is EMPTY"; exit 1; else echo "KIWEB_DEV_FTP_SERVER is SET"; fi
-          if [ -z "${{ secrets.KIWEB_DEV_FTP_USERNAME }}" ]; then echo "KIWEB_DEV_FTP_USERNAME is EMPTY"; exit 1; else echo "KIWEB_DEV_FTP_USERNAME is SET"; fi
-          if [ -z "${{ secrets.KIWEB_DEV_FTP_PASSWORD }}" ]; then echo "KIWEB_DEV_FTP_PASSWORD is EMPTY"; exit 1; else echo "KIWEB_DEV_FTP_PASSWORD is SET"; fi
-          if [ -z "${{ secrets.KIWEB_DEV_FTP_PORT }}" ]; then echo "KIWEB_DEV_FTP_PORT is EMPTY"; exit 1; else echo "KIWEB_DEV_FTP_PORT is SET"; fi
-          if [ -z "${{ secrets.KIWEB_DEV_FTP_SERVER_DIR }}" ]; then echo "KIWEB_DEV_FTP_SERVER_DIR is EMPTY"; exit 1; else echo "KIWEB_DEV_FTP_SERVER_DIR is SET"; fi
-
       - name: Deploy to system-dev by FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
@@ -32,9 +24,12 @@ jobs:
           password: ${{ secrets.KIWEB_DEV_FTP_PASSWORD }}
           protocol: ftps
           port: ${{ secrets.KIWEB_DEV_FTP_PORT }}
+          security : loose
+          timeout : 120000
           local-dir: ./
           server-dir: ${{ secrets.KIWEB_DEV_FTP_SERVER_DIR }}
           dry-run: false
+          log-level : standard
           exclude: |
             **/.git*
             **/.git*/**
