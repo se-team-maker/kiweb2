@@ -1,9 +1,13 @@
 <!DOCTYPE html>
+<!-- v=20260502-fulltime-step1-aligned-with-kiweb2 -->
 <html lang="ja">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+  <meta http-equiv="Pragma" content="no-cache" />
+  <meta http-equiv="Expires" content="0" />
   <title>ki-web2 京都医塾 専任用</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -112,6 +116,7 @@
       /* White text */
       letter-spacing: 0;
       line-height: 28px;
+      width: 100%;
     }
 
     .brand-color-text {
@@ -137,8 +142,8 @@
     }
 
     .user-icon {
-      width: 40px;
-      height: 40px;
+      width: 25px;
+      height: 25px;
       background-color: var(--md-sys-color-on-primary);
       /* White icon bg */
       color: var(--md-sys-color-primary);
@@ -147,7 +152,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.25rem;
+      font-size: 0.8rem;
       font-weight: 500;
       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     }
@@ -414,13 +419,13 @@
       background-color: var(--md-sys-color-primary);
       color: var(--md-sys-color-on-primary);
       border: none;
-      padding: 0 24px;
-      height: 40px;
+      padding: 0.2px;
+      height: 30px;
       border-radius: var(--md-sys-shape-corner-full);
       font-weight: 500;
       cursor: pointer;
       transition: box-shadow 0.2s ease, background-color 0.2s ease;
-      font-size: 0.9rem;
+      font-size: 0.8rem;
       box-shadow: var(--md-sys-elevation-1);
     }
 
@@ -560,7 +565,7 @@
 
       .header .login-button {
         height: 32px;
-        padding: 0 16px;
+        padding: 0.16px;
         font-size: 0.8rem;
       }
 
@@ -769,7 +774,7 @@
   <!-- Top App Bar (Header) -->
   <header class="header">
     <div class="header-content">
-      <h1><span class="material-symbols-outlined">school</span> ki-web2 <span class="brand-color-text">京都医塾 専任用</span></h1>
+      <h1><span class="material-symbols-outlined">school</span> ki-web2<br><span class="brand-color-text">京都医塾 専任用</span></h1>
 
       <div class="user-info">
         <div class="user-profile-chip">
@@ -779,7 +784,7 @@
           <div class="user-name" data-placeholder="ログインしてください"></div>
           </div>
         </div>
-        <button class="login-button" id="openLoginModal">ログイン</button>
+        <button class="login-button" id="openLoginModal" style="font-size: 0.7rem; min-width: 60px"><nobr>ログイン</nobr></button>
       </div>
     </div>
   </header>
@@ -789,28 +794,22 @@
     <div class="dashboard-layout">
       <!-- Navigation Drawer (Sidebar) -->
       <aside class="sidebar">
-        <div class="sidebar-title">メニュー</div>
+        <!--<div class="sidebar-title">メニュー</div>-->
         <nav>
           <ul class="nav-menu">
             <li class="nav-section open">
-              <button class="nav-link nav-section-toggle" type="button" data-nav-toggle="procedure-records" aria-expanded="true" aria-controls="nav-submenu-procedure-records">
+              <button class="nav-link nav-section-toggle" type="button" data-nav-toggle="frequent-actions" aria-expanded="true" aria-controls="nav-submenu-frequent-actions">
                 <span class="nav-section-label">
                   <span class="nav-icon material-symbols-outlined">folder_open</span>
-                  <span>手続き・記録</span>
+                  <span>よく使う</span>
                 </span>
                 <span class="nav-chevron material-symbols-outlined">expand_more</span>
               </button>
-              <ul class="nav-submenu nav-menu" id="nav-submenu-procedure-records">
+              <ul class="nav-submenu nav-menu" id="nav-submenu-frequent-actions">
                 <li class="nav-item">
                   <a class="nav-link active" data-page="lessons">
                     <span class="nav-icon material-symbols-outlined">menu_book</span>
                     <span>授業予定・実施申告</span>
-                  </a>
-                </li>
-                <li class="nav-item">
-                  <a class="nav-link" data-page="work">
-                    <span class="nav-icon material-symbols-outlined">edit_note</span>
-                    <span>勤務記録フォーム</span>
                   </a>
                 </li>
                 <li class="nav-item">
@@ -819,27 +818,51 @@
                     <span>欠勤・振替申請</span>
                   </a>
                 </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="room-booking">
+                    <span class="nav-icon material-symbols-outlined">meeting_room</span>
+                    <span>会議室予約システム</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="inquiry">
+                    <span class="nav-icon material-symbols-outlined">contact_support</span>
+                    <span>問い合わせフォーム</span>
+                  </a>
+                </li>
               </ul>
             </li>
             <li class="nav-section open">
-              <button class="nav-link nav-section-toggle" type="button" data-nav-toggle="search-view" aria-expanded="true" aria-controls="nav-submenu-search-view">
+              <button class="nav-link nav-section-toggle" type="button" data-nav-toggle="menu-actions" aria-expanded="true" aria-controls="nav-submenu-menu-actions">
                 <span class="nav-section-label">
-                  <span class="nav-icon material-symbols-outlined">search</span>
-                  <span>検索・閲覧</span>
+                  <span class="nav-icon material-symbols-outlined">menu</span>
+                  <span>メニュー</span>
                 </span>
                 <span class="nav-chevron material-symbols-outlined">expand_more</span>
               </button>
-              <ul class="nav-submenu nav-menu" id="nav-submenu-search-view">
+              <ul class="nav-submenu nav-menu" id="nav-submenu-menu-actions">
+                <li class="nav-item">
+                  <a class="nav-link" data-page="check_in_out">
+                    <span class="nav-icon material-symbols-outlined">login</span>
+                    <span>出退勤記録・履歴の閲覧</span>
+                  </a>
+                </li>
                 <li class="nav-item">
                   <a class="nav-link" data-page="class-report-search">
                     <span class="nav-icon material-symbols-outlined">description</span>
-                    <span>授業報告書の検索・閲覧</span>
+                    <span>授業報告書の閲覧・記録</span>
                   </a>
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" data-page="non-class-work-search">
                     <span class="nav-icon material-symbols-outlined">fact_check</span>
-                    <span>勤務記録の閲覧</span>
+                    <span>勤務記録の検索・閲覧</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="signage">
+                    <span class="nav-icon material-symbols-outlined">co_present</span>
+                    <span>教室割サイネージ</span>
                   </a>
                 </li>
                 <li class="nav-item">
@@ -867,13 +890,17 @@
 
         <div class="nav-divider"></div>
 
-        <div class="sidebar-title">クイックリンク</div>
-        <nav>
-          <ul class="nav-menu">
-            <li class="nav-item"><a href="#" class="nav-link"><span class="nav-icon material-symbols-outlined">bookmark</span><span>マニュアル</span></a>
-            </li>
-          </ul>
-        </nav>
+        <!--<div class="sidebar-title">クイックリンク</div>-->
+        <!--<nav>-->
+        <!--  <ul class="nav-menu">-->
+        <!--    <li class="nav-item"><a href="https://docs.google.com/forms/d/e/1FAIpQLSeonc0XVI1SrzbHZvFx5OL6ITHzwF1IDn9hoAzaHgXXys-kmQ/viewform" class="nav-link" target="_blank"><span class="nav-icon material-symbols-outlined">contact_support</span><span style="font-weight: 600">問い合わせフォーム</span></a>-->
+        <!--    </li>-->
+        <!--    <li class="nav-item"><a href="https://www.youtube.com/watch?v=UxD1_3VWiJ4&embeds_referring_euri=https%3A%2F%2Fsites.google.com%2F&source_ve_path=Mjg2NjY" class="nav-link" target="_blank"><span class="nav-icon material-symbols-outlined">video_settings</span><span>オンラインブース使用法（動画）</span></a>-->
+        <!--    </li>-->
+        <!--    <li class="nav-item"><a href="#" class="nav-link"><span class="nav-icon material-symbols-outlined">bookmark</span><span>マニュアル</span></a>-->
+        <!--    </li>-->
+        <!--  </ul>-->
+        <!--</nav>-->
       </aside>
 
       <!-- Main Content Area (Iframe Container) -->
@@ -882,7 +909,7 @@
           <span class="iframe-loading-spinner material-symbols-outlined" aria-hidden="true">progress_activity</span>
           <span class="iframe-loading-text">読み込み中…</span>
         </div>
-        <iframe id="mainFrame" title="ki-web2 main" src="class-declaration.html?v=20260317-submitted-refresh"></iframe>
+        <iframe id="mainFrame" title="ki-web2 main" src="about:blank"></iframe>
       </main>
     </div>
   </div>
@@ -897,15 +924,21 @@
         </button>
       </li>
       <li class="tab-item">
-        <button class="tab-button" data-page="work">
-          <div class="tab-icon-container"><span class="material-symbols-outlined">edit_note</span></div>
-          <span>勤務記録</span>
+        <button class="tab-button" data-page="absence">
+          <div class="tab-icon-container"><span class="material-symbols-outlined">description</span></div>
+          <span>欠勤振替</span>
         </button>
       </li>
       <li class="tab-item">
-        <button class="tab-button" data-page="absence">
-          <div class="tab-icon-container"><span class="material-symbols-outlined">description</span></div>
-          <span>欠勤・振替</span>
+        <button class="tab-button" data-page="room-booking">
+          <div class="tab-icon-container"><span class="material-symbols-outlined">meeting_room</span></div>
+          <span>会議室</span>
+        </button>
+      </li>
+      <li class="tab-item">
+        <button class="tab-button" data-page="inquiry">
+          <div class="tab-icon-container"><span class="material-symbols-outlined">contact_support</span></div>
+          <span>問い合わせ</span>
         </button>
       </li>
       <li class="tab-item tab-item--menu">
@@ -920,15 +953,27 @@
         </button>
         <ul class="mobile-expand-list" id="mobileExpandList" aria-hidden="true">
           <li>
+            <button class="mobile-expand-link" type="button" data-page="check_in_out">
+              <span class="material-symbols-outlined" aria-hidden="true">login</span>
+              <span>出退勤記録・履歴の閲覧</span>
+            </button>
+          </li>
+          <li>
             <button class="mobile-expand-link" type="button" data-page="class-report-search">
               <span class="material-symbols-outlined" aria-hidden="true">description</span>
-              <span>授業報告書の検索・閲覧</span>
+              <span>授業報告書の閲覧・記録</span>
             </button>
           </li>
           <li>
             <button class="mobile-expand-link" type="button" data-page="non-class-work-search">
               <span class="material-symbols-outlined" aria-hidden="true">fact_check</span>
-              <span>勤務記録の閲覧</span>
+              <span>勤務記録の検索・閲覧</span>
+            </button>
+          </li>
+          <li>
+            <button class="mobile-expand-link" type="button" data-page="signage">
+              <span class="material-symbols-outlined" aria-hidden="true">co_present</span>
+              <span>教室割サイネージ</span>
             </button>
           </li>
           <li>
@@ -962,10 +1007,10 @@
     </div>
   </div>
   <script>
-    // ★ 同一フォルダにある3ページを iframe で切り替え
+    // ★ ki-web2 専任用：メニューから iframe でページを切り替え
     const PAGES = {
       lessons: { file: '/kiweb/class-declaration.html?v=20260502-kazasu-badge-date' }, // 授業予定・実施申告
-      absence: { file: '/kiweb/class-reschedule_v260401.html', appendTeacher: false, appendTheme: false }, // 欠勤・振替申請（社員版）
+      absence: { file: '/kiweb/class-reschedule.html', appendTeacher: false, appendTheme: false }, // 欠勤・振替申請（社員版）
       'room-booking': { file: '/kiweb/room-booking/room-booking.php', appendTeacher: false, appendTheme: false }, // 会議室予約システム
       check_in_out: { file: '/kiweb/check_in_out.html' }, // 出退勤記録・履歴の閲覧
       'class-report-search': { file: '/kiweb/ClassReportSearchForm.html?v=20260317-class-report-search-bridge-v3' }, // 授業報告書の検索・閲覧
@@ -984,11 +1029,19 @@
     const mobileExpandList = document.getElementById('mobileExpandList');
     const mobileExpandIcon = document.getElementById('mobileExpandIcon');
     const LOGIN_URL = '/kiweb/teacher-auth/public/login.php';
+    const LOGOUT_API_URL = '/kiweb/teacher-auth/api/logout.php';
+    const INQUIRY_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeonc0XVI1SrzbHZvFx5OL6ITHzwF1IDn9hoAzaHgXXys-kmQ/viewform';
+    const PORTAL_THEME = 'fulltime';
     const NAME_STORAGE_KEY = 'kiweb_user_name';
     const NAME_PLACEHOLDER = 'ログインしてください';
+    const LOGOUT_ON_CLOSE_COOKIE = 'teacher_auth_logout_on_close';
+    const SHARED_TAB_SESSION_KEY = 'kiweb_shared_tab_session';
+    const SHARED_TAB_TOKEN_KEY = 'kiweb_shared_tab_token';
+    const SHARED_TAB_NAME_PREFIX = 'kiweb-shared-tab:';
     let isLoggedIn = false;
     let loginCheckTimer = null;
     let userScopes = {};
+    let userRoles = [];
 
     function formatDisplayName(name) {
       return name ? name + 'さん' : NAME_PLACEHOLDER;
@@ -1026,6 +1079,13 @@
       return text.replace(/(さん)+$/u, '').trim();
     }
 
+    function setPartTimeOnlyVisible(visible) {
+      document.querySelectorAll('.parttime-only').forEach((el) => {
+        const display = visible ? (el.dataset.display || 'block') : 'none';
+        el.style.display = display;
+      });
+    }
+
     function openLogin(nameOverride) {
       const name = (nameOverride !== undefined && nameOverride !== null) ? nameOverride : getLoginName();
       const url = name ? `${LOGIN_URL}?name=${encodeURIComponent(name)}` : LOGIN_URL;
@@ -1045,7 +1105,99 @@
           nameEl.textContent = formatDisplayName('');
         }
         setStoredName('');
+        userScopes = {};
+        userRoles = [];
+        setPartTimeOnlyVisible(false);
+        clearSharedTabMarker();
       }
+    }
+
+    function hasCookie(name) {
+      const encodedName = encodeURIComponent(name) + '=';
+      return document.cookie.split(';').some((entry) => entry.trim().startsWith(encodedName));
+    }
+
+    function hasSharedTabMarker() {
+      try {
+        return sessionStorage.getItem(SHARED_TAB_SESSION_KEY) === '1';
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function getSharedTabToken() {
+      try {
+        return (sessionStorage.getItem(SHARED_TAB_TOKEN_KEY) || '').trim();
+      } catch (error) {
+        return '';
+      }
+    }
+
+    function isValidSharedTabContext() {
+      if (!hasSharedTabMarker()) {
+        return false;
+      }
+      const token = getSharedTabToken();
+      if (!token) {
+        return false;
+      }
+      return (window.name || '') === (SHARED_TAB_NAME_PREFIX + token);
+    }
+
+    function setSharedTabMarker(token) {
+      const nextToken = (token || '').trim();
+      if (!nextToken) {
+        return;
+      }
+      try {
+        sessionStorage.setItem(SHARED_TAB_SESSION_KEY, '1');
+        sessionStorage.setItem(SHARED_TAB_TOKEN_KEY, nextToken);
+        window.name = SHARED_TAB_NAME_PREFIX + nextToken;
+      } catch (error) {
+        // ignore
+      }
+    }
+
+    function clearSharedTabMarker() {
+      try {
+        sessionStorage.removeItem(SHARED_TAB_SESSION_KEY);
+        sessionStorage.removeItem(SHARED_TAB_TOKEN_KEY);
+        if ((window.name || '').startsWith(SHARED_TAB_NAME_PREFIX)) {
+          window.name = '';
+        }
+      } catch (error) {
+        // ignore
+      }
+    }
+
+    async function clearServerSession() {
+      try {
+        await fetch(LOGOUT_API_URL, {
+          method: 'POST',
+          credentials: 'include',
+          keepalive: true
+        });
+      } catch (error) {
+        // ignore
+      }
+    }
+
+    function sendLogoutBeacon() {
+      try {
+        if (navigator.sendBeacon) {
+          const emptyBody = new Blob([], { type: 'application/x-www-form-urlencoded; charset=UTF-8' });
+          navigator.sendBeacon(LOGOUT_API_URL, emptyBody);
+          return;
+        }
+      } catch (error) {
+        // ignore
+      }
+
+      fetch(LOGOUT_API_URL, {
+        method: 'POST',
+        credentials: 'include',
+        keepalive: true
+      }).catch(() => {});
     }
 
     function getPrimaryScope(type) {
@@ -1057,7 +1209,7 @@
 
     async function logout() {
       try {
-        await fetch('/kiweb/teacher-auth/api/logout.php', {
+        await fetch(LOGOUT_API_URL, {
           method: 'POST',
           credentials: 'include'
         });
@@ -1080,7 +1232,9 @@
         if (!response.ok) {
           setLoginState(null);
           if (redirectOnFail && (response.status === 401 || response.status === 403)) {
+            await clearServerSession();
             window.location.href = LOGIN_URL;
+            return null;
           }
           return false;
         }
@@ -1088,11 +1242,14 @@
         if (!data || !data.success || !data.user) {
           setLoginState(null);
           if (redirectOnFail) {
+            await clearServerSession();
             window.location.href = LOGIN_URL;
+            return null;
           }
           return false;
         }
         userScopes = data.user.scopes || {};
+        userRoles = Array.isArray(data.user.roles) ? data.user.roles : [];
         const name = (data.user.name || data.user.email || '').trim();
         if (name) {
           nameEl.textContent = formatDisplayName(name);
@@ -1102,6 +1259,9 @@
           setStoredName('');
         }
         setLoginState(data.user);
+
+        const isPartTimeUser = userRoles.includes('part_time_teacher') || userRoles.includes('part_time_staff');
+        setPartTimeOnlyVisible(isPartTimeUser);
 
         // 管理者リンクの表示制御
         const isAdmin = data.user.permissions && data.user.permissions.includes('manage_users');
@@ -1125,7 +1285,10 @@
       } catch (error) {
         // no-op: keep default name if API fails
         setLoginState(null);
+        userScopes = {};
+        userRoles = [];
         if (redirectOnFail) {
+          await clearServerSession();
           window.location.href = LOGIN_URL;
           return null;
         }
@@ -1208,22 +1371,29 @@
 
     function loadPage(pageKey, { updateHash = true } = {}) {
       const key = PAGES[pageKey] ? pageKey : 'lessons';
+      const pageConfig = PAGES[key];
       showLoading(true);
       setActive(key);
 
-      // 同一フォルダ指定の相対パス + 講師名パラメータ
+      // 同一フォルダ指定の相対パス + ログインユーザー情報
       const teacherName = getLoginName();
-      let url = PAGES[key].file;
-      if (teacherName) {
+      let url = pageConfig.file;
+
+      // 社員版では各画面側で氏名を可変にできるよう、対応ページには theme=fulltime を渡す
+      if (pageConfig.appendTheme !== false) {
+        url += (url.includes('?') ? '&' : '?') + 'theme=fulltime';
+      }
+
+      // 既存画面との互換用。appendTeacher:false のページには teacher を付けない。
+      if (teacherName && pageConfig.appendTeacher !== false) {
         url += (url.includes('?') ? '&' : '?') + 'teacher=' + encodeURIComponent(teacherName);
       }
-      if (key === 'work') {
-        url += (url.includes('?') ? '&' : '?') + 'theme=fulltime';
-        const department = getPrimaryScope('department');
-        if (department) {
-          url += '&department=' + encodeURIComponent(department);
-        }
+
+      const department = getPrimaryScope('department');
+      if (department && (key === 'check_in_out' || key === 'class-report-search' || key === 'non-class-work-search')) {
+        url += (url.includes('?') ? '&' : '?') + 'department=' + encodeURIComponent(department);
       }
+
       iframe.src = url;
 
       if (updateHash) {
@@ -1261,15 +1431,36 @@
         setMobileMenuOpen(false);
       }
 
-      const nav = e.target.closest('[data-page]');
-      if (nav) {
-        const pageKey = nav.dataset.page;
-        if (!pageKey) return;
-        e.preventDefault();
-        loadPage(pageKey);
+    //   const nav = e.target.closest('[data-page]');
+    //   if (nav) {
+    //     const pageKey = nav.dataset.page;
+    //     if (!pageKey) return;
+    //     e.preventDefault();
+    //     loadPage(pageKey);
+    //     setMobileMenuOpen(false);
+    //     return;
+    //   }
+
+    const nav = e.target.closest('[data-page]');
+    if (nav) {
+      const pageKey = nav.dataset.page;
+      if (!pageKey) return;
+      e.preventDefault();
+    
+      if (pageKey === 'inquiry') {
+        if (window.innerWidth <= 768) {
+          window.open(INQUIRY_URL, '_blank', 'noopener');
+        } else {
+          window.open(INQUIRY_URL, '_blank', 'noopener');
+        }
         setMobileMenuOpen(false);
         return;
       }
+    
+      loadPage(pageKey);
+      setMobileMenuOpen(false);
+      return;
+    }
 
       const mobileActionLink = e.target.closest('#mobileExpandList a[href]');
       if (mobileActionLink) {
@@ -1322,9 +1513,30 @@
         setMobileMenuOpen(false);
       }
     });
+    window.addEventListener('pagehide', () => {
+      if (!hasCookie(LOGOUT_ON_CLOSE_COOKIE)) {
+        return;
+      }
+      // Browser constraints make close detection best-effort.
+      sendLogoutBeacon();
+    });
     // 初期表示：URLの # に合わせる（#lessons / #work / #absence）
     (async function init() {
-      const hash = (location.hash || '').replace('#', '').trim();
+      const sharedLogoutOnClose = hasCookie(LOGOUT_ON_CLOSE_COOKIE);
+      if (sharedLogoutOnClose && !isValidSharedTabContext()) {
+        await clearServerSession();
+        window.location.href = LOGIN_URL;
+        return;
+      }
+      if (sharedLogoutOnClose) {
+        const token = getSharedTabToken();
+        if (token) {
+          setSharedTabMarker(token);
+        }
+      } else {
+        clearSharedTabMarker();
+      }
+
       const nameEl = document.querySelector('.user-name');
       if (nameEl) {
         const storedName = getStoredName();
@@ -1332,11 +1544,17 @@
       }
       initializeNavSections();
       setMobileMenuOpen(false);
+
       const refreshResult = await refreshUserName({ redirectOnFail: true });
       if (refreshResult !== true) {
         return;
       }
-      loadPage(hash || 'lessons', { updateHash: true });
+      
+
+      const hash = (location.hash || '').replace('#', '').trim();
+      const hasValidHash = !!hash && !!PAGES[hash];
+      const initialPage = hasValidHash ? hash : 'lessons';
+      loadPage(initialPage, { updateHash: true });
 
       // Init Ripple Effects
       const createRipple = (event) => {
