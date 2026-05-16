@@ -871,6 +871,12 @@
                     <span>資料一覧</span>
                   </a>
                 </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="pdf-viewer">
+                    <span class="nav-icon material-symbols-outlined">description</span>
+                    <span>資料一覧</span>
+                  </a>
+                </li>
               </ul>
             </li>
             <li class="nav-item admin-only" data-display="list-item" style="display: none;">
@@ -1110,6 +1116,94 @@
         setPartTimeOnlyVisible(false);
         clearSharedTabMarker();
       }
+    }
+
+    function hasCookie(name) {
+      const encodedName = encodeURIComponent(name) + '=';
+      return document.cookie.split(';').some((entry) => entry.trim().startsWith(encodedName));
+    }
+
+    function hasSharedTabMarker() {
+      try {
+        return sessionStorage.getItem(SHARED_TAB_SESSION_KEY) === '1';
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function getSharedTabToken() {
+      try {
+        return (sessionStorage.getItem(SHARED_TAB_TOKEN_KEY) || '').trim();
+      } catch (error) {
+        return '';
+      }
+    }
+
+    function isValidSharedTabContext() {
+      if (!hasSharedTabMarker()) {
+        return false;
+      }
+      const token = getSharedTabToken();
+      if (!token) {
+        return false;
+      }
+      return (window.name || '') === (SHARED_TAB_NAME_PREFIX + token);
+    }
+
+    function setSharedTabMarker(token) {
+      const nextToken = (token || '').trim();
+      if (!nextToken) {
+        return;
+      }
+      try {
+        sessionStorage.setItem(SHARED_TAB_SESSION_KEY, '1');
+        sessionStorage.setItem(SHARED_TAB_TOKEN_KEY, nextToken);
+        window.name = SHARED_TAB_NAME_PREFIX + nextToken;
+      } catch (error) {
+        // ignore
+      }
+    }
+
+    function clearSharedTabMarker() {
+      try {
+        sessionStorage.removeItem(SHARED_TAB_SESSION_KEY);
+        sessionStorage.removeItem(SHARED_TAB_TOKEN_KEY);
+        if ((window.name || '').startsWith(SHARED_TAB_NAME_PREFIX)) {
+          window.name = '';
+        }
+      } catch (error) {
+        // ignore
+      }
+    }
+
+    async function clearServerSession() {
+      try {
+        await fetch(LOGOUT_API_URL, {
+          method: 'POST',
+          credentials: 'include',
+          keepalive: true
+        });
+      } catch (error) {
+        // ignore
+      }
+    }
+
+    function sendLogoutBeacon() {
+      try {
+        if (navigator.sendBeacon) {
+          const emptyBody = new Blob([], { type: 'application/x-www-form-urlencoded; charset=UTF-8' });
+          navigator.sendBeacon(LOGOUT_API_URL, emptyBody);
+          return;
+        }
+      } catch (error) {
+        // ignore
+      }
+
+      fetch(LOGOUT_API_URL, {
+        method: 'POST',
+        credentials: 'include',
+        keepalive: true
+      }).catch(() => {});
     }
 
     function hasCookie(name) {

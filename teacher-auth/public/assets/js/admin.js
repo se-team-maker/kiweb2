@@ -12,12 +12,14 @@ const API = {
     permissions: '/kiweb/teacher-auth/api/admin/permissions.php',
     scopes: '/kiweb/teacher-auth/api/admin/scopes.php',
     scopeTypes: '/kiweb/teacher-auth/api/admin/scope-types.php',
-    accessLogs: '/kiweb/teacher-auth/api/admin/access-logs.php'
+    accessLogs: '/kiweb/teacher-auth/api/admin/access-logs.php',
+    adminViewLogs: '/kiweb/teacher-auth/api/admin/admin-access-log.php'
 };
 
 // 状態管理
 let currentPage = 1;
 let accessLogsCurrentPage = 1;
+let adminViewLogsCurrentPage = 1;
 let allRoles = [];
 let allPermissions = [];
 let allScopes = [];
@@ -34,7 +36,8 @@ const sectionAccess = {
     users: canManageUsers,
     roles: canManageUsers,
     scopes: canManageUsers,
-    'access-logs': canViewAuditLogs
+    'access-logs': canViewAuditLogs,
+    'admin-view-logs': canViewAuditLogs
 };
 const currentUserId = String(window.currentUserId || '');
 const managedRoleNames = ['admin', 'full_time_teacher', 'part_time_teacher', 'part_time_staff'];
@@ -160,6 +163,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
+    //管理者アクセスログ関連
+    const searchAdminViewLogsBtn = document.getElementById('btn-search-admin-view-logs');
+    const clearAdminViewLogsBtn = document.getElementById('btn-clear-admin-view-logs');
+    const adminViewLogFilterInputs = [
+        document.getElementById('admin-log-date-from'),
+        document.getElementById('admin-log-date-to'),
+        document.getElementById('admin-log-user-search'),
+        document.getElementById('admin-log-page-path')
+    ];
+
+    if (searchAdminViewLogsBtn) {
+        searchAdminViewLogsBtn.addEventListener('click', () => loadAdminViewLogs(1));
+    }
+    if (clearAdminViewLogsBtn) {
+        clearAdminViewLogsBtn.addEventListener('click', () => clearAdminViewLogFilters());
+    }
+    adminViewLogFilterInputs.forEach((input) => {
+        if (!input) return;
+        input.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                loadAdminViewLogs(1);
+            }
+        });
+    });
+
     // 初期データ読み込み
     await loadInitialData();
 
@@ -267,6 +296,7 @@ function switchSection(section) {
     }
 
     currentSection = section;
+    logAdminView(`admin:${section}`);
     closeMobileDetail();
 
     // ナビゲーションの更新
@@ -303,7 +333,7 @@ function switchSection(section) {
         selectedScopeId = null;
         document.getElementById('scope-detail').style.display = 'none';
         document.getElementById('scope-empty-state').style.display = 'flex';
-    }
+    } 
 
     // セクション固有の読み込み
     if (section === 'roles') {
@@ -315,6 +345,8 @@ function switchSection(section) {
         loadUsers();
     } else if (section === 'access-logs') {
         loadAccessLogs(1);
+    } else if (section === 'admin-view-logs') {
+        loadAdminViewLogs(1);
     }
 }
 
@@ -368,6 +400,25 @@ async function fetchAPI(url, options = {}) {
         return JSON.parse(rawText);
     } catch (e) {
         throw new Error('APIレスポンスのJSON解析に失敗しました');
+    }
+}
+
+// 管理者のページ閲覧ログを記録
+async function logAdminView(pagePath) {
+    if (!pagePath) return;
+
+    try {
+        await fetch(API.adminViewLogs, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                page_path: pagePath
+            })
+        });
+    } catch (error) {
+        console.warn('admin view log failed:', error);
     }
 }
 
@@ -523,6 +574,7 @@ async function selectUser(userId) {
             </div>
         `;
         openMobileDetail();
+        logAdminView(`admin:user-detail:${userId}`);
     } catch (error) {
         showAlert('ユーザー情報の取得に失敗しました', 'error');
     }
@@ -590,6 +642,114 @@ async function loadAccessLogs(page = 1) {
         showAlert(`アクセスログの読み込みに失敗しました: ${error.message || '不明なエラー'}`, 'error');
     }
 }
+
+function getAdminViewLogFilters() {
+    return {
+        date_from: (document.getElementById('admin-log-date-from')?.value || '').trim(),
+        date_to: (document.getElementById('admin-log-date-to')?.value || '').trim(),
+        user_search: (document.getElementById('admin-log-user-search')?.value || '').trim(),
+        page_path: (document.getElementById('admin-log-page-path')?.value || '').trim()
+    };
+}
+
+async function loadAdminViewLogs(page = 1) {
+    adminViewLogsCurrentPage = Math.max(1, Number(page) || 1);
+    const filters = getAdminViewLogFilters();
+    const params = new URLSearchParams({
+        page: String(adminViewLogsCurrentPage),
+        per_page: '50'
+    });
+
+    if (filters.date_from) params.set('date_from', filters.date_from);
+    if (filters.date_to) params.set('date_to', filters.date_to);
+    if (filters.user_search) params.set('user_search', filters.user_search);
+    if (filters.page_path) params.set('page_path', filters.page_path);
+
+    try {
+        const data = await fetchAPI(`${API.adminViewLogs}?${params.toString()}`);
+        renderAdminViewLogRows(data.items || []);
+        renderAdminViewLogPagination(data.pages || 0, data.page || 1);
+        const totalLabel = document.getElementById('admin-view-logs-total-label');
+        if (totalLabel) {
+            totalLabel.textContent = `全 ${Number(data.total || 0).toLocaleString()} 件`;
+        }
+        if (currentSection === 'admin-view-logs') {
+            openMobileDetail();
+        }
+    } catch (error) {
+        showAlert(`管理画面閲覧ログの読み込みに失敗しました: ${error.message || '不明なエラー'}`, 'error');
+    }
+}
+
+function clearAdminViewLogFilters() {
+    const ids = ['admin-log-date-from', 'admin-log-date-to', 'admin-log-user-search', 'admin-log-page-path'];
+    ids.forEach((id) => {
+        const field = document.getElementById(id);
+        if (field) {
+            field.value = '';
+        }
+    });
+    loadAdminViewLogs(1);
+}
+
+function renderAdminViewLogRows(items) {
+    const tbody = document.getElementById('admin-view-logs-tbody');
+    if (!tbody) {
+        return;
+    }
+
+    if (!Array.isArray(items) || items.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="6" class="access-log-empty-cell">対象データがありません。</td>
+            </tr>
+        `;
+        return;
+    }
+
+    tbody.innerHTML = items.map((item) => {
+        const userName = item.user_name || '-';
+        const userEmail = item.user_email || '-';
+        const pagePath = item.page_path || '-';
+        const ipAddress = item.ip_address || '-';
+        const userAgent = item.user_agent || '-';
+
+        return `
+            <tr>
+                <td>${escapeHtml(item.created_at || '-')}</td>
+                <td>${escapeHtml(userName)}</td>
+                <td>${escapeHtml(userEmail)}</td>
+                <td title="${escapeHtml(pagePath)}">${escapeHtml(pagePath)}</td>
+                <td>${escapeHtml(ipAddress)}</td>
+                <td title="${escapeHtml(userAgent)}">${escapeHtml(truncateText(userAgent, 100))}</td>
+            </tr>
+        `;
+    }).join('');
+}
+
+function renderAdminViewLogPagination(totalPages, current) {
+    const container = document.getElementById('admin-view-logs-pagination');
+    if (!container) {
+        return;
+    }
+
+    if (!totalPages || totalPages <= 1) {
+        container.innerHTML = '';
+        return;
+    }
+
+    let html = `<button class="page-btn" ${current <= 1 ? 'disabled' : ''} onclick="goToAdminViewLogPage(${current - 1})">前へ</button>`;
+    for (let i = 1; i <= totalPages; i++) {
+        html += `<button class="page-btn ${i === current ? 'active' : ''}" onclick="goToAdminViewLogPage(${i})">${i}</button>`;
+    }
+    html += `<button class="page-btn" ${current >= totalPages ? 'disabled' : ''} onclick="goToAdminViewLogPage(${current + 1})">次へ</button>`;
+    container.innerHTML = html;
+}
+
+function goToAdminViewLogPage(page) {
+    loadAdminViewLogs(page);
+}
+
 
 function clearAccessLogFilters() {
     const ids = ['log-date-from', 'log-date-to', 'log-user-search', 'log-page-path'];
@@ -955,6 +1115,7 @@ async function selectRole(roleId) {
             </div>
         `;
         openMobileDetail();
+        logAdminView(`admin:role-detail:${roleId}`);
     } catch (error) {
         showAlert('役職情報の取得に失敗しました', 'error');
     }
@@ -1268,6 +1429,7 @@ async function selectScope(scopeId) {
         </div>
     `;
     openMobileDetail();
+    logAdminView(`admin:scope-detail:${scopeId}`);
 }
 
 function openScopeModal(scopeId = null) {

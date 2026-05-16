@@ -78,7 +78,16 @@ $csrfToken = Session::generateCsrfToken();
                     <a href="#" class="nav-item" data-section="access-logs">アクセスログ</a>
                 </div>
             </div>
-            
+
+            <div class="sidebar-divider"></div>
+
+            <div class="sidebar-section">
+                <div class="sidebar-section-title">管理者ログ</div>
+                <div class="sidebar-nav glass-panel glass-compact">
+                    <a href="#" class="nav-item" data-section="admin-view-logs">管理画面閲覧ログ</a>    
+                </div>
+            </div>
+
             <div class="sidebar-footer">
                 <div class="sidebar-divider"></div>
                 <a href="/kiweb/teacher-auth/public/portal/" class="nav-item">← 戻る</a>
@@ -154,8 +163,37 @@ $csrfToken = Session::generateCsrfToken();
                     </div>
                 </div>
             </div>
-        </div>
 
+            <!--管理者ページアクセスログフィルタ-->
+            <div id="list-admin-view-logs" class="list-section">
+                <div class="list-header">
+                        <h2>管理者アクセスログ</h2>
+                </div>
+                <div class="list-search access-log-filter-panel">
+                    <div class="form-group">
+                        <label for="admin-log-date-from">開始日</label>
+                        <input type="date" id="admin-log-date-from">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-log-date-to">終了日</label>
+                        <input type="date" id="admin-log-date-to">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-log-user-search">ユーザー検索</label>
+                        <input type="text" id="admin-log-user-search" placeholder="名前・メール">
+                    </div>
+                    <div class="form-group">
+                        <label for="admin-log-page-path">ページパス</label>
+                        <input type="text" id="admin-log-page-path" placeholder="例: kiweb2.html">
+                    </div>
+                    <div class="access-log-filter-actions">
+                        <button type="button" class="btn btn-primary" id="btn-search-admin-view-logs">検索</button>
+                        <button type="button" class="btn btn-secondary" id="btn-clear-admin-view-logs">クリア</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
         <!-- 詳細パネル -->
         <main class="detail-panel no-scrollbar glass-panel">
             <div class="mobile-detail-bar">
@@ -239,6 +277,47 @@ $csrfToken = Session::generateCsrfToken();
                             </table>
                         </div>
                         <div class="pagination" id="access-logs-pagination"></div>
+                    </div>
+                </div>
+            </div>
+
+
+            <!-- 管理者アクセスログ詳細 -->
+            <div id="detail-admin-view-logs" class="detail-section-container">
+                <div class="detail-content glass-panel access-log-content">
+                    <div class="detail-header access-log-header">
+                        <div class="detail-icon" style="background: var(--icon-green); color: white;">
+                            <span class="material-symbols-outlined">visibility</span>
+                        </div>
+                        <h1 class="detail-title">管理画面閲覧ログ</h1>
+                        <div class="detail-actions">
+                            <span class="role-tag" id="admin-view-logs-total-label">全 0 件</span>
+                        </div>
+                    </div>
+
+                    <div class="detail-divider"></div>
+
+                    <div class="detail-section">
+                        <div class="access-log-table-wrap">
+                            <table class="data-table access-log-table">
+                                <thead>
+                                    <tr>
+                                        <th>日時</th>
+                                        <th>ユーザー</th>
+                                        <th>メール</th>
+                                        <th>ページ</th>
+                                        <th>IP</th>
+                                        <th>User-Agent</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-view-logs-tbody">
+                                    <tr>
+                                        <td colspan="6" class="access-log-empty-cell">検索条件を指定して「検索」を押してください。</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div class="pagination" id="admin-view-logs-pagination"></div>
                     </div>
                 </div>
             </div>
