@@ -438,6 +438,8 @@ if ($isSignageMode) {
         aria-label="ズーム倍率"
       >
       <span class="zoom-unit">%</span>
+      <button class="button" type="button" id="zoom120Btn">120%</button>
+      <button class="button" type="button" id="zoom210Btn">210%</button>
       <button class="button" type="button" id="applyZoomBtn">適用</button>
       <button class="button" type="button" id="fitWidthBtn"><span class="wide-label">幅に合わせる</span><span class="mobile-label">幅</span></button>
       <button class="button" type="button" id="fitPageBtn"><span class="wide-label">全体表示</span><span class="mobile-label">全体</span></button>
@@ -479,6 +481,8 @@ if ($isSignageMode) {
     const zoomOutBtn = document.getElementById('zoomOutBtn');
     const zoomInBtn = document.getElementById('zoomInBtn');
     const zoomInput = document.getElementById('zoomInput');
+    const zoom120Btn = document.getElementById('zoom120Btn');
+    const zoom210Btn = document.getElementById('zoom210Btn');
     const applyZoomBtn = document.getElementById('applyZoomBtn');
     const fitWidthBtn = document.getElementById('fitWidthBtn');
     const fitPageBtn = document.getElementById('fitPageBtn');
@@ -511,6 +515,20 @@ if ($isSignageMode) {
         btn.disabled = disabled;
       });
     }
+
+    function setZoomButtonsDisabled(disabled) {
+      const clamped = Math.min(400, Math.max(30, percent));
+      scale = clamped / 100;
+      zoomInput.value = String(clamped);
+      renderPage();
+    }
+
+    function setZoomPercent(percent) {
+    const clamped = Math.min(400, Math.max(30, percent));
+    scale = clamped / 100;
+    zoomInput.value = String(clamped);
+    renderPage();
+  }
 
     async function getCurrentPage() {
       if (!pdfDoc) return null;
@@ -694,6 +712,8 @@ if ($isSignageMode) {
 
     fitWidthBtn.addEventListener('click', fitWidth);
     applyZoomBtn.addEventListener('click', applyZoomInput);
+    zoom120Btn.addEventListener('click', () => setZoomPercent(120));
+    zoom210Btn.addEventListener('click', () => setZoomPercent(210));
 
     zoomInput.addEventListener('keydown', (event) => {
       if (event.key === 'Enter') {
