@@ -168,6 +168,7 @@ $signage = isset($_GET['signage']) ? strtolower((string) $_GET['signage']) : '';
 $signageTitles = [
     'sk' => '教室割サイネージ（SK）',
     'em' => '教室割サイネージ（EM）',
+    'booth' => '高卒本科生 ブース番号一覧',
 ];
 
 $isSignageMode = $signage !== '';
@@ -419,6 +420,7 @@ if ($isSignageMode) {
       <?php if ($isSignageMode): ?>
         <a class="button signage-tab<?= $signage === 'sk' ? ' active' : '' ?>" href="pdf-viewer.php?signage=sk">SK</a>
         <a class="button signage-tab<?= $signage === 'em' ? ' active' : '' ?>" href="pdf-viewer.php?signage=em">EM</a>
+        <a class="button signage-tab<?= $signage === 'booth' ? ' active' : '' ?>" href="pdf-viewer.php?signage=booth">BOOTH</a>
       <?php endif; ?>
 
       <button class="button" type="button" id="prevBtn">前へ</button>

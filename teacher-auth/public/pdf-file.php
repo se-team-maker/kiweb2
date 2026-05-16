@@ -198,6 +198,7 @@ $signage = isset($_GET['signage']) ? strtolower((string) $_GET['signage']) : '';
 $signageFiles = [
     'sk' => 'sk.pdf',
     'em' => 'em.pdf',
+    'booth' => 'booth.pdf',
 ];
 
 if ($signage !== '') {
