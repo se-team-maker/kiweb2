@@ -1,7 +1,22 @@
 <?php
-require_once __DIR__ . '/../login/public/bootstrap.php';
-requireAuth();
-?><!DOCTYPE html>
+require_once __DIR__ . '/../teacher-auth/public/bootstrap.php';
+
+use App\Auth\Session;
+use App\Model\User;
+
+if (!Session::isLoggedIn()) {
+    header('Location: /kiweb/teacher-auth/public/login.php');
+    exit;
+}
+
+$userId = Session::getUserId();
+$user = $userId ? User::findById($userId) : null;
+
+if (!$user || !$user->isActive()) {
+    Session::destroy();
+    header('Location: /kiweb/teacher-auth/public/login.php');
+    exit;
+}?><!DOCTYPE html>
 <html lang="ja">
 
 <head>
