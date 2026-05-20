@@ -65,6 +65,19 @@
       width: 100%;
     }
 
+    /* 申請者名だけ編集不可にする */
+    .search-section #applicantName.locked-field {
+      background-color: #EEEEEE !important;
+      border-color: #CCCCCC !important;
+      color: #333 !important;
+      cursor: not-allowed;
+    }
+
+    .search-section #applicantName.locked-field:focus {
+      outline: none;
+      box-shadow: none;
+    }
+
     .form-group {
       margin-bottom: 15px
     }
@@ -331,12 +344,6 @@
 
     #pendingClassList .pane-title {
       color: #8a2f3b;
-    }
-
-    #applicantName[readonly] {
-      background: #f3f4f6;
-      color: #555;
-      cursor: not-allowed;
     }
 
     .loading {
@@ -755,7 +762,7 @@
       <div class="form-group">
         <label for="applicantName">申請者</label>
         <div class="inline-input">
-          <input type="text" id="applicantName" placeholder="申請者名を入力してください" readonly aria-readonly="true" />
+          <input type="text" id="applicantName" class="locked-field" placeholder="申請者名を入力してください" readonly aria-readonly="true" autocomplete="off" tabindex="-1" />
           <button type="button" class="btn-secondary" id="copyApplicantToTeacher">講師名欄に転記</button>
         </div>
       </div>
@@ -1071,18 +1078,47 @@
         return user.name.trim();
       }
 
+      function lockApplicantName(name) {
+        const applicantEl = document.getElementById('applicantName');
+        if (!applicantEl || !name) return;
+
+        applicantEl.value = name;
+        applicantEl.readOnly = true;
+        applicantEl.classList.add('locked-field');
+        applicantEl.setAttribute('readonly', 'readonly');
+        applicantEl.setAttribute('aria-readonly', 'true');
+        applicantEl.setAttribute('autocomplete', 'off');
+        applicantEl.tabIndex = -1;
+
+        // ブラウザ補完やスクリプトで値が変わった場合も、申請者名だけ元に戻す
+        applicantEl.dataset.lockedValue = name;
+        if (!applicantEl.dataset.lockListenerAttached) {
+          applicantEl.addEventListener('input', () => {
+            const lockedValue = applicantEl.dataset.lockedValue || '';
+            if (lockedValue && applicantEl.value !== lockedValue) {
+              applicantEl.value = lockedValue;
+            }
+          });
+          applicantEl.dataset.lockListenerAttached = '1';
+        }
+      }
+
       function applyLoggedInUserName(user) {
         const name = getLoggedInUserName(user);
         if (!name) return;
 
-        const applicantEl = document.getElementById('applicantName');
-        if (applicantEl) {
-          applicantEl.value = name;
-        }
+        // ロックするのは申請者名だけ
+        lockApplicantName(name);
 
+        // 講師名は初期表示用にログイン名を入れるだけ。編集・検索は可能なままにする。
         const teacherEl = document.getElementById('teacherName');
         if (teacherEl) {
           teacherEl.value = name;
+          teacherEl.readOnly = false;
+          teacherEl.classList.remove('locked-field');
+          teacherEl.removeAttribute('readonly');
+          teacherEl.removeAttribute('aria-readonly');
+
           pendingInitialTeacherFilter = true;
           scheduleInitialTeacherFilterIfReady();
         }
@@ -1358,7 +1394,7 @@
       function resetToInitialScreen() {
         // 入力をクリア
         const applicantEl = document.getElementById('applicantName');
-        if (applicantEl) applicantEl.value = '';
+        if (applicantEl && !applicantEl.readOnly) applicantEl.value = '';
 
         const teacherEl = document.getElementById('teacherName');
         if (teacherEl) teacherEl.value = '';
