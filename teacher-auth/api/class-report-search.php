@@ -62,7 +62,10 @@ $subject = trim((string)($_GET['subject'] ?? ''));
 $studentName = trim((string)($_GET['studentName'] ?? ''));
 $className = trim((string)($_GET['className'] ?? ''));
 
-if (!$user->hasPermission('manage_users')) {
+$canSelectTeacher = $user->hasPermission('manage_users')
+    || $user->hasPermission('full_time_teacher');
+
+if (!$canSelectTeacher) {
     $teacherName = trim((string)$user->name);
     if ($teacherName === '') {
         jsonResponse([

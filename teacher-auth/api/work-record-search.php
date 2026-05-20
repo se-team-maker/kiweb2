@@ -52,17 +52,12 @@ if (!$user->isActive()) {
 }
 
 $name = trim((string)$user->name);
-if ($requestedName !== '' && $user->hasPermission('manage_users')) {
+$canSelectUser = $user->hasPermission('manage_users')
+    || $user->hasPermission('full_time_teacher');
+
+if ($requestedName !== '' && $canSelectUser) {
     $name = $requestedName;
 }
-if ($name === '') {
-    jsonResponse([
-        'success' => false,
-        'error' => 'ユーザー名が取得できません',
-        'error_code' => 'EMPTY_USER_NAME'
-    ], 401);
-}
-
 if (strpos(WORK_RECORD_SEARCH_GAS_URL, 'REPLACE_WITH_NEW_GAS_DEPLOYMENT_ID') !== false) {
     jsonResponse([
         'success' => false,
