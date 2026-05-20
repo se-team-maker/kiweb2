@@ -62,8 +62,15 @@ $subject = trim((string)($_GET['subject'] ?? ''));
 $studentName = trim((string)($_GET['studentName'] ?? ''));
 $className = trim((string)($_GET['className'] ?? ''));
 
-$canSelectTeacher = $user->hasPermission('manage_users')
-    || $user->hasPermission('full_time_teacher');
+$roles = $user->roles ?? [];
+
+if (is_string($roles)) {
+    $roles = array_map('trim', explode(',', $roles));
+}
+
+$isFullTimeTeacher = in_array('full_time_teacher', $roles, true);
+
+$canSelectTeacher = $user->hasPermission('manage_users') || $isFullTimeTeacher;
 
 if (!$canSelectTeacher) {
     $teacherName = trim((string)$user->name);
