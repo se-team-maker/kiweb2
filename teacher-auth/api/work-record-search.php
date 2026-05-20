@@ -53,11 +53,7 @@ if (!$user->isActive()) {
 
 $name = trim((string)$user->name);
 
-$roles = $user->roles ?? [];
-if (is_string($roles)) {
-    $roles = array_map('trim', explode(',', $roles));
-}
-
+$roles = $user->getRoles();
 $isFullTimeTeacher = in_array('full_time_teacher', $roles, true);
 
 $canSelectUser = $user->hasPermission('manage_users') || $isFullTimeTeacher;
