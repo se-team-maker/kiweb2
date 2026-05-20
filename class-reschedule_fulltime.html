@@ -333,6 +333,12 @@
       color: #8a2f3b;
     }
 
+    #applicantName[readonly] {
+      background: #f3f4f6;
+      color: #555;
+      cursor: not-allowed;
+    }
+
     .loading {
       display: none;
       align-items: center;
@@ -749,7 +755,7 @@
       <div class="form-group">
         <label for="applicantName">申請者</label>
         <div class="inline-input">
-          <input type="text" id="applicantName" placeholder="申請者名を入力してください" />
+          <input type="text" id="applicantName" placeholder="申請者名を入力してください" readonly aria-readonly="true" />
           <button type="button" class="btn-secondary" id="copyApplicantToTeacher">講師名欄に転記</button>
         </div>
       </div>
