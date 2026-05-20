@@ -52,12 +52,20 @@ if (!$user->isActive()) {
 }
 
 $name = trim((string)$user->name);
-$canSelectUser = $user->hasPermission('manage_users')
-    || $user->hasPermission('full_time_teacher');
+
+$roles = $user->roles ?? [];
+if (is_string($roles)) {
+    $roles = array_map('trim', explode(',', $roles));
+}
+
+$isFullTimeTeacher = in_array('full_time_teacher', $roles, true);
+
+$canSelectUser = $user->hasPermission('manage_users') || $isFullTimeTeacher;
 
 if ($requestedName !== '' && $canSelectUser) {
     $name = $requestedName;
 }
+
 if (strpos(WORK_RECORD_SEARCH_GAS_URL, 'REPLACE_WITH_NEW_GAS_DEPLOYMENT_ID') !== false) {
     jsonResponse([
         'success' => false,
