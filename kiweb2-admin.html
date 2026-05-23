@@ -943,12 +943,6 @@
               <span>管理</span>
             </a>
           </li>
-          <li class="admin-only" data-display="list-item" style="display: none;">
-            <a class="mobile-expand-link" href="/kiweb/teacher-auth/public/admin.php">
-              <span class="material-symbols-outlined" aria-hidden="true">settings</span>
-              <span>管理</span>
-            </a>
-          </li>
         </ul>
       </li>
     </ul>
@@ -1205,6 +1199,46 @@
       });
     }
 
+    const IFRAME_ACCESS_LOG_API_URL = '/kiweb/teacher-auth/api/iframe-access-log.php';
+
+    function getIframePageLabel(pageKey) {
+      const nav = document.querySelector(`.nav-link[data-page="${CSS.escape(pageKey)}"]`) ||
+        document.querySelector(`.tab-button[data-page="${CSS.escape(pageKey)}"]`);
+      if (!nav) return pageKey;
+      return nav.textContent.replace(/\s+/g, ' ').trim() || pageKey;
+    }
+
+    function buildLoggedIframePath(url) {
+      try {
+        const parsed = new URL(url, window.location.origin);
+        ['teacher', 'name', 'department'].forEach((key) => parsed.searchParams.delete(key));
+        return parsed.pathname + parsed.search;
+      } catch (error) {
+        return String(url || '').split('#')[0];
+      }
+    }
+
+    function logIframeAccess(pageKey, pageConfig, url) {
+      if (!pageKey || !url) return;
+      const payload = {
+        page_key: pageKey,
+        page_label: (pageConfig && pageConfig.label) || getIframePageLabel(pageKey),
+        page_path: buildLoggedIframePath(url)
+      };
+
+      try {
+        fetch(IFRAME_ACCESS_LOG_API_URL, {
+          method: 'POST',
+          credentials: 'include',
+          keepalive: true,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).catch(() => {});
+      } catch (error) {
+        // ログ失敗で画面操作を止めない
+      }
+    }
+
     function loadPage(pageKey, { updateHash = true } = {}) {
       const key = PAGES[pageKey] ? pageKey : 'lessons';
       showLoading(true);
@@ -1212,7 +1246,9 @@
 
       // 同一フォルダ指定の相対パス + 講師名パラメータ
       const teacherName = getLoginName();
-      let url = PAGES[key].file;
+      const pageConfig = PAGES[key];
+      let url = pageConfig.file;
+
       if (teacherName) {
         url += (url.includes('?') ? '&' : '?') + 'teacher=' + encodeURIComponent(teacherName);
       }
@@ -1230,6 +1266,7 @@
         url += (url.includes('?') ? '&' : '?') + 'theme=admin';
       }
       iframe.src = url;
+      logIframeAccess(key, pageConfig, url);
       if (updateHash) {
         history.replaceState(null, '', '#' + key);
       }
