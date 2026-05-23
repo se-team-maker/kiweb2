@@ -848,6 +848,18 @@
                     <span>勤務記録の閲覧</span>
                   </a>
                 </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="signage">
+                    <span class="nav-icon material-symbols-outlined">dashboard</span>
+                    <span>サイネージ</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="pdf-viewer">
+                    <span class="nav-icon material-symbols-outlined">picture_as_pdf</span>
+                    <span>資料一覧</span>
+                  </a>
+                </li>
               </ul>
             </li>
             <li class="nav-item admin-only" data-display="list-item" style="display: none;">
@@ -937,10 +949,22 @@
               <span>勤務記録の閲覧</span>
             </button>
           </li>
+          <li>
+            <button class="mobile-expand-link" type="button" data-page="signage">
+              <span class="material-symbols-outlined" aria-hidden="true">dashboard</span>
+              <span>サイネージ</span>
+            </button>
+          </li>
+          <li>
+            <button class="mobile-expand-link" type="button" data-page="pdf-viewer">
+              <span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
+              <span>資料一覧</span>
+            </button>
+          </li>
           <li class="admin-only" data-display="list-item" style="display: none;">
-            <a class="mobile-expand-link" href="/kiweb/teacher-auth/public/admin.php">
-              <span class="material-symbols-outlined" aria-hidden="true">settings</span>
-              <span>管理</span>
+            <a class="mobile-expand-link" href="/kiweb/teacher-auth/public/pdf-admin.php">
+              <span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
+              <span>資料配信管理</span>
             </a>
           </li>
         </ul>
@@ -963,7 +987,9 @@
       absence: { file: 'class-reschedule.html' },   // 欠勤・振替
       check_in_out: { file: 'check_in_out.html' },     // 出退勤記録
       'class-report-search': { file: 'ClassReportSearchForm.html?v=20260317-class-report-search-bridge-v3' }, // 授業報告書の検索・閲覧
-      'non-class-work-search': { file: 'declaration_of_non_class_work_search_and_view.html' } // 勤務記録の閲覧
+      'non-class-work-search': { file: 'declaration_of_non_class_work_search_and_view.html' }, // 勤務記録の閲覧
+      signage: { file: '/kiweb/teacher-auth/public/pdf-viewer.php?signage=sk', appendTeacher: false, appendTheme: false }, // サイネージ（共通）
+      'pdf-viewer': { file: '/kiweb/teacher-auth/public/pdf-list.php', appendTeacher: false, appendTheme: false } // 資料一覧（共通）
     };
 
     const iframe = document.getElementById('mainFrame');
@@ -1249,7 +1275,7 @@
       const pageConfig = PAGES[key];
       let url = pageConfig.file;
 
-      if (teacherName) {
+      if (teacherName && pageConfig.appendTeacher !== false) {
         url += (url.includes('?') ? '&' : '?') + 'teacher=' + encodeURIComponent(teacherName);
       }
       if (NAME_EDITABLE_PAGES.has(key)) {
