@@ -41,6 +41,8 @@ $filters = [
     'date_from' => $_GET['date_from'] ?? '',
     'date_to' => $_GET['date_to'] ?? '',
     'user_search' => $_GET['user_search'] ?? '',
+    'event_type' => $_GET['event_type'] ?? '',
+    'page_key' => $_GET['page_key'] ?? '',
     'page_path' => $_GET['page_path'] ?? '',
 ];
 
