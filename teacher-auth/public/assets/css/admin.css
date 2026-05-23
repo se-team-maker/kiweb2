@@ -982,18 +982,85 @@ md-icon-button.btn-add {
     align-items: center;
 }
 
+/* アクセスログは列数が多いので、横スクロール前提ではなく1画面に収める */
 .access-log-table-wrap {
-    overflow: auto;
-    border-radius: 12px;
-    border: 1px solid var(--border-light);
+    width: 100%;
+    overflow-x: visible;
+    overflow-y: visible;
 }
 
 .access-log-table {
-    min-width: 980px;
+    width: 100%;
+    min-width: 0;
+    table-layout: fixed;
+    font-size: 12px;
+}
+
+.access-log-table th,
+.access-log-table td {
+    padding: 10px 8px;
+    white-space: normal;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    vertical-align: middle;
+    max-width: none;
+    line-height: 1.45;
+}
+
+/* 列幅調整: IPまで通常表示範囲に入るように圧縮 */
+.access-log-table th:nth-child(1),
+.access-log-table td:nth-child(1) {
+    width: 13%; /* 日時 */
+}
+
+.access-log-table th:nth-child(2),
+.access-log-table td:nth-child(2) {
+    width: 9%; /* ユーザー */
+}
+
+.access-log-table th:nth-child(3),
+.access-log-table td:nth-child(3) {
+    width: 16%; /* メール */
+}
+
+.access-log-table th:nth-child(4),
+.access-log-table td:nth-child(4) {
+    width: 8%; /* 種別 */
+}
+
+.access-log-table th:nth-child(5),
+.access-log-table td:nth-child(5) {
+    width: 14%; /* メニュー */
+}
+
+.access-log-table th:nth-child(6),
+.access-log-table td:nth-child(6) {
+    width: 25%; /* ページ */
+}
+
+.access-log-table th:nth-child(7),
+.access-log-table td:nth-child(7) {
+    width: 7%; /* IP */
+    white-space: nowrap;
+    word-break: normal;
+    overflow-wrap: normal;
+}
+
+.access-log-table th:nth-child(8),
+.access-log-table td:nth-child(8) {
+    width: 8%; /* User-Agent */
+    font-size: 11px;
+    color: var(--text-secondary);
+}
+
+/* ガラスカード側の overflow:hidden に巻き込まれて表示幅が詰まるのを避ける */
+.access-log-content,
+.access-log-content .detail-section {
+    overflow: visible;
 }
 
 .access-log-table td:last-child {
-    max-width: 420px;
+    max-width: none;
 }
 
 .access-log-empty-cell {
