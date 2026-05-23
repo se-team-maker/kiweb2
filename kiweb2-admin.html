@@ -848,6 +848,18 @@
                     <span>勤務記録の閲覧</span>
                   </a>
                 </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="signage">
+                    <span class="nav-icon material-symbols-outlined">dashboard</span>
+                    <span>サイネージ</span>
+                  </a>
+                </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="pdf-viewer">
+                    <span class="nav-icon material-symbols-outlined">picture_as_pdf</span>
+                    <span>資料一覧</span>
+                  </a>
+                </li>
               </ul>
             </li>
             <li class="nav-item admin-only" data-display="list-item" style="display: none;">
@@ -937,10 +949,22 @@
               <span>勤務記録の閲覧</span>
             </button>
           </li>
+          <li>
+            <button class="mobile-expand-link" type="button" data-page="signage">
+              <span class="material-symbols-outlined" aria-hidden="true">dashboard</span>
+              <span>サイネージ</span>
+            </button>
+          </li>
+          <li>
+            <button class="mobile-expand-link" type="button" data-page="pdf-viewer">
+              <span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
+              <span>資料一覧</span>
+            </button>
+          </li>
           <li class="admin-only" data-display="list-item" style="display: none;">
-            <a class="mobile-expand-link" href="/kiweb/teacher-auth/public/admin.php">
-              <span class="material-symbols-outlined" aria-hidden="true">settings</span>
-              <span>管理</span>
+            <a class="mobile-expand-link" href="/kiweb/teacher-auth/public/pdf-admin.php">
+              <span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
+              <span>資料配信管理</span>
             </a>
           </li>
           <li class="admin-only" data-display="list-item" style="display: none;">
@@ -969,7 +993,9 @@
       absence: { file: 'class-reschedule.html' },   // 欠勤・振替
       check_in_out: { file: 'check_in_out.html' },     // 出退勤記録
       'class-report-search': { file: 'ClassReportSearchForm.html?v=20260317-class-report-search-bridge-v3' }, // 授業報告書の検索・閲覧
-      'non-class-work-search': { file: 'declaration_of_non_class_work_search_and_view.html' } // 勤務記録の閲覧
+      'non-class-work-search': { file: 'declaration_of_non_class_work_search_and_view.html' }, // 勤務記録の閲覧
+      signage: { file: '/kiweb/teacher-auth/public/pdf-viewer.php?signage=sk', appendTeacher: false, appendTheme: false }, // サイネージ（共通）
+      'pdf-viewer': { file: '/kiweb/teacher-auth/public/pdf-list.php', appendTeacher: false, appendTheme: false } // 資料一覧（共通）
     };
 
     const iframe = document.getElementById('mainFrame');
@@ -1205,6 +1231,46 @@
       });
     }
 
+    const IFRAME_ACCESS_LOG_API_URL = '/kiweb/teacher-auth/api/iframe-access-log.php';
+
+    function getIframePageLabel(pageKey) {
+      const nav = document.querySelector(`.nav-link[data-page="${CSS.escape(pageKey)}"]`) ||
+        document.querySelector(`.tab-button[data-page="${CSS.escape(pageKey)}"]`);
+      if (!nav) return pageKey;
+      return nav.textContent.replace(/\s+/g, ' ').trim() || pageKey;
+    }
+
+    function buildLoggedIframePath(url) {
+      try {
+        const parsed = new URL(url, window.location.origin);
+        ['teacher', 'name', 'department'].forEach((key) => parsed.searchParams.delete(key));
+        return parsed.pathname + parsed.search;
+      } catch (error) {
+        return String(url || '').split('#')[0];
+      }
+    }
+
+    function logIframeAccess(pageKey, pageConfig, url) {
+      if (!pageKey || !url) return;
+      const payload = {
+        page_key: pageKey,
+        page_label: (pageConfig && pageConfig.label) || getIframePageLabel(pageKey),
+        page_path: buildLoggedIframePath(url)
+      };
+
+      try {
+        fetch(IFRAME_ACCESS_LOG_API_URL, {
+          method: 'POST',
+          credentials: 'include',
+          keepalive: true,
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        }).catch(() => {});
+      } catch (error) {
+        // ログ失敗で画面操作を止めない
+      }
+    }
+
     function loadPage(pageKey, { updateHash = true } = {}) {
       const key = PAGES[pageKey] ? pageKey : 'lessons';
       showLoading(true);
@@ -1212,8 +1278,10 @@
 
       // 同一フォルダ指定の相対パス + 講師名パラメータ
       const teacherName = getLoginName();
-      let url = PAGES[key].file;
-      if (teacherName) {
+      const pageConfig = PAGES[key];
+      let url = pageConfig.file;
+
+      if (teacherName && pageConfig.appendTeacher !== false) {
         url += (url.includes('?') ? '&' : '?') + 'teacher=' + encodeURIComponent(teacherName);
       }
       if (NAME_EDITABLE_PAGES.has(key)) {
@@ -1230,6 +1298,7 @@
         url += (url.includes('?') ? '&' : '?') + 'theme=admin';
       }
       iframe.src = url;
+      logIframeAccess(key, pageConfig, url);
       if (updateHash) {
         history.replaceState(null, '', '#' + key);
       }
