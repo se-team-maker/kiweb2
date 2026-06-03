@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>タスク配信システム</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f6f5f1;
+    --card-bg: #ffffff;
+    --text-primary: #1a1a1a;
+    --text-secondary: #6b6b6b;
+    --text-tertiary: #999;
+    --border: #e8e6e1;
+    --border-light: #f0eeea;
+    --accent-blue: #2563eb;
+    --accent-blue-light: #eff6ff;
+    --accent-green: #059669;
+    --accent-green-light: #ecfdf5;
+    --accent-amber: #d97706;
+    --accent-amber-light: #fffbeb;
+    --accent-red: #dc2626;
+    --accent-red-light: #fef2f2;
+    --accent-gray: #6b7280;
+    --accent-gray-light: #f3f4f6;
+    --shadow-hover: 0 4px 16px rgba(0,0,0,0.08);
+    --radius: 10px;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Noto Sans JP', 'IBM Plex Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-primary);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .app {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 40px 20px 80px;
+  }
+
+  /* ── Header ── */
+  .header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding: 0 4px;
+  }
+  .header h1 { font-size: 20px; font-weight: 600; letter-spacing: -0.02em; }
+  .header .count {
+    font-size: 13px;
+    color: var(--text-tertiary);
+    font-family: 'IBM Plex Sans', sans-serif;
+  }
+
+  /* ── User selector ── */
+  .user-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    padding: 0 4px;
+  }
+  .user-bar label { font-size: 12.5px; color: var(--text-secondary); font-weight: 500; }
+  .user-select {
+    padding: 6px 12px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 13px;
+    color: var(--text-primary);
+    cursor: pointer;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+  .user-select:focus { border-color: var(--accent-blue); }
+
+  /* ── Filters ── */
+  .filters {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 24px;
+    padding: 0 4px;
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    padding: 6px 14px;
+    border-radius: 100px;
+    border: 1px solid var(--border);
+    background: var(--card-bg);
+    font-size: 12.5px;
+    font-family: 'Noto Sans JP', sans-serif;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  .filter-btn:hover { border-color: var(--text-tertiary); color: var(--text-primary); }
+  .filter-btn.active { background: var(--text-primary); color: #fff; border-color: var(--text-primary); }
+
+  /* ── Task list ── */
+  .task-list { display: flex; flex-direction: column; gap: 10px; }
+
+  /* ── Card ── */
+  .task-card {
+    background: var(--card-bg);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 0;
+    transition: all 0.25s ease;
+    animation: fadeUp 0.4s ease both;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+  }
+  .task-card > * {
+    position: relative;
+    z-index: 1;
+  }
+  .task-card:hover {
+    box-shadow: var(--shadow-hover);
+    border-color: #d4d2cd;
+    transform: translateY(-1px);
+  }
+  /* 締切超過: ごく薄い赤の背景 */
+  .task-card.overdue {
+    background-color: #fff8f8;
+    border-color: rgba(220, 38, 38, 0.15);
+  }
+  /* 深刻な遅延: 薄い赤の斜めストライプ背景 */
+  .task-card.critical {
+    --critical-stripe-period: 48px;
+    /* 135deg の勾配軸へ 1周期ぶん移動する量 = 48 / √2 */
+    --critical-stripe-shift: 33.9411255px;
+    background-color: #fffcfc;
+    border-color: rgba(220, 38, 38, 0.22);
+  }
+  .task-card.critical::before {
+    content: '';
+    position: absolute;
+    inset: -128px;
+    background-image: repeating-linear-gradient(
+      135deg,
+      rgba(220, 38, 38, 0.07) 0,
+      rgba(220, 38, 38, 0.07) 24px,
+      transparent 24px,
+      transparent 48px
+    );
+    pointer-events: none;
+    z-index: 0;
+    will-change: transform;
+    animation: criticalStripeDrift 3s linear infinite;
+    /*animation: criticalStripeDrift 18s linear infinite;*/
+    transform: translate3d(calc(-1 * var(--critical-stripe-shift)), calc(-1 * var(--critical-stripe-shift)), 0);
+  }
+  .task-card.critical:hover {
+    border-color: rgba(220, 38, 38, 0.45);
+    box-shadow: 0 4px 16px rgba(220, 38, 38, 0.12);
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(8px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes criticalStripeDrift {
+    from {
+      transform: translate3d(
+        calc(-1 * var(--critical-stripe-shift)),
+        calc(-1 * var(--critical-stripe-shift)),
+        0
+      );
+    }
+    to {
+      transform: translate3d(0, 0, 0);
+    }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .task-card.critical::before { animation: none; }
+  }
+
+  /* Row 1 */
+  .row-top {
+    grid-column: 1 / 2;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 6px;
+  }
+  .status-label {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 11.5px; font-weight: 600;
+    padding: 3px 10px; border-radius: 5px; white-space: nowrap;
+  }
+  .status-dot { display: none; }
+
+  .status-未実施   { background: var(--accent-gray-light); color: var(--accent-gray); }
+  .status-未実施 .status-dot { background: var(--accent-gray); }
+  .status-進行中   { background: var(--accent-blue-light); color: var(--accent-blue); }
+  .status-進行中 .status-dot { background: var(--accent-blue); }
+  .status-完了     { background: var(--accent-green-light); color: var(--accent-green); }
+  .status-完了 .status-dot   { background: var(--accent-green); }
+  .status-確認待ち { background: var(--accent-amber-light); color: var(--accent-amber); }
+  .status-確認待ち .status-dot { background: var(--accent-amber); }
+
+  /* 期限ベースの自動ステータス */
+  .status-締切近し    { background: var(--accent-amber-light); color: var(--accent-amber); }
+  .status-締切近し .status-dot { background: var(--accent-amber); }
+  .status-締切超過    { background: var(--accent-red-light); color: var(--accent-red); }
+  .status-深刻な遅延  {
+    background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(220,38,38,0.35);
+  }
+  /* 絵文字付きラベルは中黒（dot）を非表示 */
+  .status-締切超過 .status-dot,
+  .status-深刻な遅延 .status-dot { display: none; }
+
+  .deadline {
+    font-size: 16px;
+    color: var(--text-primary);
+    font-family: 'IBM Plex Sans', 'Noto Sans JP', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+  }
+  .deadline-label {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    font-weight: 500;
+    margin-right: 4px;
+    letter-spacing: 0.02em;
+  }
+  .deadline.overdue { color: var(--accent-red); }
+  .deadline.critical { color: #991b1b; }
+
+  /* Row 2 */
+  .series-name {
+    grid-column: 1 / -1;
+    font-size: 12px; color: var(--text-tertiary);
+    margin-bottom: 4px;
+  }
+
+  /* Row 3 */
+  .row-main {
+    grid-column: 1 / 2;
+    display: flex; align-items: baseline; gap: 10px;
+    margin-bottom: 10px; flex-wrap: wrap;
+  }
+  .detail-title { font-size: 16px; font-weight: 600; line-height: 1.4; letter-spacing: -0.01em; }
+  .detail-id {
+    font-size: 11px; color: var(--text-tertiary);
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--border-light); padding: 2px 7px;
+    border-radius: 4px; white-space: nowrap; flex-shrink: 0;
+  }
+
+  /* Row 4 */
+  .row-meta {
+    grid-column: 1 / 2;
+    display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  }
+  .description { font-size: 12.5px; color: var(--text-secondary); line-height: 1.5; }
+  .meta-divider { width: 1px; height: 14px; background: var(--border); flex-shrink: 0; }
+  .ref-url {
+    font-size: 11.5px; color: var(--accent-blue);
+    text-decoration: none; white-space: nowrap; transition: opacity 0.2s;
+  }
+  .ref-url:hover { opacity: 0.7; }
+  .department {
+    font-size: 11.5px; color: var(--text-tertiary);
+    white-space: nowrap; display: inline-flex; align-items: center; gap: 4px;
+  }
+  .department::before {
+    content: ''; display: inline-block;
+    width: 3px; height: 3px; border-radius: 50%;
+    background: var(--text-tertiary); opacity: 0.5;
+  }
+
+  /* Action */
+  .action-area {
+    grid-column: 2 / 3; grid-row: 1 / -1;
+    display: flex; align-items: center; padding-left: 20px;
+  }
+  .open-btn {
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    padding: 10px 18px; border-radius: 10px; border: none;
+    background: var(--accent-blue); cursor: pointer;
+    transition: all 0.2s ease; color: #fff; flex-shrink: 0;
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: 12.5px; font-weight: 600;
+    box-shadow: 0 2px 8px rgba(37,99,235,0.25);
+  }
+  .open-btn:hover {
+    background: #1d4ed8; transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(37,99,235,0.35);
+  }
+  .open-btn:active { transform: translateY(0); box-shadow: 0 1px 4px rgba(37,99,235,0.2); }
+  .open-btn svg { width: 14px; height: 14px; }
+  .no-url-placeholder { width: 90px; }
+
+  .loading, .empty { text-align: center; padding: 60px 20px; color: var(--text-tertiary); font-size: 14px; }
+  .loading::after {
+    content: ''; display: inline-block;
+    width: 18px; height: 18px;
+    border: 2px solid var(--border); border-top-color: var(--accent-blue);
+    border-radius: 50%; animation: spin 0.7s linear infinite;
+    margin-left: 8px; vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 600px) {
+    .app { padding: 24px 12px 60px; }
+    .task-card { padding: 16px; }
+    .detail-title { font-size: 15px; }
+    .action-area { padding-left: 12px; }
+    .open-btn { padding: 8px 14px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="app">
+  <div class="header">
+    <h1>配信タスク一覧</h1>
+    <span class="count" id="count"></span>
+  </div>
+  <div class="user-bar">
+    <label>配信先</label>
+    <select class="user-select" id="userSelect"></select>
+  </div>
+  <div class="filters" id="filters"></div>
+  <div class="task-list" id="taskList">
+    <div class="loading">読み込み中</div>
+  </div>
+</div>
+
+<script>
+// ━━━ Field index map ━━━
+const FIELD = {};
+function buildFieldMap(header) {
+  header.forEach((name, i) => { FIELD[name] = i; });
+}
+
+// ━━━ Parse backend response ━━━
+function parseResponse(json, requestedAssignees = []) {
+  const userMap = {};
+  requestedAssignees.forEach(name => { if (name) userMap[name] = []; });
+
+  if (!json || typeof json !== 'object') {
+    throw new Error('GASの応答がJSONオブジェクトではありません');
+  }
+  if (json.error) {
+    throw new Error(json.error);
+  }
+
+  // header がない応答でも「氏名未指定」とは扱わない。
+  // 例：指定氏名にタスクが0件の場合や、バックエンドが空データを返した場合。
+  if (!Array.isArray(json.header)) {
+    Object.keys(json).forEach(key => {
+      if (Array.isArray(json[key]) && !userMap[key]) userMap[key] = [];
+    });
+    return userMap;
+  }
+
+  buildFieldMap(json.header);
+
+  Object.keys(json).forEach(key => {
+    if (key === 'header') return;
+    if (!Array.isArray(json[key])) return;
+    if (!userMap[key]) userMap[key] = [];
+
+    json[key].forEach(row => {
+      userMap[key].push({
+        status:       row[FIELD['実行STATUS']],
+        category:     row[FIELD['分類']],
+        requestId:    row[FIELD['依頼ID']],
+        requestTitle: row[FIELD['依頼件名']],
+        department:   row[FIELD['依頼元部署']],
+        requester:    row[FIELD['依頼元担当者']],
+        description:  row[FIELD['依頼説明']],
+        descUrl:      row[FIELD['依頼説明URL']],
+        execType:     row[FIELD['実行類型']],
+        assignee:     row[FIELD['依頼先氏名']],
+        detailId:     row[FIELD['明細ID']],
+        detailTitle:  row[FIELD['明細件名']],
+        deadline:     row[FIELD['実行期限']],
+        warnStart:    row[FIELD['厳重警告開始']],
+        displayLimit: row[FIELD['表示期限']],
+        execUrl:      row[FIELD['実行URL']],
+      });
+    });
+  });
+
+  return userMap;
+}
+
+// ━━━ Status resolution ━━━
+// 優先度: バックエンドSTATUS > 表示期限切れ(非表示) > 深刻な遅延 > 締切超過 > 締切近し > 未実施
+function resolveStatus(task) {
+  const now = new Date();
+
+  // バックエンドで明示的にSTATUSが指定されている場合は優先
+  if (task.status && task.status.trim()) return task.status.trim();
+
+  // 表示期限を過ぎていたら非表示（指定がない場合はずっと表示）
+  if (task.displayLimit && new Date(task.displayLimit) < now) return '__hidden__';
+
+  // 期限ベースの自動判定
+  if (task.deadline) {
+    const deadline = new Date(task.deadline);
+
+    // 厳重警告開始を過ぎている → 深刻な遅延
+    if (task.warnStart && new Date(task.warnStart) < now) return '深刻な遅延';
+
+    // 実行期限を過ぎている → 締切超過
+    if (deadline < now) return '締切超過';
+
+    // 実行期限の2日前を過ぎている → 締切近し
+    const twoDaysBefore = new Date(deadline.getTime() - 2 * 24 * 60 * 60 * 1000);
+    if (twoDaysBefore < now) return '締切近し';
+  }
+
+  return '未実施';
+}
+
+// ステータスごとの表示ラベル（絵文字付き）
+function statusLabel(status) {
+  switch (status) {
+    case '締切近し':    return '締切近し';
+    case '締切超過':    return '⚠️ 締切超過';
+    case '深刻な遅延':  return '🔥 深刻な遅延';
+    case '未実施':      return '未完了';
+    default:            return status;
+  }
+}
+
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, ch => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  }[ch]));
+}
+
+function decodeMaybe(value) {
+  let decoded = String(value ?? '');
+  for (let i = 0; i < 2; i++) {
+    try {
+      const next = decodeURIComponent(decoded);
+      if (next === decoded) break;
+      decoded = next;
+    } catch (e) {
+      break;
+    }
+  }
+  return decoded;
+}
+
+// ━━━ Date format ━━━
+function formatDeadline(isoStr) {
+  if (!isoStr) return '—';
+  const d = new Date(isoStr);
+  const m = d.getMonth() + 1;
+  const day = d.getDate();
+  const w = ['日','月','火','水','木','金','土'][d.getDay()];
+  const hh = String(d.getHours()).padStart(2, '0');
+  const mm = String(d.getMinutes()).padStart(2, '0');
+  return `${m}/${day}（${w}）${hh}:${mm}`;
+}
+
+function isOverdue(isoStr) {
+  return isoStr ? new Date(isoStr) < new Date() : false;
+}
+
+// ━━━ Render ━━━
+const FILTER_ALL = 'すべて';
+const STATUS_ORDER = ['深刻な遅延', '締切超過', '締切近し', '未実施', '完了'];
+const STATUS_PRIORITY = Object.fromEntries(STATUS_ORDER.map((s, i) => [s, i]));
+let activeFilter = FILTER_ALL;
+let userData = {};
+let currentUser = null;
+
+function renderUserSelect() {
+  const sel = document.getElementById('userSelect');
+  const users = Object.keys(userData);
+  sel.innerHTML = users.map(u =>
+    `<option value="${u}" ${u === currentUser ? 'selected' : ''}>${u}</option>`
+  ).join('');
+  sel.onchange = () => { currentUser = sel.value; activeFilter = FILTER_ALL; render(); };
+}
+
+function render() {
+  const tasks = (userData[currentUser] || [])
+    .map(t => ({ ...t, _status: resolveStatus(t) }))
+    .filter(t => t._status !== '__hidden__');
+
+  // Filters — 指定順で表示し、未知のステータスは末尾に追加
+  const statusSet = new Set();
+  tasks.forEach(t => statusSet.add(t._status));
+  const knownStatuses = STATUS_ORDER.filter(status => statusSet.has(status));
+  const unknownStatuses = [...statusSet].filter(status => !(status in STATUS_PRIORITY));
+  const statuses = [FILTER_ALL, ...knownStatuses, ...unknownStatuses];
+
+  const filtersEl = document.getElementById('filters');
+  filtersEl.innerHTML = statuses.map(s =>
+    `<button class="filter-btn ${s === activeFilter ? 'active' : ''}" data-filter="${s}">${s === FILTER_ALL ? s : statusLabel(s)}</button>`
+  ).join('');
+  filtersEl.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.onclick = () => { activeFilter = btn.dataset.filter; render(); };
+  });
+
+  const filtered = (activeFilter === FILTER_ALL ? tasks : tasks.filter(t => t._status === activeFilter))
+    .slice()
+    .sort((a, b) => {
+      const statusA = STATUS_PRIORITY[a._status] ?? Number.MAX_SAFE_INTEGER;
+      const statusB = STATUS_PRIORITY[b._status] ?? Number.MAX_SAFE_INTEGER;
+      if (statusA !== statusB) return statusA - statusB;
+
+      // 同一ステータス内は期限が古い順（=上ほど深刻）
+      const da = a.deadline ? new Date(a.deadline).getTime() : Infinity;
+      const db = b.deadline ? new Date(b.deadline).getTime() : Infinity;
+      return da - db;
+    });
+  document.getElementById('count').textContent = `${filtered.length} 件`;
+
+  const list = document.getElementById('taskList');
+  if (!filtered.length) {
+    list.innerHTML = '<div class="empty">該当するタスクはありません</div>';
+    return;
+  }
+
+  list.innerHTML = filtered.map((t, i) => {
+    const hasUrl = t.execUrl && t.execUrl.trim();
+    const hasDescUrl = t.descUrl && t.descUrl.trim();
+
+    // 期限の色分け
+    let deadlineClass = '';
+    if (t._status === '深刻な遅延') deadlineClass = 'critical';
+    else if (t._status === '締切超過') deadlineClass = 'overdue';
+
+    // カードのクラス（深刻な遅延は警告ストライプ、締切超過は薄い赤背景）
+    let cardClass = 'task-card';
+    if (t._status === '深刻な遅延') cardClass += ' critical';
+    else if (t._status === '締切超過') cardClass += ' overdue';
+
+    return `
+    <div class="${cardClass}" style="animation-delay:${i * 0.04}s">
+      <div class="row-top">
+        <span class="status-label status-${t._status}">
+          <span class="status-dot"></span>${statusLabel(t._status)}
+        </span>
+        <span class="deadline ${deadlineClass}">
+          <span class="deadline-label">期限</span>${formatDeadline(t.deadline)}
+        </span>
+      </div>
+
+      <div class="series-name">${t.requestTitle || ''}</div>
+
+      <div class="row-main">
+        <span class="detail-title">${t.detailTitle || '（件名なし）'}</span>
+        <span class="detail-id">${t.detailId || ''}</span>
+      </div>
+
+      <div class="row-meta">
+        <span class="description">${t.description || ''}</span>
+        ${hasDescUrl ? `<span class="meta-divider"></span><a class="ref-url" href="${t.descUrl}" target="_blank" rel="noopener">参照URL</a>` : ''}
+        ${t.department ? `<span class="department">${t.department}</span>` : ''}
+      </div>
+
+      <div class="action-area">
+        ${hasUrl ? `
+        <button class="open-btn" onclick="window.open('${t.execUrl}','_blank')">
+          開く
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="15 3 21 3 21 9"/>
+            <line x1="10" y1="14" x2="21" y2="3"/>
+          </svg>
+        </button>` : '<div class="no-url-placeholder"></div>'}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ━━━ API fetch (GAS doGet) ━━━
+// デプロイしたGAS WebアプリのURLに差し替えてください
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbzw1KVJreAodFe9ZbmT_2aDMbTSOYu49qJx2CjdP9m1p2IiAJLRFXbLMLpdAd_RLi-5gQ/exec';
+
+// assignees: 配列 → | 連結でGETクエリに載せる
+// 例: ?assignees=山田太郎|鈴木一郎
+async function fetchTasks(assignees) {
+  const listEl = document.getElementById('taskList');
+  listEl.innerHTML = '<div class="loading">読み込み中</div>';
+
+  try {
+    const param = encodeURIComponent(assignees.join('|'));
+    const url = `${GAS_URL}?assignees=${param}`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+
+    const json = await res.json();
+
+    userData = parseResponse(json, assignees);
+
+    // 指定された氏名は、タスクが0件でもプルダウンに残す。
+    assignees.forEach(name => {
+      if (name && !userData[name]) userData[name] = [];
+    });
+
+    const users = Object.keys(userData);
+    if (users.length && (!currentUser || !userData[currentUser])) currentUser = users[0];
+
+    renderUserSelect();
+    render();
+  } catch (err) {
+    console.warn('GAS unavailable:', err);
+
+    // ここでは「氏名が指定されていません」とは表示しない。
+    // URLの names は認識できているが、GAS取得または応答解析に失敗した状態。
+    userData = {};
+    assignees.forEach(name => {
+      if (name) userData[name] = [];
+    });
+    currentUser = assignees[0] || null;
+    renderUserSelect();
+
+    const nameText = assignees.length ? assignees.join('｜') : '—';
+    document.getElementById('count').textContent = '0 件';
+    listEl.innerHTML =
+      `<div class="empty">
+        タスクの取得に失敗しました。<br>
+        指定された氏名：${escapeHtml(nameText)}<br>
+        <span style="font-size:12px;color:var(--text-tertiary);">URLの氏名指定は認識されています。GASの応答または通信状態を確認してください。</span>
+      </div>`;
+  }
+}
+
+
+// ━━━ Demo ━━━
+// function loadDemo() {
+//   const demo = {
+//     header: ["実行STATUS","分類","依頼ID","依頼件名","依頼元部署","依頼元担当者","依頼説明","依頼説明URL","実行類型","依頼先氏名","明細ID","明細件名","実行期限","厳重警告開始","表示期限","実行URL"],
+//     "青木秀紀": [
+//       ["","実施申告","26-4月_遅延申告","2026-4月遅延申告","事務集中課","遠藤花奈","すみやかに実施申告してください","","遅延申告","青木秀紀","26-4月_遅延申告//YGN=154559","04/04(土) 09:00～ 織田信三郎_数学｜YGN=154559","2026-04-09T03:00:00.000Z","2026-04-11T03:00:00.000Z","2026-05-05T14:59:00.000Z",""],
+//       ["","実施申告","26-4月_遅延申告","2026-4月遅延申告","事務集中課","遠藤花奈","すみやかに実施申告してください","","遅延申告","青木秀紀","26-4月_遅延申告//YGN=154714","04/04(土) 10:40～ 玉木琴花_数学｜YGN=154714","2026-04-09T03:00:00.000Z","2026-04-11T03:00:00.000Z","2026-05-05T14:59:00.000Z",""],
+//       ["","資料確認","26-Q1_報告","2026-Q1四半期報告書確認","教務部","佐藤健一","四半期報告書の内容を確認し、承認してください","https://docs.google.com/document/d/example","確認依頼","青木秀紀","26-Q1_報告//DOC=001","Q1四半期報告書_教務部｜DOC=001","2026-04-15T06:00:00.000Z","2026-04-18T06:00:00.000Z","2026-04-30T14:59:00.000Z","https://system.example.com/review/001"],
+//       ["完了","出欠登録","26-4月_出欠","2026-4月出欠登録","事務集中課","遠藤花奈","出欠を登録してください","","出欠登録","青木秀紀","26-4月_出欠//YGN=154100","04/01(水) 14:00～ 山田太郎_英語｜YGN=154100","2026-04-03T03:00:00.000Z","","2026-04-30T14:59:00.000Z",""]
+//     ],
+//     "鈴木一郎": [
+//       ["","資料確認","26-Q1_報告","2026-Q1四半期報告書確認","教務部","佐藤健一","四半期報告書の内容を確認し、承認してください","https://docs.google.com/document/d/example","確認依頼","鈴木一郎","26-Q1_報告//DOC=002","Q1四半期報告書_管理部｜DOC=002","2026-04-15T06:00:00.000Z","2026-04-18T06:00:00.000Z","2026-04-30T14:59:00.000Z","https://system.example.com/review/002"],
+//       ["","実施申告","26-4月_遅延申告","2026-4月遅延申告","事務集中課","遠藤花奈","すみやかに実施申告してください","","遅延申告","鈴木一郎","26-4月_遅延申告//YGN=155001","04/05(日) 13:00～ 佐々木翔_物理｜YGN=155001","2026-04-09T03:00:00.000Z","2026-04-11T03:00:00.000Z","2026-05-05T14:59:00.000Z",""]
+// //     ]
+// //   };
+//   userData = parseResponse(demo);
+//   const users = Object.keys(userData);
+//   if (!currentUser && users.length) currentUser = users[0];
+//   renderUserSelect();
+//   render();
+// }
+
+// ━━━ Init ━━━
+// ticket-delivery-manager.html?names=山田太郎|山田二郎 のように指定
+// names パラメータがなければデモデータを表示
+(function init() {
+  const params = new URLSearchParams(window.location.search);
+
+  // 通知バーからは names で来る。互換用に assignees / name も許容。
+  const rawNamesParam = params.get('names') || params.get('assignees') || params.get('name');
+
+  if (rawNamesParam) {
+    const namesParam = decodeMaybe(rawNamesParam);
+    const assignees = namesParam
+      .split(/[|｜]/)
+      .map(s => s.trim())
+      .filter(Boolean);
+
+    if (assignees.length) {
+      currentUser = assignees[0];
+      fetchTasks(assignees);
+      return;
+    }
+  }
+
+  // names 未指定 or 空 → メッセージ表示
+  document.getElementById('taskList').innerHTML =
+    '<div class="empty">氏名が指定されていません</div>';
+})();
+
+</script>
+</body>
+</html>
