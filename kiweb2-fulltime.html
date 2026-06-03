@@ -1006,6 +1006,7 @@
       <iframe id="loginFrame" class="modal-frame" title="ログイン"></iframe>
     </div>
   </div>
+  <script src="kiweb-task-delivery.js"></script>
   <script>
     // ★ ki-web2 専任用：メニューから iframe でページを切り替え
     const PAGES = {
@@ -1684,6 +1685,10 @@
       const hasValidHash = !!hash && !!PAGES[hash];
       const initialPage = hasValidHash ? hash : 'lessons';
       loadPage(initialPage, { updateHash: true });
+
+      if (window.KiwebTaskDelivery) {
+        KiwebTaskDelivery.init({ getLoginName });
+      }
 
       // Init Ripple Effects
       const createRipple = (event) => {
