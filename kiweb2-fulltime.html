@@ -871,6 +871,12 @@
                     <span>資料一覧</span>
                   </a>
                 </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="ict-manual">
+                    <span class="nav-icon material-symbols-outlined">help</span>
+                    <span>ICTマニュアル</span>
+                  </a>
+                </li>
               </ul>
             </li>
             <li class="nav-item admin-only" data-display="list-item" style="display: none;">
@@ -982,6 +988,12 @@
               <span>資料一覧</span>
             </button>
           </li>
+          <li>
+            <button class="mobile-expand-link" type="button" data-page="ict-manual">
+              <span class="material-symbols-outlined" aria-hidden="true">help</span>
+              <span>ICTマニュアル</span>
+            </button>
+          </li>
           <li class="admin-only" data-display="list-item" style="display: none;">
             <a class="mobile-expand-link" href="/kiweb/teacher-auth/public/pdf-admin.php">
               <span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
@@ -1018,6 +1030,7 @@
       'non-class-work-search': { file: '/kiweb/declaration_of_non_class_work_search_and_view.html' }, // 勤務記録の検索・閲覧
       signage: { file: '/kiweb/teacher-auth/public/pdf-viewer.php?signage=sk',appendTeacher: false,appendTheme: false}, // 教室割サイネージ（共通）
       'pdf-viewer': { file: '/kiweb/teacher-auth/public/pdf-list.php', appendTeacher: false, appendTheme: false }, // PDFビューア（共通）
+      'ict-manual': { file: '/kiweb/teacher-auth/public/ict-manual.php', appendTeacher: false, appendTheme: false }, // ICTマニュアル
     };
 
     const iframe = document.getElementById('mainFrame');
