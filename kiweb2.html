@@ -885,6 +885,12 @@
                     <span>教室割サイネージ</span>
                   </a>
                 </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="ict-manual">
+                    <span class="nav-icon material-symbols-outlined">help</span>
+                    <span>ICTマニュアル</span>
+                  </a>
+                </li>
               </ul>
             </li>
             <li class="nav-item admin-only" style="display: none;">
@@ -990,6 +996,12 @@
               <span>教室割サイネージ</span>
             </button>
           </li>
+          <li>
+            <button class="mobile-expand-link" type="button" data-page="ict-manual">
+              <span class="material-symbols-outlined" aria-hidden="true">help</span>
+              <span>ICTマニュアル</span>
+            </button>
+          </li>
           <li class="admin-only" data-display="list-item" style="display: none;">
             <a class="mobile-expand-link" href="/kiweb/teacher-auth/public/admin.php">
               <span class="material-symbols-outlined" aria-hidden="true">settings</span>
@@ -1021,6 +1033,7 @@
       'class-report-search': { file: 'ClassReportSearchForm.html?v=20260317-class-report-search-bridge-v3' }, // 授業報告書の検索・閲覧
       'non-class-work-search': { file: 'declaration_of_non_class_work_search_and_view.html' }, // 勤務記録の閲覧
       signage: { file: '/kiweb/teacher-auth/public/pdf-viewer.php?signage=sk',appendTeacher: false,appendTheme: false}, // 教室割サイネージ（共通）
+      'ict-manual': { file: '/kiweb/teacher-auth/public/ict-manual.php', appendTeacher: false, appendTheme: false }, // ICTマニュアル
     };
 
     const iframe = document.getElementById('mainFrame');
