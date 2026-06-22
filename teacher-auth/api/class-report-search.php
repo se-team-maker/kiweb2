@@ -5,6 +5,13 @@
  * ブラウザから受け取った検索条件を権限に応じて補正し、GASへ転送する。
  * GASがJSONを返す新形式と、HTMLテーブルを返す旧形式の両方を受け付け、
  * 画面側には同じJSON形式で返す。
+ *
+ * 入力: GET action=browser, teacherName, subject, yearMonth, studentName, className
+ * 認可: 管理者・社員は指定講師、その他はログイン本人へ検索対象を固定
+ * 出力: success/count/recordsを持つJSON
+ *
+ * このAPIはkiweb DBの授業報告データを検索・更新するものではない。
+ * DBはセッションユーザーとロール・権限の確認にだけ使用し、記録本体はGASから取得する。
  */
 
 require_once __DIR__ . '/../public/bootstrap.php';
@@ -46,6 +53,7 @@ if (!$user->isActive()) {
     ], 403);
 }
 
+// ── リクエスト検証 ──
 $action = trim((string)($_GET['action'] ?? 'browser'));
 if ($action !== 'browser') {
     jsonResponse([
@@ -69,6 +77,7 @@ $subject = trim((string)($_GET['subject'] ?? ''));
 $studentName = trim((string)($_GET['studentName'] ?? ''));
 $className = trim((string)($_GET['className'] ?? ''));
 
+// ── 検索対象講師の確定 ──
 $roles = $user->getRoles();
 $isFullTimeTeacher = in_array('full_time_teacher', $roles, true);
 
@@ -95,6 +104,7 @@ if (strpos(CLASS_REPORT_SEARCH_GAS_URL, 'REPLACE_WITH_NEW_GAS_DEPLOYMENT_ID') !=
     ], 502);
 }
 
+// ── GASへの問い合わせ ──
 $query = http_build_query([
     'action' => $action,
     'format' => 'json',

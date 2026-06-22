@@ -1,4 +1,11 @@
 <!DOCTYPE html>
+<!--
+  出退勤履歴の共通ビューア。
+
+  非常勤・社員・管理者の各ポータルから同じHTMLを開き、themeパラメータで外観を、
+  me.phpのロール・権限で講師名の変更可否を切り替える。履歴本体はGASから取得し、
+  kiwebのデータベースへ出退勤データを書き込む画面ではない。
+-->
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
@@ -402,6 +409,7 @@ async function checkPermissions() {
 
 // ── 出退勤API ──
 // GASレスポンスを画面内の共通形式 { 講師名: 履歴配列 } に揃える。
+// この画面から行うのは履歴参照のみで、打刻や履歴更新は行わない。
 async function fetchData(name) {
   if (!name) return {};
   const url = `${API_URL}?action=history&name=${encodeURIComponent(name)}`;
