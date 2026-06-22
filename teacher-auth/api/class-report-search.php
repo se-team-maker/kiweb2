@@ -1,4 +1,11 @@
 <?php
+/**
+ * 授業報告書検索の認証付きブリッジAPI。
+ *
+ * ブラウザから受け取った検索条件を権限に応じて補正し、GASへ転送する。
+ * GASがJSONを返す新形式と、HTMLテーブルを返す旧形式の両方を受け付け、
+ * 画面側には同じJSON形式で返す。
+ */
 
 require_once __DIR__ . '/../public/bootstrap.php';
 
@@ -65,9 +72,11 @@ $className = trim((string)($_GET['className'] ?? ''));
 $roles = $user->getRoles();
 $isFullTimeTeacher = in_array('full_time_teacher', $roles, true);
 
+// 画面のreadonlyやURLパラメータは改変できるため、他講師を検索できるかはAPI側で確定する。
 $canSelectTeacher = $user->hasPermission('manage_users') || $isFullTimeTeacher;
 
 if (!$canSelectTeacher) {
+    // 非常勤等はリクエストの講師名を信用せず、必ずログイン本人名へ固定する。
     $teacherName = trim((string)$user->name);
     if ($teacherName === '') {
         jsonResponse([
@@ -98,6 +107,7 @@ $query = http_build_query([
 
 $url = CLASS_REPORT_SEARCH_GAS_URL . '?' . $query;
 
+// 利用可能ならcURLを使い、環境にcURL拡張がない場合はstreamへフォールバックする。
 $responseBody = false;
 $httpCode = 0;
 $contentType = '';
@@ -189,6 +199,7 @@ if (is_array($decoded)) {
     jsonResponse($decoded);
 }
 
+// 旧GASがHTMLシェルまたはHTMLテーブルを返した場合は、行データを抽出してJSONへ変換する。
 $rows = extractRowsFromGasHtmlShell((string)$responseBody, $subject);
 if (is_array($rows)) {
     jsonResponse([

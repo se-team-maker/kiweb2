@@ -342,11 +342,22 @@
 
 <script>
 
+/*
+ * 出退勤履歴の検索・表示画面。
+ *
+ * 1. me.phpからログイン本人名、ロール、管理権限を取得する。
+ * 2. 社員または管理者だけ講師名検索を有効にする。
+ * 3. GASから対象講師の履歴を取得し、講師・校舎単位で絞り込んで描画する。
+ *
+ * themeは表示モード、ロール・権限は操作可否を決める情報として分けて扱う。
+ */
+
 // ── 設定 ──
 const API_URL = 'https://script.google.com/macros/s/AKfycbyuJTeutjSMokFV4aZ0SKQ-mURuhT0__VdCHI5KDmbllGkKOiNQlse9tvymwQnAanVQ/exec';
 const params = new URLSearchParams(window.location.search);
 
-// テーマ適用
+// theme は見た目と社員モードの判定に使う。URL指定だけで権限を付与せず、
+// 講師名の編集可否は下の me.php のロール・権限確認で決める。
 const themeParam = params.get('theme') || 'parttime';
 if (themeParam === 'admin') {
   document.documentElement.classList.add('theme-admin');
@@ -389,7 +400,8 @@ async function checkPermissions() {
   return { hasManageUsers, meName, roles };
 }
 
-// ── データ取得 ──
+// ── 出退勤API ──
+// GASレスポンスを画面内の共通形式 { 講師名: 履歴配列 } に揃える。
 async function fetchData(name) {
   if (!name) return {};
   const url = `${API_URL}?action=history&name=${encodeURIComponent(name)}`;
@@ -403,7 +415,8 @@ async function fetchData(name) {
   return { [json.name]: json.history || [] };
 }
 
-// ── 状態 ──
+// ── 画面状態 ──
+// DATAは取得済み履歴、currentTeacher / currentCampusは現在の表示条件。
 let DATA = {};
 let currentTeacher = '';
 let currentCampus = '';
@@ -497,6 +510,7 @@ function selectTeacher(name) {
 }
 
 // ── 描画 ──
+// 現在の講師と校舎で絞り込み、サマリーと明細テーブルを同時に更新する。
 function render() {
   const allRecords = DATA[currentTeacher] || [];
   const filtered = currentCampus
@@ -573,7 +587,8 @@ async function init() {
   const initialName = teacherParam || meName;
   nameInput.value = initialName;
 
-  // 編集可否の制御
+  // 社員は社員ポータル経由、管理者は明示的な allowNameEdit 指定がある場合だけ編集可能。
+  // URLパラメータだけでは編集を許可せず、必ずサーバーから取得したロール・権限と組み合わせる。
   const canEdit = 
     (themeParam === 'fulltime' && roles.includes('full_time_teacher')) ||
     (allowNameEdit && hasManageUsers);

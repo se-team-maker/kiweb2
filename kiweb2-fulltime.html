@@ -1020,7 +1020,18 @@
   </div>
   <script src="kiweb-task-delivery.js"></script>
   <script>
-    // ★ ki-web2 専任用：メニューから iframe でページを切り替え
+    /*
+     * 社員ポータル全体の制御。
+     *
+     * 1. me.php からログインユーザー、ロール、所属範囲を取得する。
+     * 2. メニュー選択に応じて社員テーマとログイン本人名を付け、iframeを切り替える。
+     * 3. PC/モバイルメニュー、ログイン状態、タスク通知を同じユーザー情報で同期する。
+     *
+     * このファイルは画面遷移の入口であり、各業務の認可はiframe先とAPIでも再確認する。
+     */
+
+    // 社員ポータルのメニュー定義。appendTeacher / appendTheme が false の画面には
+    // ログイン講師名や社員テーマを付けず、各画面自身の認証・表示制御に任せる。
     const PAGES = {
       lessons: { file: '/kiweb/class-declaration-fulltime.html?v=20260502-kazasu-badge-date' }, // 授業予定・実施申告
       absence: { file: '/kiweb/class-reschedule_fulltime.html', appendTeacher: false, appendTheme: false }, // 欠勤・振替申請（社員版）
@@ -1057,6 +1068,8 @@
     let userScopes = {};
     let userRoles = [];
 
+    // ===== ログイン本人名の表示・タブ内保持 =====
+    // sessionStorageは画面切り替え用。認証情報の正本は常にme.phpの結果とする。
     function formatDisplayName(name) {
       return name ? name + 'さん' : NAME_PLACEHOLDER;
     }
@@ -1362,6 +1375,7 @@
         }
         setLoginState(data.user);
 
+        // ロール・権限・所属範囲に依存する表示を、ログイン情報の更新時にまとめて反映する。
         const isPartTimeUser = userRoles.includes('part_time_teacher') || userRoles.includes('part_time_staff');
         setPartTimeOnlyVisible(isPartTimeUser);
 
@@ -1521,12 +1535,13 @@
       const teacherName = getLoginName();
       let url = pageConfig.file;
 
-      // 社員版では各画面側で氏名を可変にできるよう、対応ページには theme=fulltime を渡す
+      // theme=fulltime は「社員として講師名を変更できる画面」であることを子画面へ伝える。
+      // 実際の変更可否は、子画面とAPIの両方でログインユーザーのロールを再確認する。
       if (pageConfig.appendTheme !== false) {
         url += (url.includes('?') ? '&' : '?') + 'theme=fulltime';
       }
 
-      // 既存画面との互換用。appendTeacher:false のページには teacher を付けない。
+      // teacher は初期表示用のログイン本人名。検索画面で選び直す対象講師名とは別に扱う。
       if (teacherName && pageConfig.appendTeacher !== false) {
         url += (url.includes('?') ? '&' : '?') + 'teacher=' + encodeURIComponent(teacherName);
       }
@@ -1663,7 +1678,8 @@
       // Browser constraints make close detection best-effort.
       sendLogoutBeacon();
     });
-    // 初期表示：URLの # に合わせる（#lessons / #work / #absence）
+    // ===== 初期化 =====
+    // セッションを確定してから初期iframeを開き、最後に本人向けタスク通知を開始する。
     (async function init() {
       const sharedLogoutOnClose = hasCookie(LOGOUT_ON_CLOSE_COOKIE);
       if (sharedLogoutOnClose && !isValidSharedTabContext()) {
@@ -1699,6 +1715,7 @@
       const initialPage = hasValidHash ? hash : 'lessons';
       loadPage(initialPage, { updateHash: true });
 
+      // タスクは検索中の講師ではなく、ログイン本人の名前を基準に取得する。
       if (window.KiwebTaskDelivery) {
         KiwebTaskDelivery.init({ getLoginName });
       }

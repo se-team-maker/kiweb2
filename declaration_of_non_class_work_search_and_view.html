@@ -269,6 +269,15 @@
 
     <script>
         (function () {
+            /*
+             * 勤務記録の検索・閲覧画面。
+             *
+             * 1. URLから初期講師名と表示モードを受け取る。
+             * 2. me.phpのロール・権限で講師名を編集できるか確認する。
+             * 3. work-record-search.phpへ年月と検索対象講師を送り、結果を表形式で描画する。
+             *
+             * URLの講師名は検索条件であり、ログイン本人のセッション情報とは分離する。
+             */
             const API_URL = '/kiweb/teacher-auth/api/work-record-search.php';
             const ME_API_URL = '/kiweb/teacher-auth/api/me.php';
             const COLUMNS = [
@@ -358,6 +367,8 @@
                         ? user.permissions
                         : [];
 
+                    // theme / allowNameEdit は画面の利用モードを示すだけなので、
+                    // me.php から取得した社員ロールまたは管理権限と組み合わせて判定する。
                     const isFullTimeTeacher =
                         isFullTimeMode &&
                         roles.includes('full_time_teacher');
@@ -385,6 +396,7 @@
             }
 
             function initializeTeacherName(canEditName) {
+                // URLの teacher / name は検索対象の初期値。ログイン本人の識別情報は変更しない。
                 const teacherName = (urlParams.get('teacher') || urlParams.get('name') || '').trim();
                 if (teacherNameInput) {
                     teacherNameInput.value = teacherName;
@@ -430,6 +442,7 @@
             }
 
             function renderTable(records) {
+                // APIのrecordsをCOLUMNS定義の順で描画する。列追加時はCOLUMNSだけを更新する。
                 const wrap = document.createElement('div');
                 wrap.className = 'table-wrap';
 
@@ -478,6 +491,7 @@
             }
 
             async function search(yearMonth) {
+                // 認証と代理検索可否はAPI側で再判定されるため、画面からは検索条件だけを送る。
                 const teacherName = (teacherNameInput.value || '').trim();
                 setLoading(true);
                 clearMessage();
