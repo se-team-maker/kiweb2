@@ -10,6 +10,12 @@
  *     KiwebTaskDelivery.init({ getLoginName });
  *     // ログイン確認後に呼ぶのが安全。init の既定で1回 refresh します。
  *   </script>
+ *
+ * 処理の流れ:
+ *   1. init() が通知バーと緊急モーダルをポータルへ組み込む。
+ *   2. ログイン本人名でGASのsummary APIを呼ぶ。
+ *   3. 締切状況に応じて通知を更新し、必要な場合だけ緊急モーダルを表示する。
+ *   4. タスク一覧を開く際も同じログイン本人名を引き継ぐ。
  */
 (function () {
   'use strict';
@@ -37,6 +43,7 @@
   let taskUrgentOpen = null;
 
   function init(userOptions = {}) {
+    // ポータルごとの差はオプションで吸収し、DOM生成とイベント登録は初回だけ行う。
     options = { ...DEFAULTS, ...userOptions };
 
     if (!document.getElementById('kiwebTaskDeliveryStyle')) {
@@ -237,6 +244,8 @@
   }
 
   function getCurrentLoginName() {
+    // タスクの担当者は「現在検索している講師」ではなく、ポータルへログインしている本人。
+    // 呼び出し元の getLoginName を最優先し、互換用の保存値や表示名はフォールバックとして使う。
     if (typeof options.getLoginName === 'function') {
       const value = (options.getLoginName() || '').trim();
       if (value) return value.replace(/(さん)+$/u, '').trim();
@@ -259,6 +268,7 @@
   }
 
   function setTaskAlertBar(summary) {
+    // GASの区分別件数を、緊急・未完了・全件完了の表示状態へまとめる。
     if (!taskAlertBar || !summary) return;
 
     const critical = Number(summary['深刻な遅延'] || 0);
@@ -336,6 +346,7 @@
     }
 
     try {
+      // summary APIは講師名ごとの集計を返す。単一結果の場合はキー名の揺れも許容する。
       const url = `${options.apiUrl}?mode=summary&assignees=${encodeURIComponent(name)}`;
       const response = await fetch(url);
       if (!response.ok) throw new Error(`HTTP ${response.status}`);

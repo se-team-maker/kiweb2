@@ -1,4 +1,10 @@
 <?php
+/**
+ * 勤務記録検索の認証付きブリッジAPI。
+ *
+ * 非常勤はログイン本人、社員・管理者は指定した講師を検索対象にできる。
+ * 認証中ユーザーと検索対象者を分けたまま、年月と講師名をGASへ転送する。
+ */
 
 require_once __DIR__ . '/../public/bootstrap.php';
 
@@ -56,9 +62,11 @@ $name = trim((string)$user->name);
 $roles = $user->getRoles();
 $isFullTimeTeacher = in_array('full_time_teacher', $roles, true);
 
+// クライアント側の入力可否に依存せず、代理検索を許可する利用者をAPI側で限定する。
 $canSelectUser = $user->hasPermission('manage_users') || $isFullTimeTeacher;
 
 if ($requestedName !== '' && $canSelectUser) {
+    // $name は検索対象者。認証中の $user 自体は変更しない。
     $name = $requestedName;
 }
 
@@ -77,6 +85,7 @@ $query = http_build_query([
 ], '', '&', PHP_QUERY_RFC3986);
 $url = WORK_RECORD_SEARCH_GAS_URL . '?' . $query;
 
+// GASのJSONレスポンスをそのまま画面へ返す、薄い認証付きブリッジとして動作する。
 $context = stream_context_create([
     'http' => [
         'method' => 'GET',
