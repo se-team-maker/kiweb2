@@ -4,6 +4,12 @@
  *
  * 非常勤はログイン本人、社員・管理者は指定した講師を検索対象にできる。
  * 認証中ユーザーと検索対象者を分けたまま、年月と講師名をGASへ転送する。
+ *
+ * 入力: GET yearMonth, name
+ * 出力: GASが返す勤務記録JSON
+ *
+ * kiweb DBはログインユーザーとロール・権限の確認にだけ使用する。
+ * 勤務記録本体の読み書きは行わず、このAPIはGASへの認証付き参照窓口として動作する。
  */
 
 require_once __DIR__ . '/../public/bootstrap.php';
@@ -26,6 +32,7 @@ if (!Session::isLoggedIn()) {
     ], 401);
 }
 
+// ── リクエスト検証 ──
 $yearMonth = trim((string)($_GET['yearMonth'] ?? ''));
 if (!preg_match('/^\d{4}-(0[1-9]|1[0-2])$/', $yearMonth)) {
     jsonResponse([
@@ -57,6 +64,7 @@ if (!$user->isActive()) {
     ], 403);
 }
 
+// ── 検索対象講師の確定 ──
 $name = trim((string)$user->name);
 
 $roles = $user->getRoles();
@@ -78,6 +86,7 @@ if (strpos(WORK_RECORD_SEARCH_GAS_URL, 'REPLACE_WITH_NEW_GAS_DEPLOYMENT_ID') !==
     ], 502);
 }
 
+// ── GASへの問い合わせ ──
 $query = http_build_query([
     'name' => $name,
     'yearMonth' => $yearMonth,

@@ -1,4 +1,11 @@
 <!DOCTYPE html>
+<!--
+    勤務記録の検索・閲覧画面。
+
+    ポータルから渡された講師名を初期検索条件として表示し、社員・管理者だけが
+    別講師へ切り替えられる。検索は認証付きPHP APIを経由してGASの記録を取得する。
+    この画面で変更する氏名は検索対象であり、ログインユーザー情報には保存しない。
+-->
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
@@ -490,6 +497,8 @@
                 resultContainer.appendChild(wrap);
             }
 
+            // 画面は検索条件と結果表示だけを担当する。
+            // 誰の記録を取得してよいかはwork-record-search.phpがセッションから再判定する。
             async function search(yearMonth) {
                 // 認証と代理検索可否はAPI側で再判定されるため、画面からは検索条件だけを送る。
                 const teacherName = (teacherNameInput.value || '').trim();
@@ -564,6 +573,7 @@
                 search(yearMonth);
             });
 
+            // 権限確認が終わる前に入力欄を編集可能にしないため、初期化は非同期で行う。
             async function init() {
                 const canEditName = await canCurrentUserEditName();
                 initializeTeacherName(canEditName);

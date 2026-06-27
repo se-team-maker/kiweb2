@@ -1061,13 +1061,15 @@
             const urlParams = new URLSearchParams(window.location.search);
             return urlParams.get('allowNameEdit') === '1';
         }
+        function isFullTimeMode() {
+            const urlParams = new URLSearchParams(window.location.search);
+            return String(urlParams.get('theme') || '').trim().toLowerCase() === 'fulltime';
+        }
 
         async function canCurrentUserEditTeacherName() {
-            const urlParams = new URLSearchParams(window.location.search);
-            const themeParam = String(urlParams.get('theme') || '').trim().toLowerCase();
-            const isFullTimeMode = themeParam === 'fulltime';
+            const fullTimeMode = isFullTimeMode();
 
-            if (!isFullTimeMode && !isNameEditAllowed()) {
+            if (!fullTimeMode && !isNameEditAllowed()) {
                 return false;
             }
 
@@ -1093,7 +1095,7 @@
                     : [];
 
                 const isFullTimeTeacher =
-                    isFullTimeMode &&
+                    fullTimeMode &&
                     roles.includes('full_time_teacher');
 
                 const isAdminEditable =
@@ -1110,7 +1112,7 @@
             input.readOnly = !editable;
             if (editable) {
                 input.removeAttribute('readonly');
-                input.placeholder = isFullTimeMode
+                input.placeholder = isFullTimeMode()
                     ? "講師名を入力・変更できます"
                     : "講師名はポータルから自動設定されます（管理者は編集可）";
             } else {

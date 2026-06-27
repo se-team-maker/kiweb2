@@ -1,4 +1,11 @@
 ﻿<!DOCTYPE html>
+<!--
+  授業報告書の検索画面。
+
+  ブラウザ表示は認証付きPHP APIを経由して権限を確認し、検索結果を画面内iframeへ表示する。
+  Slack送信は既存GASへ直接依頼する別経路であるため、改修時は両処理を混同しない。
+  講師名欄の変更は検索対象を切り替えるだけで、ログインユーザーの登録氏名は変更しない。
+-->
 <html lang="ja">
 
 <head>
@@ -691,6 +698,8 @@
         }
       }
 
+      // 2つの送信ボタンを同じフォームで扱う。
+      // browserは認証付きAPI、slackDMは通知処理を持つGASへ送るため、分岐後の責務が異なる。
       form.addEventListener("submit", async function (event) {
         event.preventDefault();
         const submitter = event.submitter;
