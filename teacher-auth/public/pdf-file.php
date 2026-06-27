@@ -1,4 +1,6 @@
 <?php
+// PDF実ファイル配信エンドポイント。
+// private-pdfs 配下のPDFを直接公開せず、ログイン・公開状態・配信対象を確認してから返す。
 declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
@@ -9,6 +11,7 @@ use App\Model\User;
 
 function requirePdfUser(): array
 {
+    // PDF本体のURLを直接叩かれても、未ログインなら配信しない。
     if (!Session::isLoggedIn()) {
         http_response_code(401);
         exit('Unauthorized');
@@ -33,12 +36,14 @@ function privatePdfDir(): string
 
 function isSafePdfFileName(string $fileName): bool
 {
+    // DBに保存されたファイル名だけを許可し、パストラバーサルを防ぐ。
     return preg_match('/\A[A-Za-z0-9][A-Za-z0-9._-]*\.pdf\z/i', $fileName) === 1
         && strpos($fileName, '..') === false;
 }
 
 function resolvePrivatePdfPath(string $fileName): ?string
 {
+    // realpath で private-pdfs の外へ出ていないことを確認してから実ファイルパスにする。
     if (!isSafePdfFileName($fileName)) {
         return null;
     }
@@ -63,6 +68,7 @@ function resolvePrivatePdfPath(string $fileName): ?string
 
 function normalizeRoleNames(mixed $rawRoles): array
 {
+    // User::getRoles() の形式差を吸収して、ロール名の配列に正規化する。
     if (!is_array($rawRoles)) {
         return [];
     }
@@ -88,6 +94,7 @@ function normalizeRoleNames(mixed $rawRoles): array
 
 function getUserRoleNames(User $user, PDO $db, string $userId): array
 {
+    // 既存DBのロールカラム名差異に備え、複数の取得方法を順に試す。
     foreach (['getRoles', 'getRoleNames'] as $method) {
         if (method_exists($user, $method)) {
             $roles = normalizeRoleNames($user->{$method}());
@@ -131,6 +138,7 @@ function userHasPermission(User $user, string $permission): bool
 
 function getAllowedTargetScopes(User $user, PDO $db, string $userId): array
 {
+    // PDF本体配信でも対象スコープを再計算し、ビューアを経由しない取得を防ぐ。
     $roles = array_map('strtolower', getUserRoleNames($user, $db, $userId));
 
     $isManager = userHasPermission($user, 'manage_users')
@@ -158,6 +166,7 @@ function getAllowedTargetScopes(User $user, PDO $db, string $userId): array
 
 function getVisibleDocument(PDO $db, int $documentId, string $userId, array $allowedScopes): ?array
 {
+    // PDF配信直前に、資料が公開中かつ利用者の対象内かを再確認する。
     if ($allowedScopes === []) {
         return null;
     }
@@ -202,6 +211,7 @@ $signageFiles = [
 ];
 
 if ($signage !== '') {
+    // サイネージPDFは資料配信DBを使わず、固定ファイル名だけを許可する。
     if (!isset($signageFiles[$signage])) {
         http_response_code(404);
         exit('PDF not found');

@@ -20,6 +20,7 @@ function pdfAdminActionContains($haystack, $needle)
 
 function pdfAdminActionRequireUser()
 {
+    // POST処理も画面表示とは独立してログイン状態を確認する。
     if (!\App\Auth\Session::isLoggedIn()) {
         http_response_code(401);
         exit('Unauthorized');
@@ -39,6 +40,7 @@ function pdfAdminActionRequireUser()
 
 function pdfAdminActionNormalizeRoleNames($rawRoles)
 {
+    // User::getRoles() の戻り値差異を吸収して、ロール名の配列に揃える。
     if (!is_array($rawRoles)) {
         return array();
     }
@@ -66,6 +68,7 @@ function pdfAdminActionNormalizeRoleNames($rawRoles)
 
 function pdfAdminActionGetUserRoleNames($user, $db, $userId)
 {
+    // 既存DBのロールカラム名差異に備え、複数の取得方法を順に試す。
     foreach (array('getRoles', 'getRoleNames') as $method) {
         if (method_exists($user, $method)) {
             $roles = pdfAdminActionNormalizeRoleNames($user->{$method}());
@@ -110,6 +113,7 @@ function pdfAdminActionUserHasPermission($user, $permission)
 
 function pdfAdminActionCanManage($user, $db, $userId)
 {
+    // 管理者ロールまたは管理権限を持つユーザーだけPDF管理POSTを許可する。
     $roles = array_map('strtolower', pdfAdminActionGetUserRoleNames($user, $db, $userId));
 
     return pdfAdminActionUserHasPermission($user, 'manage_users')
@@ -128,6 +132,7 @@ function pdfAdminActionRequireManager($user, $db, $userId)
 
 function pdfAdminActionVerifyCsrf()
 {
+    // 管理画面からの正規POSTかを確認し、CSRFトークン不一致なら処理しない。
     if (session_status() !== PHP_SESSION_ACTIVE) {
         @session_start();
     }
@@ -147,6 +152,7 @@ function pdfAdminActionPrivatePdfDir()
 
 function pdfAdminActionEnsurePrivatePdfDir()
 {
+    // PDF保存先がなければ作成し、登録前に書き込み可能か確認する。
     $dir = pdfAdminActionPrivatePdfDir();
 
     if (!is_dir($dir)) {
@@ -173,6 +179,7 @@ function pdfAdminActionTruncate($value, $maxLength)
 
 function pdfAdminActionMakeStorageFileName($dir)
 {
+    // 元ファイル名は表示用に残し、保存名は推測しにくい一意名にする。
     for ($i = 0; $i < 10; $i++) {
         $name = 'pdf_' . date('Ymd_His') . '_' . bin2hex(random_bytes(6)) . '.pdf';
         if (!file_exists($dir . DIRECTORY_SEPARATOR . $name)) {
@@ -185,6 +192,7 @@ function pdfAdminActionMakeStorageFileName($dir)
 
 function pdfAdminActionValidatePdfUpload($file)
 {
+    // 拡張子だけでなくPDFヘッダーも確認し、想定外ファイルの登録を防ぐ。
     if (!isset($file) || !is_array($file)) {
         throw new RuntimeException('PDFファイルを選択してください。');
     }
@@ -236,6 +244,7 @@ function pdfAdminActionValidatePdfUpload($file)
 
 function pdfAdminActionCreateDocument($db, $userId)
 {
+    // PDFファイルを保存してからDB登録する。DB登録に失敗した場合は保存済みファイルを削除する。
     $title = isset($_POST['title']) ? pdfAdminActionTruncate($_POST['title'], 255) : '';
     if ($title === '') {
         throw new RuntimeException('資料タイトルを入力してください。');
@@ -286,6 +295,7 @@ function pdfAdminActionCreateDocument($db, $userId)
 
 function pdfAdminActionToggleActive($db, $userId)
 {
+    // 物理削除はせず、is_active で公開・非公開だけを切り替える。
     $id = isset($_POST['id']) ? (int)$_POST['id'] : 0;
     if ($id < 1) {
         throw new RuntimeException('資料IDが不正です。');
@@ -321,6 +331,7 @@ try {
 
     $action = isset($_POST['action']) ? (string)$_POST['action'] : '';
 
+    // action の値で、登録処理と公開状態切替を振り分ける。
     if ($action === 'create') {
         pdfAdminActionCreateDocument($db, $userId);
     }

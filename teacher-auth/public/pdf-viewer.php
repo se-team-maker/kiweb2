@@ -1,4 +1,7 @@
 <?php
+// PDFビューア画面。
+// 通常の配信資料はDBで公開状態・配信対象を確認し、PDF.jsで表示する。
+// signage パラメータ付きの場合だけ、固定サイネージPDFの表示モードとして動く。
 declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
@@ -14,6 +17,7 @@ function h(mixed $value): string
 
 function requirePdfUser(): array
 {
+    // PDFビューアも直接URLで開けるため、ここで必ずログイン状態を確認する。
     if (!Session::isLoggedIn()) {
         http_response_code(401);
         exit('Unauthorized');
@@ -33,6 +37,7 @@ function requirePdfUser(): array
 
 function normalizeRoleNames(mixed $rawRoles): array
 {
+    // User::getRoles() の形式差を吸収して、ロール名の配列に正規化する。
     if (!is_array($rawRoles)) {
         return [];
     }
@@ -58,6 +63,7 @@ function normalizeRoleNames(mixed $rawRoles): array
 
 function getUserRoleNames(User $user, PDO $db, string $userId): array
 {
+    // 既存DBのロールカラム名差異に備え、複数の取得方法を順に試す。
     foreach (['getRoles', 'getRoleNames'] as $method) {
         if (method_exists($user, $method)) {
             $roles = normalizeRoleNames($user->{$method}());
@@ -101,6 +107,7 @@ function userHasPermission(User $user, string $permission): bool
 
 function getAllowedTargetScopes(User $user, PDO $db, string $userId): array
 {
+    // 一覧画面と同じ条件で対象スコープを計算し、直接URL指定による対象外閲覧を防ぐ。
     $roles = array_map('strtolower', getUserRoleNames($user, $db, $userId));
 
     $isManager = userHasPermission($user, 'manage_users')
@@ -128,6 +135,7 @@ function getAllowedTargetScopes(User $user, PDO $db, string $userId): array
 
 function getVisibleDocument(PDO $db, int $documentId, string $userId, array $allowedScopes): ?array
 {
+    // ビューア表示前に、資料ID・公開状態・配信対象・確認済み状態をまとめて確認する。
     if ($allowedScopes === []) {
         return null;
     }
@@ -174,6 +182,7 @@ $signageTitles = [
 $isSignageMode = $signage !== '';
 
 if ($isSignageMode) {
+    // サイネージは資料配信テーブルではなく、private-pdfs/signage 配下の固定PDFを読む。
     if (!isset($signageTitles[$signage])) {
         http_response_code(404);
         exit('PDF not found');
@@ -189,6 +198,7 @@ if ($isSignageMode) {
     $acknowledged = false;
     $pdfUrl = 'pdf-file.php?signage=' . rawurlencode($signage) . '&v=' . time();
 } else {
+    // 通常資料はDB上の資料IDを必須にし、配信対象外や非公開資料は404扱いにする。
     $db = Database::getConnection();
 
     $documentId = filter_input(INPUT_GET, 'id', FILTER_VALIDATE_INT);

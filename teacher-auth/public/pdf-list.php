@@ -1,4 +1,6 @@
 <?php
+// 利用者向けの資料一覧画面。
+// ログインユーザーのロールから配信対象を絞り、確認済み状態と一緒に表示する。
 declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
@@ -14,6 +16,7 @@ function h(mixed $value): string
 
 function requirePdfUser(): array
 {
+    // 資料一覧はログイン済みの有効ユーザーだけに見せる。
     if (!Session::isLoggedIn()) {
         http_response_code(401);
         exit('Unauthorized');
@@ -33,6 +36,7 @@ function requirePdfUser(): array
 
 function normalizeRoleNames(mixed $rawRoles): array
 {
+    // User::getRoles() の戻り値が文字列配列でも連想配列でも扱えるように揃える。
     if (!is_array($rawRoles)) {
         return [];
     }
@@ -58,6 +62,7 @@ function normalizeRoleNames(mixed $rawRoles): array
 
 function getUserRoleNames(User $user, PDO $db, string $userId): array
 {
+    // 既存DBのロールカラム名が環境で違っても拾えるよう、候補SQLを順に試す。
     foreach (['getRoles', 'getRoleNames'] as $method) {
         if (method_exists($user, $method)) {
             $roles = normalizeRoleNames($user->{$method}());
@@ -101,6 +106,7 @@ function userHasPermission(User $user, string $permission): bool
 
 function getAllowedTargetScopes(User $user, PDO $db, string $userId): array
 {
+    // 管理者は全資料、それ以外は all + 自分の雇用区分に合う資料だけを表示対象にする。
     $roles = array_map('strtolower', getUserRoleNames($user, $db, $userId));
 
     $isManager = userHasPermission($user, 'manage_users')
@@ -138,6 +144,7 @@ function getScopeLabel(string $scope): string
 
 function getVisibleDocuments(PDO $db, string $userId, array $allowedScopes): array
 {
+    // 一覧では公開中かつ対象スコープ内の資料だけを取得し、利用者ごとの確認日時も合わせて読む。
     if ($allowedScopes === []) {
         return [];
     }
@@ -172,6 +179,7 @@ $allowedScopes = getAllowedTargetScopes($user, $db, $userId);
 $pdfs = getVisibleDocuments($db, $userId, $allowedScopes);
 
 if (session_status() === PHP_SESSION_ACTIVE) {
+    // 以降はHTML表示だけなので、他リクエストを待たせないようセッションロックを解放する。
     session_write_close();
 }
 ?>

@@ -1,4 +1,6 @@
 <?php
+// 「確かに見ました」ボタンの確認済み記録API。
+// ビューアからPOSTされた資料IDを、ログインユーザー・配信対象・確認要否を確認してから保存する。
 declare(strict_types=1);
 
 require_once __DIR__ . '/bootstrap.php';
@@ -25,6 +27,7 @@ function pdfAckSendJson($payload, $status = 200)
 }
 
 register_shutdown_function(function () {
+    // ビューア側が原因を把握できるよう、Fatal Error でもJSON形式のレスポンスを返す。
     $error = error_get_last();
     if (!$error) {
         return;
@@ -57,6 +60,7 @@ function pdfAckContains($haystack, $needle)
 
 function pdfAckRequireUser()
 {
+    // 確認済み記録はログイン済みの有効ユーザーIDに紐づける。
     if (!\App\Auth\Session::isLoggedIn()) {
         pdfAckSendJson(array('success' => false, 'message' => 'Unauthorized'), 401);
     }
@@ -74,6 +78,7 @@ function pdfAckRequireUser()
 
 function pdfAckNormalizeRoleNames($rawRoles)
 {
+    // User::getRoles() の戻り値差異を吸収して、ロール名の配列に揃える。
     if (!is_array($rawRoles)) {
         return array();
     }
@@ -102,6 +107,7 @@ function pdfAckNormalizeRoleNames($rawRoles)
 
 function pdfAckGetUserRoleNames($user, $db, $userId)
 {
+    // 既存DBのロールカラム名差異に備え、複数の取得方法を順に試す。
     foreach (array('getRoles', 'getRoleNames') as $method) {
         if (method_exists($user, $method)) {
             $roles = pdfAckNormalizeRoleNames($user->{$method}());
@@ -146,6 +152,7 @@ function pdfAckUserHasPermission($user, $permission)
 
 function pdfAckGetAllowedTargetScopes($user, $db, $userId)
 {
+    // 確認記録APIでも対象スコープを確認し、対象外資料へのPOSTを拒否する。
     $roles = array_map('strtolower', pdfAckGetUserRoleNames($user, $db, $userId));
 
     $isManager = pdfAckUserHasPermission($user, 'manage_users')
@@ -173,6 +180,7 @@ function pdfAckGetAllowedTargetScopes($user, $db, $userId)
 
 function pdfAckGetVisibleDocument($db, $documentId, $allowedScopes)
 {
+    // 保存前に、資料が公開中かつログインユーザーの配信対象内かを確認する。
     if ($allowedScopes === array()) {
         return null;
     }
@@ -229,6 +237,7 @@ try {
     }
 
     if ((int)$document['requires_ack'] !== 1) {
+        // 確認不要の資料はエラーにせず、保存対象外であることだけ返す。
         pdfAckSendJson(array(
             'success' => true,
             'message' => 'この資料は確認記録が不要です。',
@@ -246,6 +255,7 @@ try {
             ip_address = VALUES(ip_address),
             user_agent = VALUES(user_agent)
     ');
+    // document_id + user_id のユニーク制約を使い、再クリック時は確認日時を更新する。
 
     $ok = $stmt->execute(array(
         $documentId,

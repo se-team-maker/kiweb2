@@ -19,6 +19,7 @@ function pdfAdminContains($haystack, $needle)
 
 function pdfAdminRequireUser()
 {
+    // 管理画面はログイン済みの有効ユーザーだけを入口にする。
     if (!\App\Auth\Session::isLoggedIn()) {
         http_response_code(401);
         exit('Unauthorized');
@@ -38,6 +39,7 @@ function pdfAdminRequireUser()
 
 function pdfAdminNormalizeRoleNames($rawRoles)
 {
+    // User::getRoles() の戻り値差異を吸収して、ロール名の配列に揃える。
     if (!is_array($rawRoles)) {
         return array();
     }
@@ -65,6 +67,7 @@ function pdfAdminNormalizeRoleNames($rawRoles)
 
 function pdfAdminGetUserRoleNames($user, $db, $userId)
 {
+    // 既存DBのロールカラム名差異に備え、複数の取得方法を順に試す。
     foreach (array('getRoles', 'getRoleNames') as $method) {
         if (method_exists($user, $method)) {
             $roles = pdfAdminNormalizeRoleNames($user->{$method}());
@@ -109,6 +112,7 @@ function pdfAdminUserHasPermission($user, $permission)
 
 function pdfAdminCanManage($user, $db, $userId)
 {
+    // 管理者ロールまたは管理権限を持つユーザーだけPDF管理を許可する。
     $roles = array_map('strtolower', pdfAdminGetUserRoleNames($user, $db, $userId));
 
     return pdfAdminUserHasPermission($user, 'manage_users')
@@ -127,6 +131,7 @@ function pdfAdminRequireManager($user, $db, $userId)
 
 function pdfAdminCsrfToken()
 {
+    // PDF登録・公開切替POSTで使うCSRFトークンをセッションに保持する。
     if (session_status() !== PHP_SESSION_ACTIVE) {
         @session_start();
     }
@@ -166,6 +171,7 @@ function pdfAdminFormatDate($value)
 
 function pdfAdminGetDocuments($db)
 {
+    // 管理画面では全資料を対象にし、資料ごとの確認済み件数も集計して表示する。
     $sql = '
         SELECT
             d.id,
@@ -205,6 +211,7 @@ try {
     $db = \App\Config\Database::getConnection();
     pdfAdminRequireManager($user, $db, $userId);
 
+    // ここまで通ったユーザーだけに、登録フォームと登録済み一覧を表示する。
     $csrfToken = pdfAdminCsrfToken();
     $documents = pdfAdminGetDocuments($db);
     $message = isset($_GET['message']) ? (string)$_GET['message'] : '';
