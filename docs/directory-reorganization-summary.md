@@ -70,6 +70,8 @@ Gitに入れないもの:
 - `storage/auth/private-pdfs/**`
 - `storage/room-booking/**`
 
+`app/Auth/vendor/` はGitには入れません。ただしテストサーバーへのFTPS反映では、GitHub Actionsが `composer install --working-dir app/Auth` を実行してからアップロードします。
+
 ## ローカル確認結果
 
 2026-07-08時点の確認:

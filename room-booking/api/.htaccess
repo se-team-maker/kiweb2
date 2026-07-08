@@ -1,0 +1,2 @@
+RewriteEngine On
+RewriteRule ^(.*)$ /kiweb/public/room-booking/api/$1 [R=302,L,QSA]

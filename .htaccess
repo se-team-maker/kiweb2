@@ -30,6 +30,7 @@ RewriteRule ^ダウンロード\.png$ /kiweb/public/assets/download.png [R=302,L
 
 # ===== セキュリティ =====
 # 機密ファイルへのアクセスを遮断
+RewriteRule (^|/)\.[^/]+ - [F,L]
 RewriteRule ^login/\.env$ - [F,L]
 RewriteRule ^login/(src|vendor|database)/ - [F,L]
 RewriteRule ^app/ - [F,L]

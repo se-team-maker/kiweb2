@@ -5,6 +5,13 @@ DirectoryIndex index.php
 # ディレクトリ一覧を無効化
 Options -Indexes
 
+# 内部ライブラリ・設定・保守ツールはURLから直接開かせない
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(lib|tools|migrations)(/|$) - [F,L]
+    RewriteRule ^(config|config\.sample|service-account\.example)\. - [F,L]
+</IfModule>
+
 # JSON レスポンスのための CORS ヘッダー（必要に応じて）
 <IfModule mod_headers.c>
     Header set Access-Control-Allow-Origin "*"

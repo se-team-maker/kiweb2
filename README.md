@@ -62,7 +62,7 @@ composer install --working-dir app/Auth
 
 補足:
 
-- `app/Auth/vendor/` はGit管理しません。clone後は `composer install --working-dir app/Auth` が必要です。
+- `app/Auth/vendor/` はGit管理しません。clone後は `composer install --working-dir app/Auth` が必要です。テストサーバーへのFTPS反映時はGitHub Actions内でComposer installしてからアップロードします。
 - `login/vendor/` は現状repoに含まれています。
 - `.env`、ローカル設定、サービスアカウント、非公開PDF、キャッシュはGitに入れません。
 - PHPやDBにつなげて試すときは、`file://` ではなく `http://localhost/kiweb/...` で確認してください。
@@ -117,10 +117,9 @@ GitHub Actions 側の接続情報は repository secrets に置きます。
 
 ## Gitに入れないもの
 
-`.gitignore` とFTPデプロイ除外で、以下はGit/テストサーバー反映から外します。
+`.gitignore` とFTPデプロイ除外で、秘密情報や保存データはGit/テストサーバー反映から外します。
 
 - `**/.env`
-- `app/Auth/vendor/`
 - `config/auth/user-sync.env`
 - `config/room-booking/config.local.php`
 - `config/room-booking/credentials/service-account.json`
@@ -129,6 +128,8 @@ GitHub Actions 側の接続情報は repository secrets に置きます。
 - `storage/auth/runtime/**`
 - `storage/auth/private-pdfs/**`
 - `storage/room-booking/**`
+
+`app/Auth/vendor/` はGitには入れませんが、`.github/workflows/deploy-staging.yml` がデプロイ前に生成し、テストサーバーへアップロードします。
 
 `git add .` は意図しないローカルファイルを拾いやすいので、基本は `git add ファイル名` で確認しながら追加してください。
 

@@ -1,1 +1,2 @@
-../auth/pdf-viewer.php
+<?php
+require __DIR__ . '/../auth/pdf-viewer.php';

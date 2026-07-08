@@ -1,1 +1,6 @@
-../config/room-booking/htaccess.public
+RewriteEngine On
+DirectoryIndex room-booking.php
+
+RewriteRule ^room-booking\.php$ /kiweb/public/room-booking/index.php [R=302,L,QSA]
+RewriteRule ^room-booking-qr\.png$ /kiweb/public/room-booking/assets/room-booking-qr.png [R=302,L,QSA]
+RewriteRule ^api/(.*)$ /kiweb/public/room-booking/api/$1 [R=302,L,QSA]

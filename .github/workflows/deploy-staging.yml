@@ -16,6 +16,15 @@ jobs:
       - name: Checkout latest code
         uses: actions/checkout@v6
 
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.2'
+          tools: composer
+
+      - name: Install auth dependencies
+        run: composer install --working-dir app/Auth --no-dev --prefer-dist --no-interaction --optimize-autoloader
+
       - name: Deploy to system-dev by FTPS
         uses: SamKirkland/FTP-Deploy-Action@v4.4.0
         with:
@@ -36,7 +45,6 @@ jobs:
             **/node_modules/**
             **/.github/**
             **/.env
-            **/app/Auth/vendor/**
             **/config/auth/user-sync.env
             **/config/room-booking/config.local.php
             **/config/room-booking/credentials/service-account.json
