@@ -36,7 +36,12 @@ jobs:
             **/node_modules/**
             **/.github/**
             **/.env
-            **/teacher-auth/.env
-            **/teacher-auth/vendor/**
-            **/teacher-auth/private-pdfs/**
-            **/private-pdfs/**
+            **/app/Auth/vendor/**
+            **/config/auth/user-sync.env
+            **/config/room-booking/config.local.php
+            **/config/room-booking/credentials/service-account.json
+            **/apis/justdb_teacher_bridge.php
+            **/gas/**/consts.gs
+            **/storage/auth/runtime/**
+            **/storage/auth/private-pdfs/**
+            **/storage/room-booking/**

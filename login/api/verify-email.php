@@ -111,6 +111,6 @@ AuditLog::log(AuditLog::EMAIL_VERIFY_SUCCESS, $userId, [
 jsonResponse([
     'success' => true,
     'message' => 'メールアドレスの確認が完了しました',
-    'redirect' => '/kiweb/room-booking/room-booking.php'
+    'redirect' => '/kiweb/public/room-booking/index.php'
 
 ]);

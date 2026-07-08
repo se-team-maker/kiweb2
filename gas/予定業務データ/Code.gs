@@ -1,5 +1,5 @@
 const ss = SpreadsheetApp.openById('1QlYIcrLpbsi0uDar7sFKY9A3kCB5opKu3USt6x0nfCg');
-const DEFAULT_DECLARATION_CACHE_REFRESH_URL_ = 'https://system.kyotoijuku.com/kiweb/teacher-auth/api/internal/refresh-declaration-schedule-cache.php';
+const DEFAULT_DECLARATION_CACHE_REFRESH_URL_ = 'https://system.kyotoijuku.com/kiweb/public/auth/api/internal/refresh-declaration-schedule-cache.php';
 const DECLARATION_CACHE_REFRESH_URL_PROPERTY_ = 'DECLARATION_CACHE_REFRESH_URL';
 const DECLARATION_CACHE_REFRESH_TOKEN_PROPERTY_ = 'DECLARATION_CACHE_REFRESH_TOKEN';
 

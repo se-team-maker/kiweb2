@@ -33,9 +33,9 @@ ICTマニュアルは、以下のような構成です。
 
 ・ict-manual.php が画面本体を表示する
 ・ict-manual-file.php が一覧JSON、Markdown本文、画像を配信する
-・teacher-auth/ict-manual/manuals/index.json がマニュアル一覧の定義を持つ
-・teacher-auth/ict-manual/manuals/ 配下に本文Markdownを置く
-・teacher-auth/ict-manual/assets/images/ 配下に画像を置く
+・app/Documents/ict-manual/manuals/index.json がマニュアル一覧の定義を持つ
+・app/Documents/ict-manual/manuals/ 配下に本文Markdownを置く
+・app/Documents/ict-manual/assets/images/ 配下に画像を置く
 
 DBにはマニュアル本文を保存しません。
 
@@ -48,7 +48,7 @@ DBにはマニュアル本文を保存しません。
 
 画面本体は、以下のPHPです。
 
-teacher-auth/public/ict-manual.php
+public/auth/ict-manual.php
 
 ict-manual.php は、まずログイン状態と有効ユーザーかどうかを確認します。
 
@@ -65,7 +65,7 @@ ict-manual.php は、まずログイン状態と有効ユーザーかどうか�
 
 マニュアル一覧は、以下のJSONファイルで管理します。
 
-teacher-auth/ict-manual/manuals/index.json
+app/Documents/ict-manual/manuals/index.json
 
 index.json には、各マニュアルのタイトル、カテゴリ、本文ファイル名、説明文、更新日、対象ユーザー、タグ、並び順、表示可否などを定義します。
 
@@ -109,7 +109,7 @@ Markdown本文内では、画像を以下のような形で記述できます。
 
 ict-manual-file.php?type=image&path=画像パス
 
-ict-manual-file.php は、画像パスの形式を確認し、teacher-auth/ict-manual/assets/images/ 配下の画像だけを返します。
+ict-manual-file.php は、画像パスの形式を確認し、app/Documents/ict-manual/assets/images/ 配下の画像だけを返します。
 
 realpath 確認により、imagesフォルダの外にあるファイルを読まないようにしています。
 
@@ -176,7 +176,7 @@ ICTマニュアル機能では、以下のいずれかに該当するユーザ�
 
 画面本体
 
-teacher-auth/public/ict-manual.php
+public/auth/ict-manual.php
 
 ICTマニュアル画面を表示します。
 
@@ -187,7 +187,7 @@ ICTマニュアル画面を表示します。
 
 配信API
 
-teacher-auth/public/ict-manual-file.php
+public/auth/ict-manual-file.php
 
 一覧JSON、Markdown本文、画像を配信します。
 
@@ -196,7 +196,7 @@ teacher-auth/public/ict-manual-file.php
 
 一覧定義
 
-teacher-auth/ict-manual/manuals/index.json
+app/Documents/ict-manual/manuals/index.json
 
 マニュアル一覧の定義ファイルです。
 
@@ -205,12 +205,12 @@ teacher-auth/ict-manual/manuals/index.json
 
 本文Markdown
 
-teacher-auth/ict-manual/manuals/login.md
-teacher-auth/ict-manual/manuals/cache-refresh.md
-teacher-auth/ict-manual/manuals/checkin.md
-teacher-auth/ict-manual/manuals/pdf-viewer.md
-teacher-auth/ict-manual/manuals/contact.md
-teacher-auth/ict-manual/manuals/_template.md
+app/Documents/ict-manual/manuals/login.md
+app/Documents/ict-manual/manuals/cache-refresh.md
+app/Documents/ict-manual/manuals/checkin.md
+app/Documents/ict-manual/manuals/pdf-viewer.md
+app/Documents/ict-manual/manuals/contact.md
+app/Documents/ict-manual/manuals/_template.md
 
 マニュアル本文です。
 
@@ -219,7 +219,7 @@ _template.md は新規作成時のひな形です。
 
 画像保存先
 
-teacher-auth/ict-manual/assets/images/
+app/Documents/ict-manual/assets/images/
 
 Markdown本文内で使う画像の保存先です。
 
@@ -243,7 +243,7 @@ kiweb2-admin.html
 
 各ポータルからICTマニュアルを開く導線を持ちます。
 
-iframe 表示先として /kiweb/teacher-auth/public/ict-manual.php を開く想定です。
+iframe 表示先として /kiweb/public/auth/ict-manual.php を開く想定です。
 
 
 12. index.json の主な項目

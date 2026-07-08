@@ -1,2 +1,1 @@
-# ディレクトリアクセス時に room-booking.php を表示
-DirectoryIndex room-booking.php
+../config/room-booking/htaccess.public

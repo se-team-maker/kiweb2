@@ -2,24 +2,40 @@
 
 京都医塾の社内向け Web ツール群をまとめた private リポジトリです。
 
-`index.html` にアクセスすると `/kiweb/login/public/login.php` にリダイレクトされます。  
-講師ポータル、講師認証、会議室予約、Google Apps Script 連携用コードを同じ配下で管理しています。
+このリポジトリは、ローカルで動作確認した内容を Git に反映し、`staging` ブランチへの push で GitHub Actions からテストサーバーへ FTPS デプロイする前提です。
 
 **作成:** 真砂 大朗（SE）
 
-## 主な構成
+## 現在の構成
 
 | Path | 役割 |
 | --- | --- |
-| `index.html` | ルート。`/kiweb/login/public/login.php` へリダイレクト |
+| `index.html` | ルート入口。ログイン導線へリダイレクト |
+| `kiweb2.html`, `kiweb2-fulltime.html`, `kiweb2-admin.html` | 講師ポータル画面 |
+| `public/` | ブラウザ、GAS、外部サービスから直接アクセスされる画面・公開API・公開アセット |
+| `app/` | PHPクラス、内部ライブラリ、業務処理、CLIツール |
+| `config/` | DB schema、migration、設定サンプル、サーバー用設定 |
+| `storage/` | セッション、キャッシュ、非公開PDFなどGitに入れない保存領域 |
+| `gas/` | Google Apps Script 連携コード |
+| `docs/` | 保守資料、仕様、移行メモ |
 | `login/` | 既存ログイン機能 |
-| `teacher-auth/` | 講師ログイン、ロール制御、管理画面、各種 API |
-| `room-booking/` | 会議室予約機能 |
-| `teacher-sync/` | `teacher-auth` のユーザー情報を外部へ同期する read-only API |
-| `apis/` | JustDB 連携ブリッジ（`justdb_teacher_bridge.php` など） |
-| `gas/` | Google Apps Script と連携用ファイル |
-| `kiweb2*.html` | 講師ポータル画面 |
-| `class-*.html`, `work-record.html` | 各種申請・入力画面 |
+| `room-booking/` | 旧URL互換リンク。実体は `public/room-booking/`, `app/RoomBooking/`, `config/room-booking/` |
+| `.github/workflows/deploy-staging.yml` | `staging` ブランチからテストサーバーへFTPS反映 |
+
+基本ルールは `public = URL・画面・入口`、`app = 処理・機能・責務` です。詳細は [docs/path-migration-map.md](docs/path-migration-map.md) を参照してください。
+
+## 機能別の入口
+
+| 機能 | 主な場所 |
+| --- | --- |
+| 認証・講師ポータル | `public/auth/`, `public/auth/api/`, `app/Auth/` |
+| 出退勤 | `public/check-in/` |
+| 授業報告・申告・検索 | `public/class-report/`, `public/auth/api/` |
+| 会議室予約・教室割 | `public/room-booking/`, `app/RoomBooking/`, `config/room-booking/` |
+| 資料配信・PDF | `public/documents/`, `storage/auth/private-pdfs/` |
+| ユーザー同期 | `public/user/api/teachers.php`, `gas/user-sync/` |
+
+旧 `teacher-auth/` と旧 `teacher-sync/` は廃止済みです。新規修正で復活させないでください。
 
 ## ローカル準備
 
@@ -28,78 +44,101 @@
 - PHP 7.4 以上
 - MySQL
 - Composer
+- Apacheなど、`/kiweb` として配信できるWebサーバー
 - GAS / Slack / Google Sheets などの利用権限が必要な機能あり
 
-### 最低限のセットアップ
+### 初期セットアップ
 
 ```powershell
 Copy-Item login/.env.example login/.env
-Copy-Item teacher-auth/.env.example teacher-auth/.env
-Copy-Item teacher-sync/.env.example teacher-sync/.env
-Copy-Item room-booking/api/config.sample.php room-booking/api/config.local.php
-Copy-Item room-booking/api/service-account.example.json room-booking/api/service-account.json
+Copy-Item app/Auth/.env.example app/Auth/.env
+Copy-Item config/auth/user-sync.env.example config/auth/user-sync.env
+Copy-Item config/room-booking/config.sample.php config/room-booking/config.local.php
+Copy-Item config/room-booking/credentials/service-account.example.json config/room-booking/credentials/service-account.json
 Copy-Item apis/justdb_teacher_bridge.example.php apis/justdb_teacher_bridge.php
 Copy-Item "gas/kiweb授業報告書検索/consts.example.gs" "gas/kiweb授業報告書検索/consts.gs"
-composer install --working-dir teacher-auth
+composer install --working-dir app/Auth
 ```
 
 補足:
 
-- `teacher-auth/vendor/` は Git 管理していないので、clone 後は `composer install --working-dir teacher-auth` が必要です。
-- `login/vendor/` は現状 repo に含まれています。
-- `room-booking/api/config.local.php` と各 `.env` はローカル専用です。
-- `index.html` のリダイレクト先は `/kiweb/...` の絶対パスです。PHP や DB とつなげて試すときは、Web サーバー上で `/kiweb` 配下として配信してください（`file://` 直開きではログインへ飛びません）。
+- `app/Auth/vendor/` はGit管理しません。clone後は `composer install --working-dir app/Auth` が必要です。
+- `login/vendor/` は現状repoに含まれています。
+- `.env`、ローカル設定、サービスアカウント、非公開PDF、キャッシュはGitに入れません。
+- PHPやDBにつなげて試すときは、`file://` ではなく `http://localhost/kiweb/...` で確認してください。
 
-## 普段の Git 手順
+## ローカル動作確認
 
-### そのまま `main` で更新する場合
+最低限、push前に以下を確認します。
 
-```powershell
+```bash
+php -l public/auth/bootstrap.php
+php -l public/auth/api/login.php
+curl -i http://localhost/kiweb/public/auth/login.php
+curl -i http://localhost/kiweb/public/auth/api/login.php
+```
+
+期待値:
+
+- ログイン画面は `200 OK`
+- `GET /kiweb/public/auth/api/login.php` は `405 Method Not Allowed` のJSON
+- ログインPOSTは、DB設定とテストユーザーが正しければ成功または認証失敗のJSON
+- `500` が出る場合は、まず Apache/PHP エラーログと `app/Auth/.env` のDB設定を確認
+
+## テストサーバー反映
+
+このリポジトリでは、`staging` ブランチへの push で `.github/workflows/deploy-staging.yml` が動き、FTPSでテストサーバーへ反映します。
+
+```bash
 git status --short
 git diff
 git add 変更したファイル
-git commit -m "fix: 変更内容"
-git push
+git commit -m "chore: reorganize kiweb directories"
+git switch staging
+git merge 作業ブランチ
+git push origin staging
 ```
 
-### ブランチで作業してからマージする場合
+GitHub Actions 側の接続情報は repository secrets に置きます。
 
-```powershell
-git switch main
-git pull --rebase
-git switch -c fix/something
+- `KIWEB_DEV_FTP_SERVER`
+- `KIWEB_DEV_FTP_USERNAME`
+- `KIWEB_DEV_FTP_PASSWORD`
+- `KIWEB_DEV_FTP_PORT`
+- `KIWEB_DEV_FTP_SERVER_DIR`
 
-# 編集
-git add 変更したファイル
-git commit -m "fix: 変更内容"
+デプロイ後はテストサーバーで、ローカルと同じURLを確認します。
 
-# テスト後
-git switch main
-git merge fix/something
-git push
-git branch -d fix/something
-```
+- `/kiweb/public/auth/login.php`
+- `/kiweb/public/auth/api/login.php`
+- `/kiweb/public/room-booking/index.php`
+- `/kiweb/public/documents/index.php`
+- `/kiweb/public/user/api/teachers.php`
 
-## Git に入れないもの
+## Gitに入れないもの
 
-この repo では秘密情報やローカル専用設定を Git 管理しません。
+`.gitignore` とFTPデプロイ除外で、以下はGit/テストサーバー反映から外します。
 
 - `**/.env`
-- `room-booking/api/config.local.php`
-- `room-booking/api/service-account.json`
+- `app/Auth/vendor/`
+- `config/auth/user-sync.env`
+- `config/room-booking/config.local.php`
+- `config/room-booking/credentials/service-account.json`
 - `apis/justdb_teacher_bridge.php`
 - `gas/**/consts.gs`
-- `teacher-auth/storage/*.json`
-- `teacher-auth/vendor/`
+- `storage/auth/runtime/**`
+- `storage/auth/private-pdfs/**`
+- `storage/room-booking/**`
 
-`git add .` を使うと、未整理のローカルファイルまで拾いやすいので、基本は `git add ファイル名` を使うのがおすすめです。
+`git add .` は意図しないローカルファイルを拾いやすいので、基本は `git add ファイル名` で確認しながら追加してください。
 
-## メモ
+## 関連ドキュメント
 
-- いま一部の GAS ファイルはローカル専用のため Git 管理外です。
-- `teacher-auth/public/portal-guard.php` と `kiweb2*.html` が講師ポータル導線の中心です。
-- Nginx 側の調整が必要な場合は `nginx-kiweb.conf` を参照してください。
+- [docs/path-migration-map.md](docs/path-migration-map.md): フォルダ整理ルール
+- [docs/directory-reorganization-summary.md](docs/directory-reorganization-summary.md): 今回のディレクトリ整理まとめ
+- [docs/pdf-materials-system-summary.md](docs/pdf-materials-system-summary.md): 資料配信機能まとめ
+- [docs/ict-manual-system-summary.md](docs/ict-manual-system-summary.md): ICTマニュアルまとめ
 
 ---
 
-最終確認: 2026-03-30（リポジトリ構成・`.gitignore` と突き合わせ）
+最終確認: 2026-07-08（ディレクトリ整理とstagingデプロイ前提を反映）

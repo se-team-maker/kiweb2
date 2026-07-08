@@ -70,7 +70,7 @@ PDFビューアでは、PDFのページ送り、拡大・縮小、幅に合わ�
 ・確認ボタンを表示するかどうか
 ・PDFファイル
 
-登録されたPDFファイルは、teacher-auth/private-pdfs/ に保存されます。
+登録されたPDFファイルは、storage/auth/private-pdfs/ に保存されます。
 
 PDFの元ファイル名は記録として残しますが、実際の保存ファイル名はシステム側で自動生成されます。
 
@@ -127,7 +127,7 @@ fulltime
 
 PDF実ファイルは、ブラウザから直接アクセスさせるのではなく、以下のフォルダに保存します。
 
-teacher-auth/private-pdfs/
+storage/auth/private-pdfs/
 
 PDFを表示するときは、pdf-file.php 経由で配信します。
 
@@ -149,7 +149,7 @@ pdf-file.php では、PDFを返す前に以下を確認します。
 
 利用者側
 
-teacher-auth/public/pdf-list.php
+public/documents/index.php
 
 資料一覧を表示します。
 
@@ -158,7 +158,7 @@ teacher-auth/public/pdf-list.php
 pdf_acknowledgements と結合し、確認済み状態も表示します。
 
 
-teacher-auth/public/pdf-viewer.php
+public/documents/viewer.php
 
 PDFビューア画面です。
 
@@ -167,14 +167,14 @@ PDFビューア画面です。
 確認が必要な資料では「確かに見ました」ボタンを表示します。
 
 
-teacher-auth/public/pdf-file.php
+public/documents/file.php
 
 PDF実ファイルを配信するエンドポイントです。
 
 PDFを返す直前にも、ログイン状態、公開状態、配信対象、ファイルパスの安全性を確認します。
 
 
-teacher-auth/public/pdf-ack.php
+public/documents/ack.php
 
 確認済み記録を保存するAPIです。
 
@@ -183,14 +183,14 @@ PDFビューアの「確かに見ました」ボタンからPOSTされます。
 
 管理者側
 
-teacher-auth/public/pdf-admin.php
+public/documents/admin.php
 
 資料配信管理画面です。
 
 PDF登録フォーム、登録済み資料一覧、確認済み件数、公開状態切替ボタンを表示します。
 
 
-teacher-auth/public/pdf-admin-action.php
+public/documents/admin-action.php
 
 資料配信管理画面からのPOST処理を担当します。
 
@@ -199,19 +199,19 @@ PDF登録、PDFファイル保存、pdf_documents への登録、公開 / 非公
 
 DB
 
-teacher-auth/database/pdf_documents.sql
+config/auth/database/pdf_documents.sql
 
 pdf_documents テーブル作成SQLです。
 
 
-teacher-auth/database/pdf_acknowledgements.sql
+config/auth/database/pdf_acknowledgements.sql
 
 pdf_acknowledgements テーブル作成SQLです。
 
 
 保存先
 
-teacher-auth/private-pdfs/
+storage/auth/private-pdfs/
 
 PDF実ファイルの保存先です。
 
@@ -265,8 +265,8 @@ document_id と user_id の組み合わせはユニークです。
 
 資料配信用テーブルのSQLは、以下の順で流し込みます。
 
-1. teacher-auth/database/pdf_documents.sql
-2. teacher-auth/database/pdf_acknowledgements.sql
+1. config/auth/database/pdf_documents.sql
+2. config/auth/database/pdf_acknowledgements.sql
 
 pdf_acknowledgements は pdf_documents.id を外部キー参照しているため、pdf_documents.sql を先に流す必要があります。
 
@@ -297,7 +297,7 @@ pdf_acknowledgements は pdf_documents.id を外部キー参照しているた�
 
 本番反映時に注意が必要な点は以下です。
 
-・teacher-auth/private-pdfs/ にPHP実行ユーザーの書き込み権限が必要
+・storage/auth/private-pdfs/ にPHP実行ユーザーの書き込み権限が必要
 ・PDFアップロード上限は画面側では50MB想定だが、PHP / Webサーバー側の設定にも依存する
 ・SQLは pdf_documents.sql → pdf_acknowledgements.sql の順に流す必要がある
 ・SQLは CREATE TABLE IF NOT EXISTS ではないため、既存テーブルがある場合は再実行できない

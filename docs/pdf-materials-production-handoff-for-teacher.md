@@ -56,8 +56,8 @@ ICTマニュアル、タスク配信、サイネージ、アクセスログ、�
 
 資料配信用テーブルのSQLは、以下の2ファイルです。
 
-1. teacher-auth/database/pdf_documents.sql
-2. teacher-auth/database/pdf_acknowledgements.sql
+1. config/auth/database/pdf_documents.sql
+2. config/auth/database/pdf_acknowledgements.sql
 
 流し込み順は、必ず pdf_documents.sql → pdf_acknowledgements.sql の順にしてください。
 
@@ -152,10 +152,10 @@ phpMyAdmin などでSQLを流し込んだ後、以下を確認してください
 
 ログイン・権限の確認
 
-・未ログインで /kiweb/teacher-auth/public/pdf-list.php を開くと資料一覧を見られない
-・未ログインで /kiweb/teacher-auth/public/pdf-file.php?id=... を開いてもPDFを取得できない
-・一般ユーザーが /kiweb/teacher-auth/public/pdf-admin.php を開けない
-・管理者だけが /kiweb/teacher-auth/public/pdf-admin.php を開ける
+・未ログインで /kiweb/public/documents/index.php を開くと資料一覧を見られない
+・未ログインで /kiweb/public/documents/file.php?id=... を開いてもPDFを取得できない
+・一般ユーザーが /kiweb/public/documents/admin.php を開けない
+・管理者だけが /kiweb/public/documents/admin.php を開ける
 ・管理者だけがPDF登録・公開/非公開切替を実行できる
 
 
@@ -200,7 +200,7 @@ PDFビューアの確認
 ・PDF以外のファイルは登録できない
 ・50MBを超えるPDFは登録できない
 ・登録後、pdf_documents に資料情報が入る
-・登録後、teacher-auth/private-pdfs/ にPDF実ファイルが保存される
+・登録後、storage/auth/private-pdfs/ にPDF実ファイルが保存される
 ・登録した資料が資料一覧に表示される
 ・公開中の資料を非公開にできる
 ・非公開の資料を再公開できる
@@ -228,37 +228,37 @@ PDFビューアの確認
 
 利用者側
 
-teacher-auth/public/pdf-list.php
+public/documents/index.php
 
 資料一覧を表示します。
 
-teacher-auth/public/pdf-viewer.php
+public/documents/viewer.php
 
 PDFを画面上で表示します。確認が必要な資料では「確かに見ました」ボタンも表示します。
 
-teacher-auth/public/pdf-file.php
+public/documents/file.php
 
 PDF実ファイルを配信します。PDFを直接公開せず、ログイン状態と配信対象を確認してからPDFを返します。
 
-teacher-auth/public/pdf-ack.php
+public/documents/ack.php
 
 「確かに見ました」ボタンの保存処理です。pdf_acknowledgements に確認済み記録を保存します。
 
 
 管理者側
 
-teacher-auth/public/pdf-admin.php
+public/documents/admin.php
 
 管理者用の資料配信管理画面です。PDF登録、配信対象設定、確認ボタン要否、公開状態を管理します。
 
-teacher-auth/public/pdf-admin-action.php
+public/documents/admin-action.php
 
 管理画面からのPOST処理です。PDF登録、公開/非公開切替を行います。
 
 
 PDF保存先
 
-teacher-auth/private-pdfs/
+storage/auth/private-pdfs/
 
 PDF実ファイルの保存先です。
 
@@ -279,7 +279,7 @@ pdf-viewer.php でも、資料が公開中か、ログイン中ユーザーが�
 
 PDF本体は pdf-file.php?id=資料ID から読み込まれます。
 
-pdf-file.php でも、ログイン状態と配信対象を確認した上で、teacher-auth/private-pdfs/ 内のPDFを返します。
+pdf-file.php でも、ログイン状態と配信対象を確認した上で、storage/auth/private-pdfs/ 内のPDFを返します。
 
 
 確認済み記録の流れ
@@ -301,7 +301,7 @@ pdf-ack.php がログイン状態、資料の公開状態、配信対象を確�
 
 POST先は pdf-admin-action.php です。
 
-pdf-admin-action.php がPDFファイルを teacher-auth/private-pdfs/ に保存し、資料情報を pdf_documents に登録します。
+pdf-admin-action.php がPDFファイルを storage/auth/private-pdfs/ に保存し、資料情報を pdf_documents に登録します。
 
 登録直後は公開中として扱われます。
 
@@ -348,7 +348,7 @@ SQL流し込み前に、必ず本番DBのバックアップを取ってくださ
 
 PDF保存フォルダ
 
-teacher-auth/private-pdfs/ に、WebサーバーのPHP実行ユーザーが書き込みできる必要があります。
+storage/auth/private-pdfs/ に、WebサーバーのPHP実行ユーザーが書き込みできる必要があります。
 
 PDF登録に失敗する場合は、まずこのフォルダの存在と書き込み権限を確認してください。
 
@@ -401,7 +401,7 @@ PDFが表示されない
 
 確認するもの
 
-・teacher-auth/private-pdfs/ に実ファイルが存在するか
+・storage/auth/private-pdfs/ に実ファイルが存在するか
 ・pdf_documents.file_name と実ファイル名が一致しているか
 ・pdf-file.php?id=... が404や403になっていないか
 ・PDFファイルが壊れていないか

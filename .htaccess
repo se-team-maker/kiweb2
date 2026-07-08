@@ -3,13 +3,38 @@
 
 RewriteEngine On
 
+# ===== 旧URL互換リダイレクト =====
+# まずはキャッシュされにくい 302。安定後に 301 へ変更する。
+RewriteRule ^teacher-auth/public/(.*)$ /kiweb/public/auth/$1 [R=302,L,QSA]
+RewriteRule ^teacher-auth/api/(.*)$ /kiweb/public/auth/api/$1 [R=302,L,QSA]
+RewriteRule ^teacher-sync/api/teachers\.php$ /kiweb/public/user/api/teachers.php [R=302,L,QSA]
+RewriteRule ^room-booking/room-booking\.php$ /kiweb/public/room-booking/index.php [R=302,L,QSA]
+RewriteRule ^room-booking/room-booking-qr\.png$ /kiweb/public/room-booking/assets/room-booking-qr.png [R=302,L,QSA]
+RewriteRule ^room-booking/api/(.*)$ /kiweb/public/room-booking/api/$1 [R=302,L,QSA]
+
+RewriteRule ^ClassReportSearchForm\.html$ /kiweb/public/class-report/search.html [R=302,L,QSA]
+RewriteRule ^check_in_out\.html$ /kiweb/public/check-in/index.html [R=302,L,QSA]
+RewriteRule ^work-record\.html$ /kiweb/public/check-in/work-record.html [R=302,L,QSA]
+RewriteRule ^class-declaration\.html$ /kiweb/public/class-report/declaration.html [R=302,L,QSA]
+RewriteRule ^class-declaration-fulltime\.html$ /kiweb/public/class-report/declaration-fulltime.html [R=302,L,QSA]
+RewriteRule ^class-reschedule\.html$ /kiweb/public/class-report/reschedule.html [R=302,L,QSA]
+RewriteRule ^class-reschedule2\.html$ /kiweb/public/class-report/reschedule2.html [R=302,L,QSA]
+RewriteRule ^class-reschedule-parttime\.html$ /kiweb/public/class-report/reschedule-parttime.html [R=302,L,QSA]
+RewriteRule ^class-reschedule_fulltime\.html$ /kiweb/public/class-report/reschedule-fulltime.html [R=302,L,QSA]
+RewriteRule ^declaration_of_non_class_work_search_and_view\.html$ /kiweb/public/class-report/non-class-work-search.html [R=302,L,QSA]
+RewriteRule ^search_for_class_implementation_declaration\.html$ /kiweb/public/class-report/implementation-search.html [R=302,L,QSA]
+RewriteRule ^room_allocation\.html$ /kiweb/public/room-booking/room-allocation.html [R=302,L,QSA]
+RewriteRule ^teacher-no-view\.html$ /kiweb/public/user/teacher-no-view.html [R=302,L,QSA]
+RewriteRule ^favicon\.png$ /kiweb/public/assets/favicon.png [R=302,L,QSA]
+RewriteRule ^ダウンロード\.png$ /kiweb/public/assets/download.png [R=302,L,QSA]
+
 # ===== セキュリティ =====
 # 機密ファイルへのアクセスを遮断
 RewriteRule ^login/\.env$ - [F,L]
 RewriteRule ^login/(src|vendor|database)/ - [F,L]
-RewriteRule ^teacher-auth/\.env$ - [F,L]
-RewriteRule ^teacher-auth/(src|vendor|database)/ - [F,L]
-RewriteRule ^teacher-sync/\.env$ - [F,L]
+RewriteRule ^app/ - [F,L]
+RewriteRule ^config/ - [F,L]
+RewriteRule ^storage/ - [F,L]
 
 # ===== APIルーティング =====
 # /api/xxx → /login/api/xxx
@@ -33,9 +58,9 @@ RewriteRule ^portal/(.*)$ login/public/portal/$1 [L]
 
 # ===== Portal guard =====
 # /kiweb2*.html is protected by session guard (internal rewrite)
-RewriteRule ^kiweb2\.html$ teacher-auth/public/portal-guard.php [L]
-RewriteRule ^kiweb2-fulltime\.html$ teacher-auth/public/portal-guard.php [L]
-RewriteRule ^kiweb2-admin\.html$ teacher-auth/public/portal-guard.php [L]
+RewriteRule ^kiweb2\.html$ public/auth/portal-guard.php [L]
+RewriteRule ^kiweb2-fulltime\.html$ public/auth/portal-guard.php [L]
+RewriteRule ^kiweb2-admin\.html$ public/auth/portal-guard.php [L]
 
 # ===== 静的ファイル =====
 # 実在するファイル/フォルダはそのまま返す
