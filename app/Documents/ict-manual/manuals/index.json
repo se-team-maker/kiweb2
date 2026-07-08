@@ -1,0 +1,67 @@
+[
+  {
+    "id": "login",
+    "title": "ログインできないとき",
+    "category": "ログイン・アカウント",
+    "file": "login.md",
+    "description": "kiweb2にログインできない場合の確認手順です。",
+    "updated": "2026-06-08",
+    "target": ["all"],
+    "tags": ["ログイン", "パスワード", "アカウント"],
+    "priority": "high",
+    "order": 10,
+    "visible": true
+  },
+  {
+    "id": "cache-refresh",
+    "title": "画面が古いまま更新されないとき",
+    "category": "よくあるトラブル",
+    "file": "cache-refresh.md",
+    "description": "ブラウザのキャッシュが残っている場合の確認手順です。",
+    "updated": "2026-06-08",
+    "target": ["all"],
+    "tags": ["キャッシュ", "更新", "表示崩れ"],
+    "priority": "high",
+    "order": 20,
+    "visible": true
+  },
+  {
+    "id": "checkin",
+    "title": "出退勤の打刻方法",
+    "category": "出退勤・勤務記録",
+    "file": "checkin.md",
+    "description": "出勤・退勤の打刻と履歴確認の基本手順です。",
+    "updated": "2026-06-08",
+    "target": ["all"],
+    "tags": ["出勤", "退勤", "勤務記録"],
+    "priority": "high",
+    "order": 30,
+    "visible": true
+  },
+  {
+    "id": "pdf-viewer",
+    "title": "PDFビューアの使い方",
+    "category": "資料配信・PDFビューア",
+    "file": "pdf-viewer.md",
+    "description": "配信資料の閲覧と確認済み操作の基本手順です。",
+    "updated": "2026-06-08",
+    "target": ["all"],
+    "tags": ["PDF", "資料", "確認済み"],
+    "priority": "high",
+    "order": 40,
+    "visible": true
+  },
+  {
+    "id": "contact",
+    "title": "ICT担当への問い合わせ方法",
+    "category": "問い合わせ方法",
+    "file": "contact.md",
+    "description": "自己確認後に問い合わせるときの情報整理方法です。",
+    "updated": "2026-06-08",
+    "target": ["all"],
+    "tags": ["問い合わせ", "ICT", "連絡"],
+    "priority": "high",
+    "order": 50,
+    "visible": true
+  }
+]

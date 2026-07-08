@@ -1,4 +1,11 @@
 ﻿<!DOCTYPE html>
+<!--
+  授業報告書の検索画面。
+
+  ブラウザ表示は認証付きPHP APIを経由して権限を確認し、検索結果を画面内iframeへ表示する。
+  Slack送信は既存GASへ直接依頼する別経路であるため、改修時は両処理を混同しない。
+  講師名欄の変更は検索対象を切り替えるだけで、ログインユーザーの登録氏名は変更しない。
+-->
 <html lang="ja">
 
 <head>
@@ -377,6 +384,15 @@
 
     <script>
     (function () {
+      /*
+       * 授業報告書の検索画面。
+       *
+       * web表示は認証付きPHP APIを経由し、このページ内のiframeへ結果を表示する。
+       * Slack送信は既存GASへ検索条件を送り、DM送信処理を依頼する。
+       *
+       * 講師名欄の編集可否はここで表示制御するが、
+       * 他講師を検索できるかの最終判断はclass-report-search.phpが行う。
+       */
       const GAS_URL = "https://script.google.com/macros/s/AKfycbwYI6KlgF90HBv6_rFZGUV-ZLq-aNqa3FDQtorybGv9WJLQOzvhRMyTal7Iw483khxz/exec";
       const BROWSER_API_URL = "/kiweb/public/auth/api/class-report-search.php";
       const ME_API_URL = "/kiweb/public/auth/api/me.php";
@@ -498,6 +514,8 @@
           const roles = Array.isArray(user.roles) ? user.roles : [];
           const themeParam = String(urlParams.get("theme") || "").trim().toLowerCase();
           const normalizedRoles = roles.map(role => String(role || "").trim());
+          // 社員ポータルと管理者ポータルでは名前編集を許可する条件が異なる。
+          // ここは入力欄の表示制御であり、最終的な認可は検索API側でも同じ条件を確認する。
           const isFullTimeTeacher =
             themeParam === "fulltime" &&
             normalizedRoles.includes("full_time_teacher");
@@ -527,6 +545,7 @@
       }
 
       function buildBrowserResultDocument(rows) {
+        // API結果をsrcdoc用の独立HTMLへ変換する。値は必ずescapeHtmlを通して埋め込む。
         const rowHtml = rows.map(function (row, index) {
           return "<tr>" +
             "<td>" + (index + 1) + "</td>" +
@@ -585,6 +604,7 @@
       }
 
       async function renderBrowserResultInIframe(url, meta) {
+        // 親画面のCSSやスクリプトと干渉しないよう、web検索結果は専用iframe内へ表示する。
         resultDiv.style.display = "block";
         resultDiv.innerHTML = "";
 
@@ -678,6 +698,8 @@
         }
       }
 
+      // 2つの送信ボタンを同じフォームで扱う。
+      // browserは認証付きAPI、slackDMは通知処理を持つGASへ送るため、分岐後の責務が異なる。
       form.addEventListener("submit", async function (event) {
         event.preventDefault();
         const submitter = event.submitter;
@@ -700,6 +722,7 @@
         setLoading(true, submitterId === "browser" ? "検索結果を読み込み中..." : "送信中...");
 
         if (submitterId === "browser") {
+          // web表示はPHP APIを利用し、ログインユーザーの検索権限をサーバー側で確認する。
           const params = new URLSearchParams(Object.assign({}, baseParams, { action: "browser" }));
           const requestUrl = BROWSER_API_URL + "?" + params.toString();
 
@@ -714,6 +737,7 @@
         }
 
         if (submitterId === "slackDM") {
+          // Slack送信は既存GASを利用するため、web表示とは送信先と結果表示を分けている。
           const params = new URLSearchParams(Object.assign({}, baseParams, { action: submitterId }));
           const requestUrl = GAS_URL + "?" + params.toString();
 

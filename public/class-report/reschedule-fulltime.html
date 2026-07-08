@@ -977,8 +977,19 @@
 
     <script>
 
+      /*
+       * 社員向け欠勤・振替申請画面。
+       *
+       * regular:
+       *   現在の授業予定。欠勤、振替、担当変更等の申請対象。
+       * pending:
+       *   日時未定等で別管理されている予定。日時決定時に通常申請形式へ正規化する。
+       *
+       * 申請者はログイン本人で固定し、対象講師だけを社員が選び直せる。
+       * 画面内のchangesへ編集内容を保持し、確認後にGAS形式へ変換して一括送信する。
+       */
 
-      /* ===== 業務データ取得URL ===== */
+      /* ===== 取得・認証API ===== */
       const DATA_URL = '/kiweb/public/auth/api/absence-schedule.php';
       const PENDING_DATA_URL = '/kiweb/public/auth/api/pending-reschedule.php';
       const ME_API_URL = '/kiweb/public/auth/api/me.php';
@@ -993,14 +1004,15 @@
       const PENDING_NORMALIZED_CHANGE_TYPE = '未定振替の日時決定';
       const INITIAL_FILTER_DELAY_MS = 250;
 
-      /* ===== 申請送信用URL (doPost の Webアプリ URL) ===== */
-      // ★ ここは実際に稼働中の「欠勤届・振替申請」の Webアプリ URL に差し替えてください
+      /* ===== 申請送信用GAS ===== */
+      // 本番送信先。テスト時は誤送信を防ぐため、送信操作または接続先を明示的に分ける。
       const FORM_POST_URL = 'https://script.google.com/macros/s/AKfycbxP93qZWtaZldBTeUKRy9foMyJb_xEYXRXl1_gm5RZT-f9GlIUyzbM1_nIhrHvMh7uVNw/exec';
 
       // 送信成功後に「最初の画面へ戻ってクリア」を実行するか（ネットワークエラー回避のため一旦OFF）
       const ENABLE_RESET_AFTER_SUBMIT = false;
 
-      /* ===== 状態 ===== */
+      /* ===== 画面状態 ===== */
+      // 元データ、日時未定データ、ユーザーが編集した差分を分けて保持する。
       let allClasses = [];
       let pendingClasses = [];
       let changes = {}; // key -> changeData
@@ -1107,10 +1119,11 @@
         const name = getLoggedInUserName(user);
         if (!name) return;
 
-        // ロックするのは申請者名だけ
+        // 申請者は操作責任を示すログイン本人、講師名は申請対象者。
+        // 社員の代理申請でも両者を混同しないよう、申請者だけを固定する。
         lockApplicantName(name);
 
-        // 講師名は初期表示用にログイン名を入れるだけ。編集・検索は可能なままにする。
+        // 講師名は初期値にログイン名を使うが、社員が対象講師を選び直せる状態を保つ。
         const teacherEl = document.getElementById('teacherName');
         if (teacherEl) {
           teacherEl.value = name;
@@ -1163,6 +1176,8 @@
       }
 
       function readCachedRows(cacheKey, ttlMs) {
+        // 短時間の再表示を高速化するタブ内キャッシュ。
+        // スキーマ不一致や期限切れは破棄し、APIから取り直す。
         try {
           const raw = sessionStorage.getItem(cacheKey);
           if (!raw) return null;

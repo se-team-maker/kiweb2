@@ -881,14 +881,14 @@
                 </li>
                 <li class="nav-item">
                   <a class="nav-link" data-page="signage">
-                    <span class="nav-icon material-symbols-outlined">dashboard</span>
-                    <span>サイネージ</span>
+                    <span class="nav-icon material-symbols-outlined">co_present</span>
+                    <span>教室割サイネージ</span>
                   </a>
                 </li>
                 <li class="nav-item">
-                  <a class="nav-link" data-page="pdf-viewer">
-                    <span class="nav-icon material-symbols-outlined">picture_as_pdf</span>
-                    <span>資料一覧</span>
+                  <a class="nav-link" data-page="ict-manual">
+                    <span class="nav-icon material-symbols-outlined">help</span>
+                    <span>ICTマニュアル</span>
                   </a>
                 </li>
               </ul>
@@ -997,9 +997,9 @@
             </button>
           </li>
           <li>
-            <button class="mobile-expand-link" type="button" data-page="pdf-viewer">
-              <span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
-              <span>資料一覧</span>
+            <button class="mobile-expand-link" type="button" data-page="signage">
+              <span class="material-symbols-outlined" aria-hidden="true">co_present</span>
+              <span>教室割サイネージ</span>
             </button>
           </li>
           <li class="admin-only" data-display="list-item" style="display: none;">
@@ -1008,12 +1008,20 @@
               <span>資料配信管理</span>
             </a>
           </li>
+          <li>
+            <button class="mobile-expand-link" type="button" data-page="ict-manual">
+              <span class="material-symbols-outlined" aria-hidden="true">help</span>
+              <span>ICTマニュアル</span>
+            </button>
+          </li>
           <li class="admin-only" data-display="list-item" style="display: none;">
             <a class="mobile-expand-link" href="/kiweb/public/auth/admin.php">
               <span class="material-symbols-outlined" aria-hidden="true">settings</span>
               <span>管理</span>
             </a>
           </li>
+        </ul>
+      </li>
     </ul>
   </nav>
 
@@ -1024,6 +1032,7 @@
       <iframe id="loginFrame" class="modal-frame" title="ログイン"></iframe>
     </div>
   </div>
+  <script src="kiweb-task-delivery.js"></script>
   <script>
     // ★ 同一フォルダにある3ページを iframe で切り替え
     const PAGES = {
@@ -1036,7 +1045,8 @@
       'class-report-search': { file: '/kiweb/public/class-report/search.html?v=20260317-class-report-search-bridge-v3' }, // 授業報告書の検索・閲覧
       'non-class-work-search': { file: '/kiweb/public/class-report/non-class-work-search.html' }, // 勤務記録の閲覧
       signage: { file: '/kiweb/public/documents/viewer.php?signage=sk',appendTeacher: false,appendTheme: false} , // サイネージ（共通）
-      'pdf-viewer': { file: '/kiweb/public/documents/index.php', appendTeacher: false, appendTheme: false } // PDFビューア（共通）
+      'pdf-viewer': { file: '/kiweb/public/documents/index.php', appendTeacher: false, appendTheme: false }, // PDFビューア（共通）
+      'ict-manual': { file: '/kiweb/public/auth/ict-manual.php', appendTeacher: false, appendTheme: false }, // ICTマニュアル
     };
 
     const iframe = document.getElementById('mainFrame');
@@ -1395,9 +1405,8 @@
 
       // 同一フォルダ指定の相対パス + 講師名パラメータ
       const teacherName = getLoginName();
-      const pageConfig = PAGES[key];
-      let url = pageConfig.file;
-      if (teacherName && key !== 'teacher-no' && pageConfig.appendTeacher !== false) {
+      let url = PAGES[key].file;
+      if (teacherName && key !== 'teacher-no') {
         url += (url.includes('?') ? '&' : '?') + 'teacher=' + encodeURIComponent(teacherName);
       }
       if (key === 'work') {
@@ -1560,16 +1569,22 @@
       }
       initializeNavSections();
       setMobileMenuOpen(false);
+
       const refreshResult = await refreshUserName({ redirectOnFail: true });
       if (refreshResult !== true) {
         return;
       }
+
 
       const hash = (location.hash || '').replace('#', '').trim();
       const hasValidHash = !!hash && !!PAGES[hash];
       const defaultPage = userRoles.includes('part_time_staff') ? 'work' : 'lessons';
       const initialPage = hasValidHash ? hash : defaultPage;
       loadPage(initialPage, { updateHash: true });
+
+      if (window.KiwebTaskDelivery) {
+        KiwebTaskDelivery.init({ getLoginName });
+      }
 
       // Init Ripple Effects
       const createRipple = (event) => {

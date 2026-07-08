@@ -860,6 +860,12 @@
                     <span>資料一覧</span>
                   </a>
                 </li>
+                <li class="nav-item">
+                  <a class="nav-link" data-page="ict-manual">
+                    <span class="nav-icon material-symbols-outlined">help</span>
+                    <span>ICTマニュアル</span>
+                  </a>
+                </li>
               </ul>
             </li>
             <li class="nav-item admin-only" data-display="list-item" style="display: none;">
@@ -882,7 +888,7 @@
         <div class="sidebar-title">クイックリンク</div>
         <nav>
           <ul class="nav-menu">
-            <li class="nav-item"><a href="#" class="nav-link"><span class="nav-icon material-symbols-outlined">bookmark</span><span>マニュアル</span></a>
+            <li class="nav-item"><a class="nav-link" data-page="ict-manual"><span class="nav-icon material-symbols-outlined">help</span><span>ICTマニュアル</span></a>
             </li>
           </ul>
         </nav>
@@ -961,6 +967,12 @@
               <span>資料一覧</span>
             </button>
           </li>
+          <li>
+            <button class="mobile-expand-link" type="button" data-page="ict-manual">
+              <span class="material-symbols-outlined" aria-hidden="true">help</span>
+              <span>ICTマニュアル</span>
+            </button>
+          </li>
           <li class="admin-only" data-display="list-item" style="display: none;">
             <a class="mobile-expand-link" href="/kiweb/public/documents/admin.php">
               <span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
@@ -989,7 +1001,8 @@
       'class-report-search': { file: '/kiweb/public/class-report/search.html?v=20260317-class-report-search-bridge-v3' }, // 授業報告書の検索・閲覧
       'non-class-work-search': { file: '/kiweb/public/class-report/non-class-work-search.html' }, // 勤務記録の閲覧
       signage: { file: '/kiweb/public/documents/viewer.php?signage=sk', appendTeacher: false, appendTheme: false }, // サイネージ（共通）
-      'pdf-viewer': { file: '/kiweb/public/documents/index.php', appendTeacher: false, appendTheme: false } // 資料一覧（共通）
+      'pdf-viewer': { file: '/kiweb/public/documents/index.php', appendTeacher: false, appendTheme: false }, // 資料一覧（共通）
+      'ict-manual': { file: '/kiweb/public/auth/ict-manual.php', appendTeacher: false, appendTheme: false } // ICTマニュアル
     };
 
     const iframe = document.getElementById('mainFrame');
