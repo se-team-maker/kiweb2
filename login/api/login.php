@@ -149,4 +149,4 @@ AuditLog::log(AuditLog::LOGIN_SUCCESS, $user['id'], [
 // セッションを確実に保存してからリダイレクト
 session_write_close();
 
-$sendSuccess('/kiweb/room-booking/room-booking.php');
+$sendSuccess('/kiweb/public/room-booking/index.php');

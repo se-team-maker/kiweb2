@@ -109,6 +109,6 @@ AuditLog::log(AuditLog::PWD_RESET_SUCCESS, $userId, [
 jsonResponse([
     'success' => true,
     'message' => 'パスワードを再設定しました',
-    'redirect' => '/kiweb/room-booking/room-booking.php'
+    'redirect' => '/kiweb/public/room-booking/index.php'
 
 ]);

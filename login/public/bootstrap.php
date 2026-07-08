@@ -78,7 +78,7 @@ function requireAuth(): void
 function requireGuest(): void
 {
     if (Session::isLoggedIn()) {
-        header('Location: /kiweb/room-booking/room-booking.php');
+        header('Location: /kiweb/public/room-booking/index.php');
 
         exit;
     }

@@ -7,20 +7,20 @@
 本文は次のフォルダにMarkdownファイルとして追加します。
 
 ```text
-teacher-auth/ict-manual/manuals/
+app/Documents/ict-manual/manuals/
 ```
 
 例:
 
 ```text
-teacher-auth/ict-manual/manuals/login.md
-teacher-auth/ict-manual/manuals/pdf-viewer.md
+app/Documents/ict-manual/manuals/login.md
+app/Documents/ict-manual/manuals/pdf-viewer.md
 ```
 
 新しいページを追加したら、必ず次の一覧ファイルにも情報を追加します。
 
 ```text
-teacher-auth/ict-manual/manuals/index.json
+app/Documents/ict-manual/manuals/index.json
 ```
 
 ## 2. ファイル名
@@ -95,15 +95,15 @@ manual_最新版.md
 画像は次のフォルダ配下に置きます。
 
 ```text
-teacher-auth/ict-manual/assets/images/
+app/Documents/ict-manual/assets/images/
 ```
 
 機能ごとにフォルダを分けます。
 
 ```text
-teacher-auth/ict-manual/assets/images/login/
-teacher-auth/ict-manual/assets/images/checkin/
-teacher-auth/ict-manual/assets/images/pdf-viewer/
+app/Documents/ict-manual/assets/images/login/
+app/Documents/ict-manual/assets/images/checkin/
+app/Documents/ict-manual/assets/images/pdf-viewer/
 ```
 
 Markdownには次のように書きます。

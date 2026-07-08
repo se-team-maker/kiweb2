@@ -1,0 +1,1 @@
+../../../config/room-booking/config.sample.php

@@ -57,7 +57,7 @@ ICT_MANUAL_UPLOADER_ACCESS_KEY=登録担当者へ伝える12文字以上の値
 ## 4. API
 
 ```text
-POST /kiweb/teacher-auth/public/ict-manual-upload-api.php
+POST /kiweb/public/auth/ict-manual-upload-api.php
 Content-Type: multipart/form-data
 Authorization: Bearer {ICT_MANUAL_UPLOAD_TOKEN}
 ```
@@ -81,7 +81,7 @@ Authorization: Bearer {ICT_MANUAL_UPLOAD_TOKEN}
     "image_count": 2,
     "updated": "2026-06-20"
   },
-  "view_url": "/kiweb/teacher-auth/public/ict-manual.php#manual-room-booking",
+  "view_url": "/kiweb/public/auth/ict-manual.php#manual-room-booking",
   "request_id": "..."
 }
 ```
@@ -128,7 +128,7 @@ Markdownの保存名はAPIが `{id}.md` に決定する。
 画像は次のパスへ保存する。
 
 ```text
-teacher-auth/ict-manual/assets/images/{id}/{画像ファイル名}
+app/Documents/ict-manual/assets/images/{id}/{画像ファイル名}
 ```
 
 Markdown内の記述:
@@ -177,7 +177,7 @@ flowchart TD
 必要な環境変数:
 
 ```text
-ICT_MANUAL_API_URL=https://system.example.com/kiweb/teacher-auth/public/ict-manual-upload-api.php
+ICT_MANUAL_API_URL=https://system.example.com/kiweb/public/auth/ict-manual-upload-api.php
 ICT_MANUAL_UPLOAD_TOKEN=kiweb側と同じAPIトークン
 ICT_MANUAL_UPLOADER_ACCESS_KEY=登録担当者用の別キー
 ```
@@ -196,7 +196,7 @@ kiweb側も同様に `upload_max_filesize` と `post_max_size` を設定する�
 
 - kiweb側と外部側に同じAPIトークンを設定する。
 - 外部側のアクセスキーはAPIトークンとは別にする。
-- `teacher-auth/ict-manual/manuals/` と `assets/images/` をWebサーバーから書き込み可能にする。
-- `teacher-auth/ict-manual/` が外部から直接閲覧できないことを確認する。
+- `app/Documents/ict-manual/manuals/` と `assets/images/` をWebサーバーから書き込み可能にする。
+- `app/Documents/ict-manual/` が外部から直接閲覧できないことを確認する。
 - HTTPS以外のAPIリクエストが拒否されることを確認する。
 - 新規IDと既存ID上書きの両方をテストする。

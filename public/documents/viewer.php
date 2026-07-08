@@ -1,0 +1,1 @@
+../auth/pdf-viewer.php

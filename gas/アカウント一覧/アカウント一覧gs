@@ -21,7 +21,7 @@ const SHEET_NAME = 'アカウント一覧';
  * manualBackfillUsers() および resetAndBackfillUsers() から呼び出される。
  */
 const BACKFILL_URL =
-  'https://system.kyotoijuku.com/kiweb/teacher-auth/api/internal/backfill-users-to-sheet.php';
+  'https://system.kyotoijuku.com/kiweb/public/auth/api/internal/backfill-users-to-sheet.php';
 
 /** @const {string} バックフィルAPIの認証トークン。クエリパラメータ経由で送信する。 */
 const BACKFILL_TOKEN = '8d7b6d8429834c7da7fd673abf9c98ad';

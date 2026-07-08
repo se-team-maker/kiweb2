@@ -10,7 +10,7 @@ kiweb2内に、ICT関連の操作方法・トラブル対応・業務システ�
 
 ## 2. 基本方針
 
-- 既存の `teacher-auth` のログインセッションを利用する。
+- 既存の `public/auth` のログインセッションを利用する。
 - マニュアルページ、一覧JSON、Markdown本文、画像は未ログインで直接閲覧できないようにする。
 - DB管理、既読管理、管理画面編集は初期実装の対象外とする。
 - Markdown本文はHTMLを直接書かなくても更新できる構成にする。
@@ -75,7 +75,7 @@ kiweb2内に、ICT関連の操作方法・トラブル対応・業務システ�
 
 `kiweb2.html`、`kiweb2-fulltime.html`、`kiweb2-admin.html` のメニューに「ICTマニュアル」への入口を追加する。
 
-入口は iframe 表示先として `/kiweb/teacher-auth/public/ict-manual.php` を開く。
+入口は iframe 表示先として `/kiweb/public/auth/ict-manual.php` を開く。
 
 ### 5.2 トップページ表示
 
@@ -115,7 +115,7 @@ ICTマニュアルのトップページには以下を表示する。
 
 Markdown本文内で画像を表示できるようにする。
 
-画像は `teacher-auth/ict-manual/assets/images/` に配置し、直接URLではなくPHP経由で配信する。
+画像は `app/Documents/ict-manual/assets/images/` に配置し、直接URLではなくPHP経由で配信する。
 
 Markdown内では次のように記述する。
 
@@ -189,23 +189,25 @@ ICTマニュアルページ本体、一覧JSON、Markdown本文、画像はす�
 /kiweb/
   docs/
     ict-manual-requirements.md
-  teacher-auth/
-    ict-manual/
-      manuals/
-        index.json
-        login.md
-        cache-refresh.md
-        checkin.md
-        pdf-viewer.md
-        contact.md
-      assets/
-        images/
-    public/
+  app/
+    Documents/
+      ict-manual/
+        manuals/
+          index.json
+          login.md
+          cache-refresh.md
+          checkin.md
+          pdf-viewer.md
+          contact.md
+        assets/
+          images/
+  public/
+    auth/
       ict-manual.php
       ict-manual-file.php
 ```
 
-`teacher-auth/ict-manual/` は `.htaccess` で直アクセスを禁止する。
+`app/Documents/ict-manual/` はWebサーバー設定で直アクセスを禁止する。
 
 ## 8. index.json仕様
 

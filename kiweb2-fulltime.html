@@ -767,7 +767,7 @@
       vertical-align: middle;
     }
   </style>
-  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="icon" type="image/png" href="/kiweb/public/assets/favicon.png" />
 </head>
 
 <body>
@@ -880,13 +880,13 @@
               </ul>
             </li>
             <li class="nav-item admin-only" data-display="list-item" style="display: none;">
-              <a href="/kiweb/teacher-auth/public/pdf-admin.php" class="nav-link">
+              <a href="/kiweb/public/documents/admin.php" class="nav-link">
                 <span class="nav-icon material-symbols-outlined">picture_as_pdf</span>
                 <span>資料配信管理</span>
               </a>
             </li>
             <li class="nav-item admin-only" style="display: none;">
-              <a href="/kiweb/teacher-auth/public/admin.php" class="nav-link">
+              <a href="/kiweb/public/auth/admin.php" class="nav-link">
                 <span class="nav-icon material-symbols-outlined">settings</span>
                 <span>管理者画面</span>
               </a>
@@ -995,13 +995,13 @@
             </button>
           </li>
           <li class="admin-only" data-display="list-item" style="display: none;">
-            <a class="mobile-expand-link" href="/kiweb/teacher-auth/public/pdf-admin.php">
+            <a class="mobile-expand-link" href="/kiweb/public/documents/admin.php">
               <span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
               <span>資料配信管理</span>
             </a>
           </li>
           <li class="admin-only" data-display="list-item" style="display: none;">
-            <a class="mobile-expand-link" href="/kiweb/teacher-auth/public/admin.php">
+            <a class="mobile-expand-link" href="/kiweb/public/auth/admin.php">
               <span class="material-symbols-outlined" aria-hidden="true">settings</span>
               <span>管理</span>
             </a>
@@ -1033,15 +1033,15 @@
     // 社員ポータルのメニュー定義。appendTeacher / appendTheme が false の画面には
     // ログイン講師名や社員テーマを付けず、各画面自身の認証・表示制御に任せる。
     const PAGES = {
-      lessons: { file: '/kiweb/class-declaration-fulltime.html?v=20260502-kazasu-badge-date' }, // 授業予定・実施申告
-      absence: { file: '/kiweb/class-reschedule_fulltime.html', appendTeacher: false, appendTheme: false }, // 欠勤・振替申請（社員版）
-      'room-booking': { file: '/kiweb/room-booking/room-booking.php', appendTeacher: false, appendTheme: false }, // 会議室予約システム
-      check_in_out: { file: '/kiweb/check_in_out.html' }, // 出退勤記録・履歴の閲覧
-      'class-report-search': { file: '/kiweb/ClassReportSearchForm.html?v=20260317-class-report-search-bridge-v3' }, // 授業報告書の検索・閲覧
-      'non-class-work-search': { file: '/kiweb/declaration_of_non_class_work_search_and_view.html' }, // 勤務記録の検索・閲覧
-      signage: { file: '/kiweb/teacher-auth/public/pdf-viewer.php?signage=sk',appendTeacher: false,appendTheme: false}, // 教室割サイネージ（共通）
-      'pdf-viewer': { file: '/kiweb/teacher-auth/public/pdf-list.php', appendTeacher: false, appendTheme: false }, // PDFビューア（共通）
-      'ict-manual': { file: '/kiweb/teacher-auth/public/ict-manual.php', appendTeacher: false, appendTheme: false }, // ICTマニュアル
+      lessons: { file: '/kiweb/public/class-report/declaration-fulltime.html?v=20260502-kazasu-badge-date' }, // 授業予定・実施申告
+      absence: { file: '/kiweb/public/class-report/reschedule-fulltime.html', appendTeacher: false, appendTheme: false }, // 欠勤・振替申請（社員版）
+      'room-booking': { file: '/kiweb/public/room-booking/index.php', appendTeacher: false, appendTheme: false }, // 会議室予約システム
+      check_in_out: { file: '/kiweb/public/check-in/index.html' }, // 出退勤記録・履歴の閲覧
+      'class-report-search': { file: '/kiweb/public/class-report/search.html?v=20260317-class-report-search-bridge-v3' }, // 授業報告書の検索・閲覧
+      'non-class-work-search': { file: '/kiweb/public/class-report/non-class-work-search.html' }, // 勤務記録の検索・閲覧
+      signage: { file: '/kiweb/public/documents/viewer.php?signage=sk',appendTeacher: false,appendTheme: false}, // 教室割サイネージ（共通）
+      'pdf-viewer': { file: '/kiweb/public/documents/index.php', appendTeacher: false, appendTheme: false }, // PDFビューア（共通）
+      'ict-manual': { file: '/kiweb/public/auth/ict-manual.php', appendTeacher: false, appendTheme: false }, // ICTマニュアル
     };
 
     const iframe = document.getElementById('mainFrame');
@@ -1053,8 +1053,8 @@
     const mobileMenuToggle = document.querySelector('[data-mobile-menu-toggle]');
     const mobileExpandList = document.getElementById('mobileExpandList');
     const mobileExpandIcon = document.getElementById('mobileExpandIcon');
-    const LOGIN_URL = '/kiweb/teacher-auth/public/login.php';
-    const LOGOUT_API_URL = '/kiweb/teacher-auth/api/logout.php';
+    const LOGIN_URL = '/kiweb/public/auth/login.php';
+    const LOGOUT_API_URL = '/kiweb/public/auth/api/logout.php';
     const INQUIRY_URL = 'https://docs.google.com/forms/d/e/1FAIpQLSeonc0XVI1SrzbHZvFx5OL6ITHzwF1IDn9hoAzaHgXXys-kmQ/viewform';
     const PORTAL_THEME = 'fulltime';
     const NAME_STORAGE_KEY = 'kiweb_user_name';
@@ -1342,7 +1342,7 @@
       const nameEl = document.querySelector('.user-name');
       if (!nameEl) return false;
       try {
-        const response = await fetch('/kiweb/teacher-auth/api/me.php', {
+        const response = await fetch('/kiweb/public/auth/api/me.php', {
           method: 'GET',
           credentials: 'include'
         });
@@ -1389,7 +1389,7 @@
         });
 
         const department = getPrimaryScope('department');
-        if (department && iframe && iframe.src && iframe.src.includes('work-record.html') && !iframe.src.includes('department=')) {
+        if (department && iframe && iframe.src && iframe.src.includes('/kiweb/public/check-in/work-record.html') && !iframe.src.includes('department=')) {
           try {
             const currentUrl = new URL(iframe.src, window.location.origin);
             currentUrl.searchParams.set('department', department);
@@ -1487,10 +1487,7 @@
       });
     }
 
-    // ===== iframeナビゲーションと閲覧ログ =====
-    // URLから氏名等の個人情報を除いて記録する。ログ記録は補助機能であり、
-    // 失敗してもiframeの画面切り替え自体は継続させる。
-    const IFRAME_ACCESS_LOG_API_URL = '/kiweb/teacher-auth/api/iframe-access-log.php';
+    const IFRAME_ACCESS_LOG_API_URL = '/kiweb/public/auth/api/iframe-access-log.php';
 
     function getIframePageLabel(pageKey) {
       const nav = document.querySelector(`.nav-link[data-page="${CSS.escape(pageKey)}"]`) ||

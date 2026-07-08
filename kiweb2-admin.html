@@ -762,7 +762,7 @@
       vertical-align: middle;
     }
   </style>
-  <link rel="icon" type="image/png" href="favicon.png" />
+  <link rel="icon" type="image/png" href="/kiweb/public/assets/favicon.png" />
 </head>
 
 <body>
@@ -869,13 +869,13 @@
               </ul>
             </li>
             <li class="nav-item admin-only" data-display="list-item" style="display: none;">
-              <a href="/kiweb/teacher-auth/public/pdf-admin.php" class="nav-link">
+              <a href="/kiweb/public/documents/admin.php" class="nav-link">
                 <span class="nav-icon material-symbols-outlined">picture_as_pdf</span>
                 <span>資料配信管理</span>
               </a>
             </li>
             <li class="nav-item admin-only" style="display: none;">
-              <a href="/kiweb/teacher-auth/public/admin.php" class="nav-link">
+              <a href="/kiweb/public/auth/admin.php" class="nav-link">
                 <span class="nav-icon material-symbols-outlined">settings</span>
                 <span>管理者画面</span>
               </a>
@@ -900,7 +900,7 @@
           <span class="iframe-loading-spinner material-symbols-outlined" aria-hidden="true">progress_activity</span>
           <span class="iframe-loading-text">読み込み中…</span>
         </div>
-        <iframe id="mainFrame" title="ki-web2 main" src="class-declaration.html?v=20260323-kazasu-badge-date&allowNameEdit=1"></iframe>
+        <iframe id="mainFrame" title="ki-web2 main" src="/kiweb/public/class-report/declaration.html?v=20260323-kazasu-badge-date&allowNameEdit=1"></iframe>
       </main>
     </div>
   </div>
@@ -974,7 +974,7 @@
             </button>
           </li>
           <li class="admin-only" data-display="list-item" style="display: none;">
-            <a class="mobile-expand-link" href="/kiweb/teacher-auth/public/pdf-admin.php">
+            <a class="mobile-expand-link" href="/kiweb/public/documents/admin.php">
               <span class="material-symbols-outlined" aria-hidden="true">picture_as_pdf</span>
               <span>資料配信管理</span>
             </a>
@@ -994,15 +994,15 @@
   <script>
     // ★ 同一フォルダにある3ページを iframe で切り替え
     const PAGES = {
-      lessons: { file: 'class-declaration.html?v=20260323-kazasu-badge-date&allowNameEdit=1' }, // 授業予定・実施申告
-      work: { file: 'work-record.html?v=20260306-submit-card-center' },   // 勤務記録
-      absence: { file: 'class-reschedule.html' },   // 欠勤・振替
-      check_in_out: { file: 'check_in_out.html' },     // 出退勤記録
-      'class-report-search': { file: 'ClassReportSearchForm.html?v=20260317-class-report-search-bridge-v3' }, // 授業報告書の検索・閲覧
-      'non-class-work-search': { file: 'declaration_of_non_class_work_search_and_view.html' }, // 勤務記録の閲覧
-      signage: { file: '/kiweb/teacher-auth/public/pdf-viewer.php?signage=sk', appendTeacher: false, appendTheme: false }, // サイネージ（共通）
-      'pdf-viewer': { file: '/kiweb/teacher-auth/public/pdf-list.php', appendTeacher: false, appendTheme: false }, // 資料一覧（共通）
-      'ict-manual': { file: '/kiweb/teacher-auth/public/ict-manual.php', appendTeacher: false, appendTheme: false } // ICTマニュアル
+      lessons: { file: '/kiweb/public/class-report/declaration.html?v=20260323-kazasu-badge-date&allowNameEdit=1' }, // 授業予定・実施申告
+      work: { file: '/kiweb/public/check-in/work-record.html?v=20260306-submit-card-center' },   // 勤務記録
+      absence: { file: '/kiweb/public/class-report/reschedule.html' },   // 欠勤・振替
+      check_in_out: { file: '/kiweb/public/check-in/index.html' },     // 出退勤記録
+      'class-report-search': { file: '/kiweb/public/class-report/search.html?v=20260317-class-report-search-bridge-v3' }, // 授業報告書の検索・閲覧
+      'non-class-work-search': { file: '/kiweb/public/class-report/non-class-work-search.html' }, // 勤務記録の閲覧
+      signage: { file: '/kiweb/public/documents/viewer.php?signage=sk', appendTeacher: false, appendTheme: false }, // サイネージ（共通）
+      'pdf-viewer': { file: '/kiweb/public/documents/index.php', appendTeacher: false, appendTheme: false }, // 資料一覧（共通）
+      'ict-manual': { file: '/kiweb/public/auth/ict-manual.php', appendTeacher: false, appendTheme: false } // ICTマニュアル
     };
 
     const iframe = document.getElementById('mainFrame');
@@ -1014,7 +1014,7 @@
     const mobileMenuToggle = document.querySelector('[data-mobile-menu-toggle]');
     const mobileExpandList = document.getElementById('mobileExpandList');
     const mobileExpandIcon = document.getElementById('mobileExpandIcon');
-    const LOGIN_URL = '/kiweb/teacher-auth/public/login.php';
+    const LOGIN_URL = '/kiweb/public/auth/login.php';
     const NAME_STORAGE_KEY = 'kiweb_user_name';
     const NAME_PLACEHOLDER = 'ログインしてください';
     const NAME_EDITABLE_PAGES = new Set(['lessons', 'work', 'check_in_out', 'class-report-search', 'non-class-work-search']);
@@ -1089,7 +1089,7 @@
 
     async function logout() {
       try {
-        await fetch('/kiweb/teacher-auth/api/logout.php', {
+        await fetch('/kiweb/public/auth/api/logout.php', {
           method: 'POST',
           credentials: 'include'
         });
@@ -1105,7 +1105,7 @@
       const nameEl = document.querySelector('.user-name');
       if (!nameEl) return false;
       try {
-        const response = await fetch('/kiweb/teacher-auth/api/me.php', {
+        const response = await fetch('/kiweb/public/auth/api/me.php', {
           method: 'GET',
           credentials: 'include'
         });
@@ -1143,7 +1143,7 @@
         });
 
         const department = getPrimaryScope('department');
-        if (department && iframe && iframe.src && iframe.src.includes('work-record.html') && !iframe.src.includes('department=')) {
+        if (department && iframe && iframe.src && iframe.src.includes('/kiweb/public/check-in/work-record.html') && !iframe.src.includes('department=')) {
           try {
             const currentUrl = new URL(iframe.src, window.location.origin);
             currentUrl.searchParams.set('department', department);
@@ -1238,7 +1238,7 @@
       });
     }
 
-    const IFRAME_ACCESS_LOG_API_URL = '/kiweb/teacher-auth/api/iframe-access-log.php';
+    const IFRAME_ACCESS_LOG_API_URL = '/kiweb/public/auth/api/iframe-access-log.php';
 
     function getIframePageLabel(pageKey) {
       const nav = document.querySelector(`.nav-link[data-page="${CSS.escape(pageKey)}"]`) ||
